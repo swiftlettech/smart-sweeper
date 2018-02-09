@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html ng-app="SmartSweeper" lang="en-US">
+    <head>
+        <meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>SMART Sweeper</title>
+        
+        <link type="text/css" rel="stylesheet" href="css/bootstrap-3.3.7.min.css?v=20180206" />
+        <link type="text/css" rel="stylesheet" href="css/bootstrap-theme-3.3.7.min.css?v=20180206" />
+		<link type="text/css" rel="stylesheet" href="css/styles.css?v=20180206" />
+    </head>
+    
+    <body ng-controller="SmartController as $mainctrl" ng-init="init()">
+        <div class="container">
+            <uib-tabset id="tabset" active="tabIndex">
+                <uib-tab index="0" heading="Dashboard" select="setActiveTab(tabIndex, 'dashboard')">
+                    <dashboard-tab></dashboard-tab>
+                </uib-tab>
+                
+                <uib-tab index="1" heading="Send" select="setActiveTab(tabIndex, 'send')">
+                    <send-tab></send-tab>
+                </uib-tab>
+                
+                <uib-tab index="2" heading="Sweep" select="setActiveTab(tabIndex, 'sweep')">
+                    <sweep-tab></sweep-tab>
+                </uib-tab>
+                
+                <uib-tab index="4" heading="Log" select="setActiveTab(tabIndex, 'logs')">
+                    <log-tab></log-tab>
+                </uib-tab>
+            </uib-tabset>
+        </div>
+        
+        <!-- Enable the use of 3rd party libraries in Electron. -->
+        <script>
+            window.nodeRequire = require;
+            delete window.require;
+            delete window.exports;
+            delete window.module;
+        </script>
+        
+        <!-- libraries -->
+        <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+        <script type="text/javascript" src="js/angular-1.6.9.min.js"></script>
+        <script type="text/javascript" src="js/angular-animate-1.6.9.min.js"></script>
+        <script type="text/javascript" src="js/angular-route-1.6.9.min.js"></script>
+        <script type="text/javascript" src="js/angular-touch-1.6.9.min.js"></script>
+        <script type="text/javascript" src="js/ui-bootstrap-tpls-2.5.0.min.js"></script>
+        <script type="text/javascript" src="js/fontawesome-all-5.0.6.min.js"></script>
+        
+        <!-- bootstrapping -->
+        <script type="text/javascript" src="app/app.module.js"></script>
+        
+        <!-- dashboard -->
+        <script type="text/javascript" src="app/dashboard/dashboard.js"></script>
+        
+        <!-- send -->
+        <script type="text/javascript" src="app/send/send.js"></script>
+        
+        <!-- sweep -->
+        <script type="text/javascript" src="app/sweep/sweep.js"></script>
+        
+        <!-- log -->
+        <script type="text/javascript" src="app/log/log.js"></script>
+    </body>
+</html>

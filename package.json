@@ -1,0 +1,20 @@
+{
+    "name": "smart-sweeper",
+    "version": "0.1.0",
+    "description": "Sweeper application for SMART cryptocurrency to allow easy retrieval of gift funds.",
+    "keywords": "",
+    "license": "GPL-3.0",
+    "repository": "github:swiftlettech/smart-sweeper",
+    "bugs": "https://github.com/swiftlettech/smart-sweeper/issues",
+    "main": "main.js",
+    "dependencies": {
+        "electron-util": "^0.6.0",
+        "node-json-db": "^0.7.3",
+        "smartcashjs-lib": "^3.3.3"
+    },
+    "devDependencies": {
+        "electron-debug": "^1.5.0",
+        "electron-is-dev": "^0.3.0",
+        "elemon": "^5.0.3"
+    }
+}

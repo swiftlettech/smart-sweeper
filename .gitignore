@@ -1,0 +1,9 @@
+#directories
+node_modules
+dist
+
+#files
+*.tgz
+*.log
+/db/smart-sweeper.json
+/package-lock.json

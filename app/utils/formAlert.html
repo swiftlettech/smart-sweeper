@@ -1,0 +1,1 @@
+<div uib-alert class="formAlert" dismiss-on-timeout="{{alert.timeout}}" ng-repeat="alert in formAlerts" ng-class="'text-center alert-' + alert.type" close="closeFormAlert($index)" role="alert"><span dynamic-html-alert="alert.msg"></span></div>
