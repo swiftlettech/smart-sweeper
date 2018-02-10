@@ -3,7 +3,7 @@ body {
     margin:20px 0;
 }
 
-.svg-inline--fa {
+.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-cog, .fa-trash {
     cursor:pointer;
 }
 
@@ -36,6 +36,10 @@ body {
 
 #projectList .editCol, #projectList .deleteCol {
     width:65px;
+}
+
+#editProjectForm {
+    margin:0 15%;
 }
 
 /* Sweep */

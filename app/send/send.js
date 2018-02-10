@@ -1,51 +1,72 @@
 angular.module('SmartSweeper').component('sendTab', {
     templateUrl: 'app/send/send.html',
     controller: SendController,
+    controllerAs: '$sendCtrl',
     bindings: {
         ipcRenderer: '<'
     }
 });
 
-function SendController($scope, $document) {
+function SendController($scope, $document, $filter) {
     const {ipcRenderer} = window.nodeRequire('electron');
     var ctrl = this;
     
     this.$onInit = function() {
-        $scope.showAddNewProject = false;
-        $scope.newProject = {};
-		$scope.nameSortFlag = 1;
-        $scope.expSortFlag = -1;
+        ctrl.showAddNewProject = false;
+        ctrl.newProject = {};
+		ctrl.nameSortFlag = 1;
+        ctrl.expSortFlag = -1;
+        
+        ctrl.datepickerOptions = {
+            showWeeks: false
+        };
+        ctrl.datepickerFormat = "MM/dd/yyyy";
         
         // load all projects
         ipcRenderer.send('getProjects');
         ipcRenderer.on('projectsReady', (event, arg) => {
-            $scope.availableProjects = arg.list;
+            $scope.$parent.setAvailableProjects(arg.list);
+            ctrl.availableProjects = arg.list;
+            console.log();
         });
 	};
     
-    $scope.edit = function(id) {
-        $scope.activeProjectID = id;
-        ipcRenderer.send('editProject', {id: id});
+    ctrl.delete = function(id) {
+        ctrl.activeProjectID = id;
+        ipcRenderer.send('deleteProject', {id: id});
     };
     
-    $scope.delete = function(id) {
+    ctrl.edit = function(id) {
+        ctrl.activeProjectID = id;
+        ctrl.activeProject = $filter('filter')(ctrl.availableProjects, {id: id})[0];
         
-    };
-    
-    $scope.new = function(form) {
-        ipcRenderer.send('newProject', {newProject: $scope.newProject});
+        console.log(ctrl.activeProject);
         
-        $('#addNewProjectForm')[0].reset()
-        form.$setPristine();
-        form.$setUntouched();
-        form.$submitted = false;
+        localStorage.projectId = ctrl.activeProject.id;
+        localStorage.projectName = ctrl.activeProject.name;
+        localStorage.projectDesc = ctrl.activeProject.desc;
+        localStorage.projectExp = typeof ctrl.activeProject.exp !== "undefined" ? ctrl.activeProject.exp : '';
+        localStorage.projectFunds = typeof ctrl.activeProject.funds !== "undefined" ? ctrl.activeProject.funds : '';
+        localStorage.projectWalletNum = typeof ctrl.activeProject.numOfWallets !== "undefined" ? ctrl.activeProject.numOfWallets : '';
+        localStorage.projectWalletAmt = typeof ctrl.activeProject.amtPerWallet !== "undefined" ? ctrl.activeProject.amtPerWallet : '';
+        
+        ipcRenderer.send('editProject', {id: id, project: ctrl.activeProject});
     };
     
-    $scope.sort = function(type) {
+    ctrl.new = function(form) {
+        ipcRenderer.send('newProject', {newProject: ctrl.newProject});
+        ipcRenderer.on('newProjectAdded', (event, arg) => {
+            $('#addNewProjectForm')[0].reset()
+            form.$setPristine();
+            form.$setUntouched();
+            form.$submitted = false;
+        });
+    };
+    
+    ctrl.sort = function(type) {
         console.log(type);
     };
     
-    //TODO: project list
     //TODO: edit project form
     //TODO: paper wallet generator
     //TODO: QR code generator

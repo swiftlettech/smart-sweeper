@@ -19,7 +19,11 @@ function createWindow () {
     // Create the browser window.
     win = new BrowserWindow({
         width: width,
-        height: height
+        height: height,
+        webPreferences: {
+            //nodeIntegration: false,
+            preload: path.join(__dirname, 'preload.js')
+        }
     });
     
     win.setMenu(null);
@@ -99,12 +103,15 @@ ipcMain.on('newProject', (event, args) => {
     db.push("/projects", projects);
     db.reload();
     projects = db.getData("/projects");
+    
+    event.sender.send('newProjectAdded');
     event.sender.send('projectsReady', projects);
 });
 
 // delete a project
 ipcMain.on('deleteProject', (event, args) => {
     args.id;
+    //event.sender.send('projectsReady', projects);
 });
 
 // get all projects
@@ -118,7 +125,14 @@ ipcMain.on('editProject', (event, args) => {
     args.id;
     args.project;
     
-    modal = new BrowserWindow({parent: win, modal: true, show: false});
+    modal = new BrowserWindow({
+        //width: ,
+        //height: ,
+        parent: win,
+        modal: true,
+        show: false
+    });
+    
     modal.loadURL(url.format({
         pathname: path.join(__dirname, '/app/send/editModal.html'),
         protocol: 'file:',
@@ -127,5 +141,9 @@ ipcMain.on('editProject', (event, args) => {
     
     modal.once('ready-to-show', () => {
         modal.show();
+    });
+    
+    modal.on('closed', () => {
+        modal = null;
     });
 });

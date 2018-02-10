@@ -60,7 +60,7 @@ angular.module('SmartSweeper', [
 		});
 	};
     
-    /* Set the site or form alert message. */
+    /* Set the app or form alert message. */
 	$scope.setAppAlert = function(alertType, msgType, msg) {
 		var prefix;
 		var timeout;
@@ -92,8 +92,7 @@ angular.module('SmartSweeper', [
 		}
 	};
     
-    /* All Electron-related code. */
-    function electron() {
-        
-    }
+    $scope.setAvailableProjects = function(projects) {
+        $scope.availableProjects = projects;
+    };
 });
