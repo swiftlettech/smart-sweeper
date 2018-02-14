@@ -1,31 +1,30 @@
-'use strict';
+(function() {
+    'use strict';
 
-angular.module('SmartSweeper', [
-	'ngAnimate',
-	'ngRoute',
-	'ngTouch'
-])
-.controller('EditController', function($scope, $document, $filter) {
-    var ctrl = this;
-    
-    ctrl.init = function() {
-        console.log(localStorage);
-        
-        ctrl.activeProject = {
-            name: localStorage.projectName,
-            desc: localStorage.projectDesc,
-            exp: localStorage.projectExp,
-            funds: localStorage.projectFunds,
-            numOfWallets: localStorage.projectWalletNum,
-            amtPerWallet: localStorage.projectWalletAmt
+    angular.module('SmartSweeper.edit', []).controller('EditController', EditController);
+
+    function EditController($scope, $document, $filter) {
+        var electron = require('electron');
+        var ctrl = this;
+
+        $scope.init = function() {
+            ctrl.activeProject = electron.remote.getGlobal('activeProject');
+            
+            ctrl.datepickerOptions = {
+                showWeeks: false
+            };
+            ctrl.datepickerFormat = "MM/dd/yyyy";
         };
-    };
-    
-    ctrl.cancel = function() {
-        console.log('modal cancel');
-    };
-    
-    ctrl.update = function() {
-        console.log('modal update');
-    };
-});
+
+        ctrl.cancel = function() {
+            console.log('modal cancel');
+        };
+
+        ctrl.update = function() {
+            console.log('modal update');
+        };
+        
+        //TODO: paper wallet generator
+        //TODO: QR code generator
+    }
+})();

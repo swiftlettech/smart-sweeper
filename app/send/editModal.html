@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="SmartSweeper" lang="en-US">
+<html ng-app="SmartSweeper.edit" lang="en-US">
     <head>
         <meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,50 +7,77 @@
         <title>Edit Project</title>
         
         <link type="text/css" rel="stylesheet" href="../../css/bootstrap-3.3.7.min.css?v=20180206" />
-        <link type="text/css" rel="stylesheet" href="../../css/bootstrap-theme-3.3.7.min.css?v=20180206" />
+        <link type="text/css" rel="stylesheet" href="../../css/sb-admin.css?v=20180213">
         <link type="text/css" rel="stylesheet" href="../../css/font-awesome-4.7.0.min.css?v=20180210" />
 		<link type="text/css" rel="stylesheet" href="../../css/styles.css?v=20180206" />
     </head>
     
-    <body ng-controller="EditController as $mainctrl" style="margin:0;" ng-init="init()">
-        <form id="editProjectForm" name="editProjectForm" class="form-horizontal" ng-submit="$mainctrl.update(editProjectForm)">
-            <div class="form-group">
-                <label for="name" class="col-md-2 control-label">Name</label>
-                <div class="col-md-7">
-                    <input id="name" name="name" type="text" class="form-control" ng-model="$mainctrl.activeProject.name" required />
+    <body ng-controller="EditController as $editctrl" style="margin:20px 15%;" ng-init="init()">
+        <div id="page-wrapper">
+            <form id="editProjectForm" name="editProjectForm" class="form-horizontal" ng-submit="$editctrl.update(editProjectForm)">
+                <div class="form-group">
+                    <label for="name" class="col-sm-3 control-label">Name</label>
+                    <div class="col-sm-8">
+                        <input name="name" type="text" class="form-control" ng-model="$editctrl.activeProject.name" required />
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="desc" class="col-md-2 control-label">Description</label>
-                <div class="col-md-7">
-                    <input id="desc" name="desc" type="text" class="form-control" ng-model="$mainctrl.activeProject.desc" />
+                <div class="form-group">
+                    <label for="desc" class="col-sm-3 control-label">Description</label>
+                    <div class="col-sm-8">
+                        <input name="desc" type="text" class="form-control" ng-model="$editctrl.activeProject.desc" />
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="exp" class="col-md-2 control-label">Expiration Date</label>
-                <div class="col-md-7">
-                    <input id="exp" name="exp" type="text" class="form-control" ng-model="$mainctrl.activeProject.exp" uib-datepicker-popup="$sendCtrl.datepickerFormat" is-open="$sendCtrl.popup.opened" datepicker-options="$mainctrl.datepickerOptions" ng-required="true" close-text="Close" />
+                <div class="form-group">
+                    <label for="exp" class="col-sm-3 control-label">Expiration Date</label>
+                    <div class="col-sm-5">
+                        <div class="input-group">
+                            <input type="text" name="exp" class="form-control" ng-model="$editctrl.activeProject.exp" uib-datepicker-popup="$editctrl.datepickerFormat" is-open="$editctrl.popup.opened" datepicker-options="$editctrl.datepickerOptions" ng-required="true" close-text="Close" required />
+                            <a id="calendarBtn" class="input-group-addon"><i class="fa fa-calendar" title="calendar"></i></a>
+                        </div>
+                    </div>
                 </div>
-            </div>
+                
+                <div class="form-group">
+                    <label for="amt" class="col-sm-3 control-label">Funds Amount</label>
+                    <div class="col-sm-4">
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-usd" aria-hidden="true"></i></span>
+                            <input type="text" name="amt" class="form-control" ng-model="$editctrl.activeProject.projectAmt" required />
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="wallets" class="col-sm-3 control-label"># of wallets</label>
+                    <div class="col-sm-2">
+                        <input name="wallets" type="text" class="form-control" ng-model="$editctrl.activeProject.walletCount" />
+                    </div>
+                </div>
 
-            <div class="form-group col-md-12" style="padding-right:0;">
-                <div ng-include="'../../app/utils/formAlert.html'"></div>
-            </div>
+                <div class="form-group col-sm-12" style="padding-right:0;">
+                    <div ng-include="'../../app/utils/formAlert.html'"></div>
+                </div>
+                
+                <!--  -->
+                <!-- QR code generator button -->
+                <!-- voucher print button -->
 
-            <div class="form-group">
-                <button type="button" class="btn btn-default" ng-click="$mainctrl.cancel()">Cancel</button>
-                <button type="submit" class="btn btn-primary">Update</button>
-            </div>
-        </form>
+                <div class="form-group col-sm-12">
+                    <button type="submit" class="btn btn-primary pull-right">Update</button>
+                    <button type="button" class="btn btn-default pull-right" ng-click="$editctrl.cancel()">Cancel</button>
+                </div>
+            </form>
+        </div>
         
         <!-- libraries -->
-        <script type="text/javascript" src="../../js/jquery-3.3.1.min.js"></script>
-        <script type="text/javascript" src="../../js/angular-1.6.9.min.js"></script>
-        <script type="text/javascript" src="../../js/angular-animate-1.6.9.min.js"></script>
-        <script type="text/javascript" src="../../js/angular-route-1.6.9.min.js"></script>
-        <script type="text/javascript" src="../../js/angular-touch-1.6.9.min.js"></script>
+        <script type="text/javascript" src="../../js/jquery-3.3.1.js"></script>
+        <script type="text/javascript" src="../../js/angular-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/angular-animate-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/angular-route-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/angular-touch-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/ui-bootstrap-tpls-2.5.0.min.js"></script>
         
         <!-- bootstrapping -->
         <script type="text/javascript" src="editModal.js"></script>

@@ -7,53 +7,64 @@
         <title>SMART Sweeper</title>
         
         <link type="text/css" rel="stylesheet" href="css/bootstrap-3.3.7.min.css?v=20180206" />
-        <link type="text/css" rel="stylesheet" href="css/bootstrap-theme-3.3.7.min.css?v=20180206" />
+        <link type="text/css" rel="stylesheet" href="css/sb-admin.css?v=20180213">
         <link type="text/css" rel="stylesheet" href="css/font-awesome-4.7.0.min.css?v=20180210" />
 		<link type="text/css" rel="stylesheet" href="css/styles.css?v=20180206" />
     </head>
     
     <body ng-controller="SmartController as $mainctrl" ng-init="init()">
-        <div class="container">
-            <uib-tabset id="tabset" active="tabIndex">
-                <uib-tab index="0" heading="Dashboard" select="setActiveTab(tabIndex, 'dashboard')">
-                    <dashboard-tab></dashboard-tab>
-                </uib-tab>
-                
-                <uib-tab index="1" heading="Send" select="setActiveTab(tabIndex, 'send')">
-                    <send-tab></send-tab>
-                </uib-tab>
-                
-                <uib-tab index="2" heading="Sweep" select="setActiveTab(tabIndex, 'sweep')">
-                    <sweep-tab></sweep-tab>
-                </uib-tab>
-                
-                <uib-tab index="4" heading="Log" select="setActiveTab(tabIndex, 'logs')">
-                    <log-tab></log-tab>
-                </uib-tab>
-            </uib-tabset>
+        <div id="wrapper">
+            <div class="collapse navbar-collapse navbar-ex1-collapse" role="navigation">
+                <ul class="nav navbar-nav side-nav">
+                    <li><a href="#!/dashboard" alt="Dashboard"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
+                    <li><a href="#!/send" alt="Send"><i class="fa fa-fw fa-share"></i> Send</a></li>
+                    <li><a href="#!/sweep" alt="Sweep"><i class="fa fa-fw fa-reply"></i> Sweep</a></li>
+                    <li><a href="#!/log" alt="Log"><i class="fa fa-fw fa-book"></i> Log</a></li>
+                </ul>
+            </div>
+            
+            <div id="page-wrapper">
+                <div class="container-fluid">
+                    <ng-view></ng-view>
+                </div>
+            </div>
         </div>
         
         <!-- libraries -->
-        <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
-        <script type="text/javascript" src="js/angular-1.6.9.min.js"></script>
-        <script type="text/javascript" src="js/angular-animate-1.6.9.min.js"></script>
-        <script type="text/javascript" src="js/angular-route-1.6.9.min.js"></script>
-        <script type="text/javascript" src="js/angular-touch-1.6.9.min.js"></script>
+        <script type="text/javascript" src="js/jquery-3.3.1.js"></script>
+        <script type="text/javascript" src="js/angular-1.6.9.js"></script>
+        <script type="text/javascript" src="js/angular-animate-1.6.9.js"></script>
+        <script type="text/javascript" src="js/angular-route-1.6.9.js"></script>
+        <script type="text/javascript" src="js/angular-touch-1.6.9.js"></script>
         <script type="text/javascript" src="js/ui-bootstrap-tpls-2.5.0.min.js"></script>
         
         <!-- bootstrapping -->
         <script type="text/javascript" src="app/app.module.js"></script>
         
+        <!-- routing -->
+        <script type="text/javascript" src="app/utils/router/router.module.js"></script>
+        <script type="text/javascript" src="app/utils/router/routehelper.js"></script>
+        
+        <!-- utilities -->
+        <script type="text/javascript" src="app/utils/config.js"></script>
+        <script type="text/javascript" src="app/utils/constants.js"></script>
+        <script type="text/javascript" src="app/utils/dynamicHtmlAlert.js"></script>
+        <script type="text/javascript" src="app/utils/js-nat-multisort.js"></script>
+        
         <!-- dashboard -->
         <script type="text/javascript" src="app/dashboard/dashboard.js"></script>
+        <script type="text/javascript" src="app/dashboard/config.route.js"></script>
         
         <!-- send -->
         <script type="text/javascript" src="app/send/send.js"></script>
+        <script type="text/javascript" src="app/send/config.route.js"></script>
         
-        <!-- sweep -->
+        <!-- sweep
         <script type="text/javascript" src="app/sweep/sweep.js"></script>
+        <script type="text/javascript" src="app/sweep/config.route.js"></script> -->
         
-        <!-- log -->
+        <!-- log
         <script type="text/javascript" src="app/log/log.js"></script>
+        <script type="text/javascript" src="app/log/config.route.js"></script> -->
     </body>
 </html>

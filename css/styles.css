@@ -1,45 +1,68 @@
 /* General */
 body {
-    margin:20px 0;
+    margin: 20px 0;
+}
+
+a {
+  color: #FFF;
+}
+a:hover,
+a:focus {
+  color: #FFF;
 }
 
 .fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-cog, .fa-trash {
-    cursor:pointer;
+    cursor: pointer;
 }
 
 .tab-content {
-	height:100%;
-    padding:15px 8px 8px 8px;
-    border:1px solid #DDD;
-    border-top:none;
+	height: 100%;
+    padding: 15px 8px 8px 8px;
+    border: 1px solid #DDD;
+    border-top: none;
+}
+
+button, .btn, .form-control, .input-group-addon {
+    border-radius: 0;
 }
 
 /* Dashboard */
 
 /* Send */
+#addNewProjectForm {
+    margin-top: 15px;
+}
+
 #projectList {
-    margin-top:15px;
+    margin-top: 15px;
 }
 
 #projectList #heading {
-    margin-bottom:0;
-    border:none;
+    margin-bottom: 0;
+    border: none;
 }
 
 #projectList .nameCol {
-    width:250px;
+    width: 250px;
 }
 
 #projectList .expCol {
-    width:150px;
+    width: 150px;
 }
 
-#projectList .editCol, #projectList .deleteCol {
-    width:65px;
+#projectList .sendCol, #projectList .editCol, #projectList .deleteCol {
+    width: 65px;
 }
 
 #editProjectForm {
-    margin:0 15%;
+}
+
+#editProjectForm #calendarBtn {
+    cursor: pointer;
+}
+
+#editProjectForm #calendarBtn:hover {
+    color: inherit;
 }
 
 /* Sweep */

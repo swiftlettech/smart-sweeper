@@ -1,13 +1,20 @@
 'use strict';
 
 angular.module('SmartSweeper', [
+    'SmartSweeper.dashboard',
+    'SmartSweeper.send',
+    //'SmartSweeper.sweep',
+    //'SmartSweeper.log',
     'ui.bootstrap',
 	'ngAnimate',
-	'ngRoute',
-	'ngTouch'
+    'router',
+	'ngTouch',
+    'mj.jsNatMultisort'
 ])
 .controller('SmartController', function($scope, $document, $filter) {
     const {ipcRenderer} = window.nodeRequire('electron');
+    
+    var ctrl = this;
     
     $scope.init = function() {
         $scope.scrollboxBaseheight = window.innerHeight - 150 - parseInt($document.find('body').css('margin-top'))*2;
@@ -22,18 +29,18 @@ angular.module('SmartSweeper', [
         $scope.$broadcast('appAlertsAvailable');
     });
     
-    $scope.closeFormAlert = function(index) {
+    ctrl.closeFormAlert = function(index) {
 		if ($scope.formAlerts)
 			$scope.formAlerts.splice(index, 1);
 	};
 	
-	$scope.closeAppAlert = function(index) {
+	ctrl.closeAppAlert = function(index) {
 		if ($scope.appAlerts)
 			$scope.appAlerts.splice(index, 1);
 	};
     
     /* Tab selection init. */
-	$scope.setActiveTab = function(tabIndex, tab) {
+	ctrl.setActiveTab = function(tabIndex, tab) {
         $scope.setScrollboxHeight();
         $scope.closeAppAlert(0);
 		$scope.closeFormAlert(0);
@@ -44,7 +51,7 @@ angular.module('SmartSweeper', [
         $scope.tabIndex = 1;
     };
     
-    $scope.setScrollboxHeight = function() {
+    ctrl.setScrollboxHeight = function() {
 		var form;
 		var extra;
 		
@@ -61,7 +68,7 @@ angular.module('SmartSweeper', [
 	};
     
     /* Set the app or form alert message. */
-	$scope.setAppAlert = function(alertType, msgType, msg) {
+	ctrl.setAppAlert = function(alertType, msgType, msg) {
 		var prefix;
 		var timeout;
 		
@@ -92,7 +99,7 @@ angular.module('SmartSweeper', [
 		}
 	};
     
-    $scope.setAvailableProjects = function(projects) {
+    ctrl.setAvailableProjects = function(projects) {
         $scope.availableProjects = projects;
     };
 });

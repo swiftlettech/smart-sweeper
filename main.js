@@ -2,16 +2,11 @@ const electron = require('electron');
 const {app, ipcMain, BrowserWindow} = electron;
 const path = require('path');
 const url = require('url');
+const Store = require('electron-store');
 const isDev = require('electron-is-dev');
 require('electron-debug')({showDevTools: true});
 
-const jsonDB = require('node-json-db');
-const autoSave = true;
-const humanReadable = true;
-
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let win, modal, db;
+let win, modal, db, projects;
 
 function createWindow () {
     const {width, height} = electron.screen.getPrimaryDisplay().workAreaSize;
@@ -21,7 +16,6 @@ function createWindow () {
         width: width,
         height: height,
         webPreferences: {
-            //nodeIntegration: false,
             preload: path.join(__dirname, 'preload.js')
         }
     });
@@ -60,19 +54,15 @@ app.on('ready', () => {
               {bw: win, res: []}
             ]
         });
-    }
+    };
     
     // create the db if it doesn't already exist
-    db = new jsonDB("db/smart-sweeper", autoSave, humanReadable);
-    var projects;
+    db = new Store({name: "smart-sweeper"});
     
-    try {
-        projects = db.getData("/projects");
-    }
-    catch (error) {
-        console.log(error);
-        db.push("/projects", {index: 0, list:[] } );
-        projects = db.getData("/projects");
+    projects = db.get("projects");    
+    if (projects === undefined) {
+        db.set("projects", {index: 0, list: [] });
+        global.availableProjects = db.get("projects");
     }
 });
 
@@ -96,16 +86,16 @@ app.on('activate', () => {
 
 // create a project
 ipcMain.on('newProject', (event, args) => {
+    event.preventDefault();
+    
     var newProject = args.newProject;
-    newProject.id = projects.index + 1;
-    projects.index = projects.index + 1;
-    projects.list.push(newProject);
-    db.push("/projects", projects);
-    db.reload();
-    projects = db.getData("/projects");
+    newProject.id = global.availableProjects.index + 1;
+    global.availableProjects.index = global.availableProjects.index + 1;
+    global.availableProjects.list.push(newProject);
+    db.set("projects", global.availableProjects);
     
     event.sender.send('newProjectAdded');
-    event.sender.send('projectsReady', projects);
+    event.sender.send('projectsReady');
 });
 
 // delete a project
@@ -116,18 +106,21 @@ ipcMain.on('deleteProject', (event, args) => {
 
 // get all projects
 ipcMain.on('getProjects', (event, args) => {
-    projects = db.getData("/projects");    
-    event.sender.send('projectsReady', projects);
+    global.availableProjects = db.get("projects");
+    event.sender.send('projectsReady');
 });
 
 // edit a project
 ipcMain.on('editProject', (event, args) => {
-    args.id;
-    args.project;
+    //args.id;
+    
+    global.activeProject = args.project;
+    
+    winBounds = win.getBounds();
     
     modal = new BrowserWindow({
-        //width: ,
-        //height: ,
+        width: Math.ceil(winBounds.width - (winBounds.width*0.4)),
+        height: winBounds.height,
         parent: win,
         modal: true,
         show: false
