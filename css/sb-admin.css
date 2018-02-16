@@ -116,9 +116,9 @@ ul.alert-dropdown {
     .side-nav {
         position: fixed;
         top: 5px;
-        left: 150px;
-        width: 150px;
-        margin-left: -150px;
+        left: 200px;
+        width: 200px;
+        margin-left: -200px;
         border: none;
         border-radius: 0;
         overflow-y: auto;

@@ -1,19 +1,34 @@
 (function() {
     'use strict';
 
-    angular.module('SmartSweeper.send', []).controller('SendController', SendController);
+    angular.module('SmartSweeper.create', []).controller('CreateController', CreateController);
 
-    function SendController($scope, $document, $filter, filterCompare) {
+    function CreateController($scope, $document, $filter, filterCompare) {
         var electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
-        var ctrl = this;
         var $mainctrl = $scope.$parent.$mainctrl;
+        
+        var ctrl = this;
 
         $scope.init = function() {
             ctrl.showAddNewProject = false;
-            ctrl.newProject = {};
+            ctrl.newProject = {
+                numAddr: 0,
+                addrAmt: 0,
+                qrCode: false,
+                walletIns: false,
+                sweepDate: ''
+            };
             ctrl.nameSortFlag = 1;
             ctrl.expSortFlag = -1;
+            
+            ctrl.calendar = {
+                opened: false
+            };
+            ctrl.datepickerOptions = {
+                showWeeks: false
+            };
+            ctrl.datepickerFormat = "MM/dd/yyyy";
 
             // load all projects
             ipcRenderer.send('getProjects');
@@ -22,11 +37,18 @@
                     ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                 });
             });
+            
+            $mainctrl.setScrollboxHeight();
+            $mainctrl.setPageHeight();
         };
 
         ctrl.delete = function(id) {
-            ctrl.activeProjectID = id;
-            ipcRenderer.send('deleteProject', {id: id});
+            ipcRenderer.send('getProjects', {type: 'confirmation', text: 'Are you sure you want to delete this project?'});
+            
+            /*ipcRenderer.on('modalYes', (event, arg) => {
+                ctrl.activeProjectID = id;
+                ipcRenderer.send('deleteProject', {id: id});
+            });*/
         };
 
         ctrl.edit = function(id) {
@@ -46,6 +68,10 @@
                 form.$setUntouched();
                 form.$submitted = false;
             });
+        };
+        
+        ctrl.openCalendar = function() {
+            ctrl.calendar.opened = false;
         };
 
         ctrl.sort = function(type) {

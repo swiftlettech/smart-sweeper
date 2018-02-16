@@ -5,5 +5,6 @@ dist
 #files
 *.tgz
 *.log
+*.zip
 /db/smart-sweeper.json
-/package-lock.json
+/startbootstrap-sb-admin-3.3.7

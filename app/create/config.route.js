@@ -2,7 +2,7 @@
     'use strict';
 	
 	angular
-        .module('SmartSweeper.send')
+        .module('SmartSweeper.create')
         .run(appRun);
 	
 	function appRun(routehelper) {
@@ -12,11 +12,11 @@
 	function getRoutes() {
         return [
             {
-                url: '/send',
+                url: '/create',
                 config: {
-                    templateUrl: 'app/send/send.html',
-                    controller: 'SendController',
-                    controllerAs: '$sendCtrl',
+                    templateUrl: 'app/create/create.html',
+                    controller: 'CreateController',
+                    controllerAs: '$createCtrl',
                     title: ''
                 }
             }

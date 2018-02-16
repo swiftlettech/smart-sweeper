@@ -11,15 +11,12 @@ a:focus {
   color: #FFF;
 }
 
-.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-cog, .fa-trash {
-    cursor: pointer;
+.active {
+    background-color: #000;
 }
 
-.tab-content {
-	height: 100%;
-    padding: 15px 8px 8px 8px;
-    border: 1px solid #DDD;
-    border-top: none;
+.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-cog, .fa-trash {
+    cursor: pointer;
 }
 
 button, .btn, .form-control, .input-group-addon {
@@ -33,8 +30,33 @@ button, .btn, .form-control, .input-group-addon {
     margin-top: 15px;
 }
 
+#addNewProjectForm input[name='name'] {
+    width:75%;
+}
+
+#addNewProjectForm input[name='numAddr'] {
+    width:15%;
+}
+
+#addNewProjectForm input[name='addrAmt'] {
+    width:25%;
+}
+
+#addNewProjectForm input[name='totalFunds'] {
+    background-color:transparent;
+    width:25%;
+    border:none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+#addNewProjectForm #sweepDateGroup {
+    width:45%;
+}
+
 #projectList {
-    margin-top: 15px;
+    padding-top: 15px;
+    clear:both;
 }
 
 #projectList #heading {
@@ -42,15 +64,15 @@ button, .btn, .form-control, .input-group-addon {
     border: none;
 }
 
-#projectList .nameCol {
-    width: 250px;
+#projectList .addrAmtCol {
+    width: 175px;
 }
 
-#projectList .expCol {
+#projectList .numAddrCol, #projectList .expCol {
     width: 150px;
 }
 
-#projectList .sendCol, #projectList .editCol, #projectList .deleteCol {
+#projectList .editCol, #projectList .deleteCol {
     width: 65px;
 }
 

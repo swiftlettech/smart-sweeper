@@ -16,10 +16,12 @@
         <div id="wrapper">
             <div class="collapse navbar-collapse navbar-ex1-collapse" role="navigation">
                 <ul class="nav navbar-nav side-nav">
-                    <li><a href="#!/dashboard" alt="Dashboard"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
-                    <li><a href="#!/send" alt="Send"><i class="fa fa-fw fa-share"></i> Send</a></li>
-                    <li><a href="#!/sweep" alt="Sweep"><i class="fa fa-fw fa-reply"></i> Sweep</a></li>
-                    <li><a href="#!/log" alt="Log"><i class="fa fa-fw fa-book"></i> Log</a></li>
+                    <li ng-class="{active: $mainctrl.activePage == 'dashboard'}"><a href="#!/dashboard" alt="Dashboard" ng-click="$mainctrl.setActivePage('dashboard')"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a></li>
+                    <li ng-class="{active: $mainctrl.activePage == 'create'}"><a href="#!/create" alt="Create Project" ng-click="$mainctrl.setActivePage('create')"><i class="fa fa-fw fa-plus"></i> Create Project</a></li>
+                    <li ng-class="{active: $mainctrl.activePage == 'fund'}"><a href="#!/fund" alt="Fund Project" ng-click="$mainctrl.setActivePage('fund')"><i class="fa fa-fw fa-share"></i> Fund Project</a></li>
+                    <li ng-class="{active: $mainctrl.activePage == 'sweep'}"><a href="#!/sweep" alt="Sweep" ng-click="$mainctrl.setActivePage('sweep')"><i class="fa fa-fw fa-reply"></i> Sweep Funds</a></li>
+                    <li ng-class="{active: $mainctrl.activePage == 'log'}"><a href="#!/log" alt="Logs" ng-click="$mainctrl.setActivePage('log')"><i class="fa fa-fw fa-book"></i> Logs</a></li>
+                    <li ng-class="{active: $mainctrl.activePage == 'help'}"><a href="#!/help" alt="Help" ng-click="$mainctrl.setActivePage('help')"><i class="fa fa-fw fa-question"></i> Help</a></li>
                 </ul>
             </div>
             
@@ -50,21 +52,30 @@
         <script type="text/javascript" src="app/utils/constants.js"></script>
         <script type="text/javascript" src="app/utils/dynamicHtmlAlert.js"></script>
         <script type="text/javascript" src="app/utils/js-nat-multisort.js"></script>
+        <script type="text/javascript" src="app/utils/utils.js"></script>
         
         <!-- dashboard -->
         <script type="text/javascript" src="app/dashboard/dashboard.js"></script>
         <script type="text/javascript" src="app/dashboard/config.route.js"></script>
         
-        <!-- send -->
-        <script type="text/javascript" src="app/send/send.js"></script>
-        <script type="text/javascript" src="app/send/config.route.js"></script>
+        <!-- create -->
+        <script type="text/javascript" src="app/create/create.js"></script>
+        <script type="text/javascript" src="app/create/config.route.js"></script>
         
-        <!-- sweep
+        <!-- fund -->
+        <script type="text/javascript" src="app/fund/fund.js"></script>
+        <script type="text/javascript" src="app/fund/config.route.js"></script>
+        
+        <!-- sweep -->
         <script type="text/javascript" src="app/sweep/sweep.js"></script>
-        <script type="text/javascript" src="app/sweep/config.route.js"></script> -->
+        <script type="text/javascript" src="app/sweep/config.route.js"></script>
         
-        <!-- log
+        <!-- logs -->
         <script type="text/javascript" src="app/log/log.js"></script>
-        <script type="text/javascript" src="app/log/config.route.js"></script> -->
+        <script type="text/javascript" src="app/log/config.route.js"></script>
+        
+        <!-- help -->
+        <script type="text/javascript" src="app/help/help.js"></script>
+        <script type="text/javascript" src="app/help/config.route.js"></script>
     </body>
 </html>

@@ -2,9 +2,11 @@
 
 angular.module('SmartSweeper', [
     'SmartSweeper.dashboard',
-    'SmartSweeper.send',
-    //'SmartSweeper.sweep',
-    //'SmartSweeper.log',
+    'SmartSweeper.create',
+    'SmartSweeper.fund',
+    'SmartSweeper.sweep',
+    'SmartSweeper.log',
+    'SmartSweeper.help',
     'ui.bootstrap',
 	'ngAnimate',
     'router',
@@ -19,6 +21,10 @@ angular.module('SmartSweeper', [
     $scope.init = function() {
         $scope.scrollboxBaseheight = window.innerHeight - 150 - parseInt($document.find('body').css('margin-top'))*2;
 		$document.find('#appAlert, .formAlert').addClass('hide');
+        
+        $(window).on("resize", function(event) {
+			ctrl.setPageHeight();
+		});
     };
     
     $scope.$watch('formAlerts', function(newValue, oldValue, scope) {
@@ -39,33 +45,9 @@ angular.module('SmartSweeper', [
 			$scope.appAlerts.splice(index, 1);
 	};
     
-    /* Tab selection init. */
-	ctrl.setActiveTab = function(tabIndex, tab) {
-        $scope.setScrollboxHeight();
-        $scope.closeAppAlert(0);
-		$scope.closeFormAlert(0);
-        
-        $scope.tabIndex = tabIndex;
-        $scope.activeTab = tab;
-        
-        $scope.tabIndex = 1;
+    ctrl.setActivePage = function(page) {
+        ctrl.activePage = page;  
     };
-    
-    ctrl.setScrollboxHeight = function() {
-		var form;
-		var extra;
-		
-		if ($scope.activeTab === "projectTab") {
-			form = "#newProject";
-			extra = 0;
-		}
-		
-		$document.find('.scrollbox').css({
-			height: function() {
-				return $scope.scrollboxBaseheight - $document.find(form).outerHeight(true) - extra + "px";
-			}
-		});
-	};
     
     /* Set the app or form alert message. */
 	ctrl.setAppAlert = function(alertType, msgType, msg) {
@@ -99,7 +81,28 @@ angular.module('SmartSweeper', [
 		}
 	};
     
-    ctrl.setAvailableProjects = function(projects) {
-        $scope.availableProjects = projects;
+    ctrl.setScrollboxHeight = function() {
+        var form;
+        var extra;
+
+        if (ctrl.activeTab === "projectTab") {
+            form = "#newProject";
+            extra = 0;
+        }
+
+        $document.find('.scrollbox').css({
+            height: function() {
+                return ctrl.scrollboxBaseheight - $document.find(form).outerHeight(true) - extra + "px";
+            }
+        });
+    };
+    
+    
+    ctrl.setPageHeight = function() {
+        $document.find('#page-wrapper').css({
+            height: function() {
+                return window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
+            }
+        });
     };
 });

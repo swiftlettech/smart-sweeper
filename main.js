@@ -38,6 +38,68 @@ function createWindow () {
     });
 }
 
+function createModal(type, text) {
+    var width;
+    var height;
+    var pathname;
+    var resizable;
+    var minimizable;
+    var maximizable;
+    var alwaysOnTop;
+    var fullscreenable;
+    
+    if (type === "edit") {
+        width = Math.ceil(winBounds.width - (winBounds.width*0.4));
+        height = winBounds.height;
+        pathname = path.join(__dirname, '/app/send/editModal.html');
+        resizable = true;
+        minimizable = true;
+        maximizable = true;
+        alwaysOnTop = false;
+        fullscreenable = true;
+    }
+    else if (type === "confirmation") {
+        width = Math.ceil(winBounds.width - (winBounds.width*0.5));
+        height = Math.ceil(winBounds.height - (winBounds.height*0.4));
+        pathname = path.join(__dirname, '/app/utils/confirmationModal.html');
+        resizable = false;
+        minimizable = false;
+        maximizable = false;
+        alwaysOnTop = true;
+        fullscreenable = false;
+    }
+        
+    winBounds = win.getBounds();
+    
+    modal = new BrowserWindow({
+        width: width,
+        height: height,
+        resizable: resizable,
+        minimizable: minimizable,
+        maximizable: maximizable,
+        alwaysOnTop: alwaysOnTop,
+        fullscreenable: fullscreenable,
+        parent: win,
+        modal: true,
+        show: false
+    });
+    
+    modal.loadURL(url.format({
+        pathname: pathname,
+        protocol: 'file:',
+        slashes: true
+    }));
+    
+    modal.once('ready-to-show', () => {
+        win.webContents.send('setModalText', text);
+        modal.show();
+    });
+    
+    modal.on('closed', () => {
+        modal = null;
+    });
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -84,6 +146,16 @@ app.on('activate', () => {
     }
 });
 
+// confirmation modal "yes"
+ipcMain.on('modalYes', (event, args) => {
+    console.log('modalYes');
+});
+
+// confirmation modal "no"
+ipcMain.on('modalNo', (event, args) => {
+    modal.close();
+});
+
 // create a project
 ipcMain.on('newProject', (event, args) => {
     event.preventDefault();
@@ -101,6 +173,10 @@ ipcMain.on('newProject', (event, args) => {
 // delete a project
 ipcMain.on('deleteProject', (event, args) => {
     args.id;
+    
+    // show a confirmation modal
+    createModal('confirmation');
+    
     //event.sender.send('projectsReady', projects);
 });
 
@@ -116,27 +192,10 @@ ipcMain.on('editProject', (event, args) => {
     
     global.activeProject = args.project;
     
-    winBounds = win.getBounds();
+    createModal('edit');
+});
+
+// send funds to a project
+ipcMain.on('fundProject', (event, args) => {
     
-    modal = new BrowserWindow({
-        width: Math.ceil(winBounds.width - (winBounds.width*0.4)),
-        height: winBounds.height,
-        parent: win,
-        modal: true,
-        show: false
-    });
-    
-    modal.loadURL(url.format({
-        pathname: path.join(__dirname, '/app/send/editModal.html'),
-        protocol: 'file:',
-        slashes: true
-    }));
-    
-    modal.once('ready-to-show', () => {
-        modal.show();
-    });
-    
-    modal.on('closed', () => {
-        modal = null;
-    });
 });

@@ -7,5 +7,6 @@
             return true;
         else
             return false;
-    });
+    })
+    .constant('numbersOnlyPattern', '^[123456789]\d*$');
 })();

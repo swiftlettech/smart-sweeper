@@ -1,17 +1,15 @@
-angular.module('SmartSweeper').component('sweepTab', {
-    templateUrl: 'app/sweep/sweep.html',
-    controller: SweepController,
-    bindings: {
-        
-    }
-});
+(function() {
+    'use strict';
 
-function SweepController($scope, $document) {
-    var ctrl = this;
-    
-    this.$onInit = function() {
-		
-	};
-    
-    //TODO: return funds back to project address after expiration date
-}
+    angular.module('SmartSweeper.sweep', []).controller('SweepController', SweepController);
+
+    function SweepController($scope, $document) {
+        var ctrl = this;
+
+        $scope.init = function() {
+
+        };
+
+        //TODO: return funds back to project address manually or automatically after expiration date
+    }
+})();

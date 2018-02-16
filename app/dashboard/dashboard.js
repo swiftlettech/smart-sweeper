@@ -8,7 +8,7 @@
         var $mainctrl = $scope.$parent.$mainctrl;
 
         $scope.init = function() {
-
+            $mainctrl.activePage = 'dashboard';
         };
 
         //TODO: available balance display
