@@ -8,5 +8,6 @@
         else
             return false;
     })
-    .constant('numbersOnlyPattern', '^[123456789]\d*$');
+    .constant('greaterThanZeroIntPattern', '^[1-9][0-9]*$') // https://stackoverflow.com/a/9038554/7843806
+    .constant('greaterThanZeroAllPattern', '^(0*[1-9][0-9]*(\.[0-9]+)?|0+\.[0-9]*[1-9][0-9]*)$'); // https://stackoverflow.com/a/9038554/7843806
 })();

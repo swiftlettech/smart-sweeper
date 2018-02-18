@@ -34,11 +34,11 @@ body {
 
 @media(min-width:768px) {
     #wrapper {
-        padding-left: 190px;
+        padding-left: 170px;
     }
 
     #page-wrapper {
-        padding: 10px;
+        padding: 10px 0;
     }
 }
 
@@ -116,9 +116,9 @@ ul.alert-dropdown {
     .side-nav {
         position: fixed;
         top: 5px;
-        left: 200px;
-        width: 200px;
-        margin-left: -200px;
+        left: 170px;
+        width: 170px;
+        margin-left: -170px;
         border: none;
         border-radius: 0;
         overflow-y: auto;

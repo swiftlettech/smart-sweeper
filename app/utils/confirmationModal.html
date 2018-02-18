@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="SmartSweeper.edit" lang="en-US">
+<html lang="en-US">
     <head>
         <meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -12,14 +12,12 @@
 		<link type="text/css" rel="stylesheet" href="../../css/styles.css?v=20180206" />
     </head>
     
-    <body ng-controller="EditController as $editctrl" style="margin:20px 15%;" ng-init="init()">
-        <div id="page-wrapper">
-            <div class="body"></div>
-            
-            <div class="footer">
-                <button id="cancelBtn" type="button" class="btn btn-default">Cancel</button>
-                <button id="okBtn" type="button" class="btn btn-primary">Yes</button>
-            </div>
+    <body id="confirmationModal" style="background-color: #FFF; margin: 20px 10px;">
+        <p class="body"></p>
+
+        <div class="footer">
+            <button id="okBtn" type="button" class="btn btn-primary pull-right">OK</button>
+            <button id="cancelBtn" type="button" class="btn btn-default pull-right">Cancel</button>
         </div>
         
         <!-- libraries -->
@@ -29,19 +27,19 @@
         <script type="text/javascript">
             (function() {
                 'use strict';
+            
+                const {ipcRenderer} = window.nodeRequire('electron');
 
-                const {ipcRenderer} = require('electron');
+                ipcRenderer.on('setModalText', (event, text) => {
+                    $('.body').html(text);
+                });                
 
-                ipcRenderer.on('setModalText', (event, message) => {
-                    $('.body').html(message);
-                });
-
-                $('#cancelBtn').on('click', function() {
-                    ipcRenderer.send('modalNo');
-                });
-
-                $('#okBtn').on('click', function() {
+                $('#okBtn').on('click', function(event) {
                     ipcRenderer.send('modalYes');
+                });
+                
+                $('#cancelBtn').on('click', function(event) {
+                    ipcRenderer.send('modalNo');
                 });
             })();
         </script>

@@ -23,6 +23,47 @@ button, .btn, .form-control, .input-group-addon {
     border-radius: 0;
 }
 
+.btn-primary {
+  color: #fff;
+  background-color: #333;
+  border-color: #333;
+}
+.btn-primary:focus,
+.btn-primary.focus {
+  color: #fff;
+  background-color: #333;
+  border-color: #3e4245;
+}
+.btn-primary:hover {
+  color: #fff;
+  background-color: #000;
+  border-color: #3e4245;
+}
+.btn-primary:active,
+.btn-primary.active,
+.open > .dropdown-toggle.btn-primary {
+  color: #fff;
+  background-color: #000;
+  border-color: #3e4245;
+}
+.btn-primary:active:hover,
+.btn-primary.active:hover,
+.open > .dropdown-toggle.btn-primary:hover,
+.btn-primary:active:focus,
+.btn-primary.active:focus,
+.open > .dropdown-toggle.btn-primary:focus,
+.btn-primary:active.focus,
+.btn-primary.active.focus,
+.open > .dropdown-toggle.btn-primary.focus {
+  color: #fff;
+  background-color: #000;
+  border-color: #3e4245;
+}
+
+#confirmationModal #okBtn {
+    margin-left: 10px;
+}
+
 /* Dashboard */
 
 /* Send */
@@ -31,27 +72,37 @@ button, .btn, .form-control, .input-group-addon {
 }
 
 #addNewProjectForm input[name='name'] {
-    width:75%;
+    width: 75%;
 }
 
 #addNewProjectForm input[name='numAddr'] {
-    width:15%;
+    width: 15%;
 }
 
 #addNewProjectForm input[name='addrAmt'] {
-    width:25%;
+    width: 25%;
 }
 
 #addNewProjectForm input[name='totalFunds'] {
-    background-color:transparent;
-    width:25%;
-    border:none;
+    background-color: transparent;
+    width: 25%;
+    border: none;
     -webkit-box-shadow: none;
     box-shadow: none;
 }
 
 #addNewProjectForm #sweepDateGroup {
-    width:45%;
+    width: 45%;
+}
+
+#addNewProjectForm .uib-datepicker-popup.dropdown-menu {
+    padding: 5px;
+    border-radius: 0;
+}
+
+#addNewProjectForm .uib-button-bar .btn {
+    color: #000;
+    font-weight: 700;
 }
 
 #projectList {

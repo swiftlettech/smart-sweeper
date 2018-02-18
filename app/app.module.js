@@ -19,7 +19,7 @@ angular.module('SmartSweeper', [
     var ctrl = this;
     
     $scope.init = function() {
-        $scope.scrollboxBaseheight = window.innerHeight - 150 - parseInt($document.find('body').css('margin-top'))*2;
+        $scope.scrollboxBaseheight = window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
 		$document.find('#appAlert, .formAlert').addClass('hide');
         
         $(window).on("resize", function(event) {
@@ -47,6 +47,10 @@ angular.module('SmartSweeper', [
     
     ctrl.setActivePage = function(page) {
         ctrl.activePage = page;  
+    };
+    
+    ctrl.setConfirmationReferrer = function(referrer) {
+        ctrl.confirmationReferrer = referrer;  
     };
     
     /* Set the app or form alert message. */
@@ -85,8 +89,8 @@ angular.module('SmartSweeper', [
         var form;
         var extra;
 
-        if (ctrl.activeTab === "projectTab") {
-            form = "#newProject";
+        if (ctrl.activePage === "create") {
+            form = "#addNewProjectForm";
             extra = 0;
         }
 

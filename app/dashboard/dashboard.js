@@ -5,10 +5,10 @@
 
     function DashboardController($scope, $document, $filter, filterCompare) {
         var ctrl = this;
-        var $mainctrl = $scope.$parent.$mainctrl;
+        var $mainCtrl = $scope.$parent.$mainCtrl;
 
         $scope.init = function() {
-            $mainctrl.activePage = 'dashboard';
+            $mainCtrl.activePage = 'dashboard';
         };
 
         //TODO: available balance display

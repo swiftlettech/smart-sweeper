@@ -3,24 +3,28 @@
 
     angular.module('SmartSweeper.create', []).controller('CreateController', CreateController);
 
-    function CreateController($scope, $document, $filter, filterCompare) {
+    function CreateController($scope, $document, $filter, filterCompare, greaterThanZeroIntPattern, greaterThanZeroAllPattern) {
         var electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
-        var $mainctrl = $scope.$parent.$mainctrl;
+        var $mainCtrl = $scope.$parent.$mainCtrl;
         
         var ctrl = this;
 
         $scope.init = function() {
+            ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
+            ctrl.greaterThanZeroAllPattern = greaterThanZeroAllPattern;
+            
             ctrl.showAddNewProject = false;
             ctrl.newProject = {
                 numAddr: 0,
                 addrAmt: 0,
                 qrCode: false,
                 walletIns: false,
+                sweep: false,
                 sweepDate: ''
             };
             ctrl.nameSortFlag = 1;
-            ctrl.expSortFlag = -1;
+            ctrl.sweepDateSortFlag = -1;
             
             ctrl.calendar = {
                 opened: false
@@ -38,19 +42,58 @@
                 });
             });
             
-            $mainctrl.setScrollboxHeight();
-            $mainctrl.setPageHeight();
+            $mainCtrl.setScrollboxHeight();
+            $mainCtrl.setPageHeight();
+        };
+        
+        /* Create the wallet addresses for the project. */
+        ctrl.createAddresses = function(form) {
+            // disable the create project button
+            $document.find('#addNewProjectForm button[type=submit]').attr('disabled', 'disabled');
+            
+            if (form.$valid) {
+                $mainCtrl.setConfirmationReferrer('createAddresses'); 
+                ipcRenderer.send('loadConfirmation', 'Are you sure you want to create addresses for this project?');
+            }
+            
+            ipcRenderer.on('modalNo', (event, arg) => {
+                if ($mainCtrl.confirmationReferrer !== 'createAddresses')
+                    return;
+                
+                $document.find('#addNewProjectForm button[type=submit]').removeAttr('disabled');
+            });
+            
+            ipcRenderer.on('modalYes', (event, arg) => {                
+                if ($mainCtrl.confirmationReferrer !== 'createAddresses')
+                    return;
+                
+                console.log('modal yes in create addresses');
+                
+                // submit the form and create the project
+                form.$submitted = true;
+                //ctrl.new(form);
+                
+                // create the addresses and add them to the project
+                
+                // save the updated project
+            });
         };
 
+        /* Delete a project. */
         ctrl.delete = function(id) {
-            ipcRenderer.send('getProjects', {type: 'confirmation', text: 'Are you sure you want to delete this project?'});
+            $mainCtrl.setConfirmationReferrer(deleteProject);            
+            ipcRenderer.send('loadConfirmation', 'Are you sure you want to delete this project?');
             
-            /*ipcRenderer.on('modalYes', (event, arg) => {
+            ipcRenderer.on('modalYes', (event, arg) => {
+                if ($mainCtrl.confirmationReferrer !== 'deleteProject')
+                    return;
+                    
                 ctrl.activeProjectID = id;
                 ipcRenderer.send('deleteProject', {id: id});
-            });*/
+            });
         };
 
+        /* Edit a project. */
         ctrl.edit = function(id) {
             ctrl.activeProjectID = id;
             ctrl.activeProject = $filter('filter')(ctrl.availableProjects, {id: id}, filterCompare)[0];
@@ -60,22 +103,25 @@
             ipcRenderer.send('editProject', {project: ctrl.activeProject});
         };
 
+        /* Create a new project. */
         ctrl.new = function(form) {            
             ipcRenderer.send('newProject', {newProject: ctrl.newProject});
             ipcRenderer.on('newProjectAdded', (event, arg) => {                
-                $('#addNewProjectForm')[0].reset()
+                ctrl.newProject = {};
                 form.$setPristine();
                 form.$setUntouched();
                 form.$submitted = false;
             });
         };
         
+        /* Open the calendar popup. */
         ctrl.openCalendar = function() {
-            ctrl.calendar.opened = false;
+            ctrl.calendar.opened = true;
         };
 
-        ctrl.sort = function(type) {
-            ctrl.sortOptions = {property: type};
+        /* Sort the project list. */
+        ctrl.sort = function(type, reverse) {
+            ctrl.sortOptions = {property: type, reverse: reverse};
         };
     }
 })();

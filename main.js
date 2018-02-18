@@ -6,8 +6,9 @@ const Store = require('electron-store');
 const isDev = require('electron-is-dev');
 require('electron-debug')({showDevTools: true});
 
-let win, modal, db, projects;
+let win, modal, db, projects, referrer;
 
+// create the main window
 function createWindow () {
     const {width, height} = electron.screen.getPrimaryDisplay().workAreaSize;
     
@@ -38,6 +39,7 @@ function createWindow () {
     });
 }
 
+// create a modal
 function createModal(type, text) {
     var width;
     var height;
@@ -47,6 +49,8 @@ function createModal(type, text) {
     var maximizable;
     var alwaysOnTop;
     var fullscreenable;
+    
+    winBounds = win.getBounds();
     
     if (type === "edit") {
         width = Math.ceil(winBounds.width - (winBounds.width*0.4));
@@ -59,17 +63,15 @@ function createModal(type, text) {
         fullscreenable = true;
     }
     else if (type === "confirmation") {
-        width = Math.ceil(winBounds.width - (winBounds.width*0.5));
-        height = Math.ceil(winBounds.height - (winBounds.height*0.4));
+        width = Math.ceil(winBounds.width - (winBounds.width*0.75));
+        height = Math.ceil(winBounds.height - (winBounds.height*0.75));
         pathname = path.join(__dirname, '/app/utils/confirmationModal.html');
-        resizable = false;
+        resizable = true;
         minimizable = false;
-        maximizable = false;
+        maximizable = true;
         alwaysOnTop = true;
         fullscreenable = false;
     }
-        
-    winBounds = win.getBounds();
     
     modal = new BrowserWindow({
         width: width,
@@ -81,8 +83,13 @@ function createModal(type, text) {
         fullscreenable: fullscreenable,
         parent: win,
         modal: true,
-        show: false
+        show: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js')
+        }
     });
+    
+    modal.setMenu(null);
     
     modal.loadURL(url.format({
         pathname: pathname,
@@ -91,13 +98,18 @@ function createModal(type, text) {
     }));
     
     modal.once('ready-to-show', () => {
-        win.webContents.send('setModalText', text);
+        modal.webContents.send('setModalText', text);
         modal.show();
     });
     
     modal.on('closed', () => {
         modal = null;
     });
+}
+
+// return the index of a project in the database
+function getDbIndex(projectID) {
+    
 }
 
 // This method will be called when Electron has finished
@@ -118,12 +130,11 @@ app.on('ready', () => {
         });
     };
     
-    // create the db if it doesn't already exist
-    db = new Store({name: "smart-sweeper"});
-    
+    // load the db or create it if it doesn't already exist
+    db = new Store({name: "smart-sweeper"});    
     projects = db.get("projects");    
     if (projects === undefined) {
-        db.set("projects", {index: 0, list: [] });
+        db.set("projects", {index: 0, list: []});
         global.availableProjects = db.get("projects");
     }
 });
@@ -146,19 +157,26 @@ app.on('activate', () => {
     }
 });
 
+// load a confirmation modal
+ipcMain.on('loadConfirmation', (event, text) => {
+    createModal('confirmation', text);
+});
+
 // confirmation modal "yes"
 ipcMain.on('modalYes', (event, args) => {
-    console.log('modalYes');
+    modal.close();
+    win.webContents.send('modalYes');
 });
 
 // confirmation modal "no"
 ipcMain.on('modalNo', (event, args) => {
     modal.close();
+    win.webContents.send('modalNo');
 });
 
 // create a project
 ipcMain.on('newProject', (event, args) => {
-    event.preventDefault();
+    //event.preventDefault();
     
     var newProject = args.newProject;
     newProject.id = global.availableProjects.index + 1;
@@ -172,12 +190,10 @@ ipcMain.on('newProject', (event, args) => {
 
 // delete a project
 ipcMain.on('deleteProject', (event, args) => {
-    args.id;
-    
-    // show a confirmation modal
-    createModal('confirmation');
-    
-    //event.sender.send('projectsReady', projects);
+    var index = getDbIndex(args.id);
+    global.availableProjects.list.splice(index, 1);
+    db.set("projects", global.availableProjects);
+    event.sender.send('projectsReady', global.availableProjects);
 });
 
 // get all projects
