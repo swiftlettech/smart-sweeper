@@ -1,10 +1,11 @@
 #directories
 node_modules
 dist
+startbootstrap-sb-admin-3.3.7
 
 #files
 *.tgz
 *.log
 *.zip
 /db/smart-sweeper.json
-/startbootstrap-sb-admin-3.3.7
+/app/utils/js-nat-multisort.js

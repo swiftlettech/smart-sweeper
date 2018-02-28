@@ -12,11 +12,21 @@ a:focus {
 }
 
 .active {
-    background-color: #000;
+    background-color: #111;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #333;
 }
 
 .fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-cog, .fa-trash {
     cursor: pointer;
+}
+
+input[disabled] {
+    background-color: transparent;
+    width: 25%;
+    border: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
 }
 
 button, .btn, .form-control, .input-group-addon {
@@ -60,6 +70,10 @@ button, .btn, .form-control, .input-group-addon {
   border-color: #3e4245;
 }
 
+.scrollbox {
+	overflow-y:auto;
+}
+
 #confirmationModal #okBtn {
     margin-left: 10px;
 }
@@ -83,14 +97,6 @@ button, .btn, .form-control, .input-group-addon {
     width: 25%;
 }
 
-#addNewProjectForm input[name='totalFunds'] {
-    background-color: transparent;
-    width: 25%;
-    border: none;
-    -webkit-box-shadow: none;
-    box-shadow: none;
-}
-
 #addNewProjectForm #sweepDateGroup {
     width: 45%;
 }
@@ -110,9 +116,25 @@ button, .btn, .form-control, .input-group-addon {
     clear:both;
 }
 
-#projectList #heading {
+#projectList #tableHeading {
     margin-bottom: 0;
     border: none;
+}
+
+#projectList #tableHeading .scrollCol {
+    width: 1px;
+}
+
+#projectList .innerTable {
+    width: 100%;
+}
+
+#projectList .innerTable td {
+    padding: 8px;
+}
+
+#projectList .nameCol {
+    
 }
 
 #projectList .addrAmtCol {

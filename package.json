@@ -6,11 +6,14 @@
     "license": "GPL-3.0",
     "repository": "github:swiftlettech/smart-sweeper",
     "bugs": "https://github.com/swiftlettech/smart-sweeper/issues",
-    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "build": "electron-packager . --out=dist --asar --overwrite --all"
+    },
     "dependencies": {
         "electron-store": "^1.3.0",
         "electron-util": "^0.6.0",
-        "smartcashjs-lib": "^3.3.3"
+        "smartcashjs-lib": "^3.3.2"
     },
     "devDependencies": {
         "devtron": "^1.4.0",

@@ -12,63 +12,80 @@
 		<link type="text/css" rel="stylesheet" href="../../css/styles.css?v=20180206" />
     </head>
     
-    <body ng-controller="EditController as $editctrl" style="margin:20px 15%;" ng-init="init()">
+    <body ng-controller="EditController as $editctrl" style="margin:20px 0;" ng-init="init()">
         <div id="page-wrapper">
-            <form id="editProjectForm" name="editProjectForm" class="form-horizontal" ng-submit="$editctrl.update(editProjectForm)">
-                <div class="form-group">
-                    <label for="name" class="col-sm-3 control-label">Name</label>
-                    <div class="col-sm-8">
-                        <input name="name" type="text" class="form-control" ng-model="$editctrl.activeProject.name" required />
+            <form id="editProjectForm" name="editProjectForm" class="ng-hide" ng-submit="$createCtrl.edit(editProjectForm)">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="name" class="control-label">Project name<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                        <input name="name" type="text" class="form-control" ng-model="$createCtrl.activeProject.name" required />
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="desc" class="col-sm-3 control-label">Description</label>
-                    <div class="col-sm-8">
-                        <input name="desc" type="text" class="form-control" ng-model="$editctrl.activeProject.desc" />
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="exp" class="col-sm-3 control-label">Expiration Date</label>
-                    <div class="col-sm-5">
-                        <div class="input-group">
-                            <input type="text" name="exp" class="form-control" ng-model="$editctrl.activeProject.exp" uib-datepicker-popup="$editctrl.datepickerFormat" is-open="$editctrl.popup.opened" datepicker-options="$editctrl.datepickerOptions" ng-required="true" close-text="Close" required />
-                            <a id="calendarBtn" class="input-group-addon"><i class="fa fa-calendar" title="calendar"></i></a>
+                    
+                    <div class="form-group">
+                        <label for="numAddr" class="control-label">Number of addresses to create<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                        <input name="numAddr" type="text" class="form-control" ng-model="$createCtrl.activeProject.numAddr" ng-pattern="$createCtrl.greaterThanZeroIntPattern" required />
+                        
+                        <div ng-show="editProjectForm.numAddr.$error.pattern" role="alert">
+                            <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
                         </div>
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="addrAmt" class="control-label">SMART per address</label>
+                        <input name="addrAmt" type="text" class="form-control" ng-model="$createCtrl.activeProject.addrAmt" disabled />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalFunds" class="control-label">Total SMART to be sent</label>
+                        <input name="totalFunds" ng-model="$createCtrl.totalFunds" type="text" class="form-control" calculate-total-funds disabled />
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="amt" class="col-sm-3 control-label">Funds Amount</label>
-                    <div class="col-sm-4">
-                        <div class="input-group">
-                            <span class="input-group-addon"><i class="fa fa-usd" aria-hidden="true"></i></span>
-                            <input type="text" name="amt" class="form-control" ng-model="$editctrl.activeProject.projectAmt" required />
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <div class="form-group">
+                            <label for="options" class="control-label">Options</label>
+
+                            <div class="checkbox">
+                                <label><input type="checkbox" ng-model="$createCtrl.activeProject.qrCode">Add QR code to wallet</label>
+                            </div>
+
+                            <div class="checkbox">
+                                <label><input type="checkbox" ng-model="$createCtrl.activeProject.walletIns">Add wallet download instructions</label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="checkbox">
+                                    <label><input type="checkbox" ng-model="$createCtrl.activeProject.sweep">Set automatic sweep date (midnight on that date)</label>
+                                </div>
+                                
+                                <div id="sweepDateGroup" class="input-group">
+                                    <input type="text" name="sweepDate" class="form-control" ng-model="$createCtrl.activeProject.sweepDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$createCtrl.datepickerFormat}}" is-open="$createCtrl.calendar.opened" datepicker-options="$createCtrl.datepickerOptions" ng-required="$createCtrl.activeProject.sweep" close-text="Close" ng-disabled="!$createCtrl.activeProject.sweep" />
+                                    
+                                    <span class="input-group-btn">
+                                        <button id="calendarBtn" type="button" class="btn btn-default" ng-disabled="!$createCtrl.activeProject.sweep" ng-click="$createCtrl.openCalendar()"><i class="fa fa-calendar" title="Calendar"></i></button>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="wallets" class="col-sm-3 control-label"># of wallets</label>
-                    <div class="col-sm-2">
-                        <input name="wallets" type="text" class="form-control" ng-model="$editctrl.activeProject.walletCount" />
+
+                    <div class="form-group" style="padding-top:10px; padding-right:0; clear:both;">
+                        <p class="help-block">Creating addresses will also automatically create the project.</p>
+                        
+                        <button type="button" class="btn btn-default" ng-disabled="editProjectForm.$pristine || editProjectForm.$invalid" ng-click="$createCtrl.createAddresses(editProjectForm)">Create Addresses</button>
+                        <button type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$pristine || editProjectForm.$invalid">Create Project</button>
+                    </div>
+                    
+                    <div class="form-group" style="padding-right:0;">
+                        <div ng-include="'app/utils/formAlert.html'"></div>
                     </div>
                 </div>
-
-                <div class="form-group col-sm-12" style="padding-right:0;">
-                    <div ng-include="'../../app/utils/formAlert.html'"></div>
-                </div>
                 
-                <!--  -->
-                <!-- QR code generator button -->
-                <!-- voucher print button -->
-
-                <div class="form-group col-sm-12">
-                    <button type="submit" class="btn btn-primary pull-right">Update</button>
-                    <button type="button" class="btn btn-default pull-right" ng-click="$editctrl.cancel()">Cancel</button>
-                </div>
-            </form>
+                <div class="clearfix"></div>
+            </div>
+        </form>
         </div>
         
         <!-- libraries -->

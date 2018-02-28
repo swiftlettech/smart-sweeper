@@ -3,7 +3,7 @@
 
     angular.module('SmartSweeper.create', []).controller('CreateController', CreateController);
 
-    function CreateController($scope, $document, $filter, filterCompare, greaterThanZeroIntPattern, greaterThanZeroAllPattern) {
+    function CreateController($rootScope, $scope, $document, $filter, filterCompare, greaterThanZeroIntPattern, greaterThanZeroAllPattern) {
         var electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         var $mainCtrl = $scope.$parent.$mainCtrl;
@@ -11,6 +11,8 @@
         var ctrl = this;
 
         $scope.init = function() {
+            $mainCtrl.setActivePage('create');
+            
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
             ctrl.greaterThanZeroAllPattern = greaterThanZeroAllPattern;
             
@@ -24,7 +26,8 @@
                 sweepDate: ''
             };
             ctrl.nameSortFlag = 1;
-            ctrl.sweepDateSortFlag = -1;
+            ctrl.sweepDateSortFlag = 1;
+            ctrl.sortOptions = {property: 'name'};
             
             ctrl.calendar = {
                 opened: false
@@ -41,10 +44,19 @@
                     ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                 });
             });
-            
-            $mainCtrl.setScrollboxHeight();
-            $mainCtrl.setPageHeight();
         };
+        
+        $scope.$on('$viewContentLoaded', function(event) {
+            $mainCtrl.setPageHeight();
+        });
+        
+        $scope.$watch('formHeight', function(newValue, oldValue, scope) {
+            console.log(oldValue);
+            console.log(newValue);
+            
+            if (newValue != oldValue)
+                $mainCtrl.setScrollboxHeight(newValue);
+        });
         
         /* Create the wallet addresses for the project. */
         ctrl.createAddresses = function(form) {
@@ -118,10 +130,25 @@
         ctrl.openCalendar = function() {
             ctrl.calendar.opened = true;
         };
+        
+        /* Called when the "new project" button is clicked. */
+        ctrl.showAddForm = function() {
+            var formHeight = $scope.formHeight;
+            
+            ctrl.showAddNewProject = !ctrl.showAddNewProject;
+            
+            //if (!ctrl.showAddNewProject)
+                //formHeight = $document.find('#newProjectShowBtn');
+                
+            $mainCtrl.setScrollboxHeight(formHeight);
+        };
 
         /* Sort the project list. */
         ctrl.sort = function(type, reverse) {
-            ctrl.sortOptions = {property: type, reverse: reverse};
+            ctrl.sortOptions.property = type;
+            ctrl.sortOptions.reverse = reverse;
+            
+            console.log(jsMultisort);
         };
     }
 })();

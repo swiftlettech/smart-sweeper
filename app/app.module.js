@@ -10,8 +10,8 @@ angular.module('SmartSweeper', [
     'ui.bootstrap',
 	'ngAnimate',
     'router',
-	'ngTouch',
-    'mj.jsNatMultisort'
+	'ngTouch'
+    //'mj.jsNatMultisort'
 ])
 .controller('SmartController', function($scope, $document, $filter) {
     const {ipcRenderer} = window.nodeRequire('electron');
@@ -19,11 +19,12 @@ angular.module('SmartSweeper', [
     var ctrl = this;
     
     $scope.init = function() {
-        $scope.scrollboxBaseheight = window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
+        ctrl.scrollboxBaseheight = window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
 		$document.find('#appAlert, .formAlert').addClass('hide');
         
         $(window).on("resize", function(event) {
-			ctrl.setPageHeight();
+            ctrl.setPageHeight();
+            ctrl.setScrollboxHeight($scope.formHeight);
 		});
     };
     
@@ -46,9 +47,11 @@ angular.module('SmartSweeper', [
 	};
     
     ctrl.setActivePage = function(page) {
-        ctrl.activePage = page;  
+        ctrl.activePage = page;
+        console.log('active page: ' + ctrl.activePage);
     };
     
+    /* Set which renderer launched a confirmation alert so that the return value goes to the right place. */
     ctrl.setConfirmationReferrer = function(referrer) {
         ctrl.confirmationReferrer = referrer;  
     };
@@ -85,28 +88,30 @@ angular.module('SmartSweeper', [
 		}
 	};
     
-    ctrl.setScrollboxHeight = function() {
+    ctrl.setScrollboxHeight = function(formHeight) {
         var form;
         var extra;
 
         if (ctrl.activePage === "create") {
             form = "#addNewProjectForm";
-            extra = 0;
+            extra = $document.find('#newProjectShowBtn').height() + 90;
         }
-
-        $document.find('.scrollbox').css({
-            height: function() {
-                return ctrl.scrollboxBaseheight - $document.find(form).outerHeight(true) - extra + "px";
-            }
-        });
+        
+        $scope.scrollboxHeight = ctrl.scrollboxBaseheight - formHeight - parseInt($document.find(form).css('margin-top')) - extra + "px";
+        
+        console.log(ctrl.scrollboxBaseheight);
+        console.log(formHeight);
+        console.log(parseInt($document.find(form).css('margin-top')));
+        console.log(extra);
     };
     
-    
     ctrl.setPageHeight = function() {
-        $document.find('#page-wrapper').css({
-            height: function() {
-                return window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
-            }
-        });
+        if (window.innerWidth >= 1000 && window.innerHeight >= 600) {
+            $document.find('#page-wrapper').css({
+                height: function() {
+                    return window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
+                }
+            });
+        }
     };
 });
