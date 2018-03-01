@@ -12,80 +12,68 @@
 		<link type="text/css" rel="stylesheet" href="../../css/styles.css?v=20180206" />
     </head>
     
-    <body ng-controller="EditController as $editctrl" style="margin:20px 0;" ng-init="init()">
-        <div id="page-wrapper">
-            <form id="editProjectForm" name="editProjectForm" class="ng-hide" ng-submit="$createCtrl.edit(editProjectForm)">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="name" class="control-label">Project name<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
-                        <input name="name" type="text" class="form-control" ng-model="$createCtrl.activeProject.name" required />
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="numAddr" class="control-label">Number of addresses to create<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
-                        <input name="numAddr" type="text" class="form-control" ng-model="$createCtrl.activeProject.numAddr" ng-pattern="$createCtrl.greaterThanZeroIntPattern" required />
-                        
-                        <div ng-show="editProjectForm.numAddr.$error.pattern" role="alert">
-                            <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="addrAmt" class="control-label">SMART per address</label>
-                        <input name="addrAmt" type="text" class="form-control" ng-model="$createCtrl.activeProject.addrAmt" disabled />
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="totalFunds" class="control-label">Total SMART to be sent</label>
-                        <input name="totalFunds" ng-model="$createCtrl.totalFunds" type="text" class="form-control" calculate-total-funds disabled />
+    <body ng-controller="EditController as $editCtrl" style="margin:20px 0;" ng-init="init()">
+        <div id="page-wrapper" style="padding:15px;">            
+            <form id="editProjectForm" name="editProjectForm" ng-submit="$editCtrl.update(editProjectForm)">
+                <div class="form-group">
+                    <label for="name" class="control-label">Project name<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <input name="name" type="text" class="form-control" ng-model="$editCtrl.activeProject.name" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="numAddr" class="control-label">Number of addresses to create<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <input name="numAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.numAddr" ng-pattern="$editCtrl.greaterThanZeroIntPattern" required />
+
+                    <div ng-show="editProjectForm.numAddr.$error.pattern" role="alert">
+                        <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
                     </div>
                 </div>
-                
-                <div class="col-md-6">
+
+                <div class="form-group">
+                    <label for="addrAmt" class="control-label">SMART per address</label>
+                    <input name="addrAmt" type="text" class="form-control" ng-model="$editCtrl.activeProject.addrAmt" calculate-addr-funds disabled />
+                </div>
+
+                <div class="form-group">
+                    <label for="totalFunds" class="control-label">Total SMART to be sent</label>
+                    <input name="totalFunds" ng-model="$editCtrl.activeProject.totalFunds" type="text" class="form-control" disabled />
+                </div>
+
+                <div class="form-group">
+                    <label for="options" class="control-label">Options</label>
+
+                    <div class="checkbox">
+                        <label><input type="checkbox" ng-model="$editCtrl.activeProject.qrCode">Add QR code to wallet</label>
+                    </div>
+
+                    <div class="checkbox">
+                        <label><input type="checkbox" ng-model="$editCtrl.activeProject.walletIns">Add wallet instructions</label>
+                    </div>
+
                     <div class="form-group">
-                        <div class="form-group">
-                            <label for="options" class="control-label">Options</label>
+                        <div class="checkbox">
+                            <label><input type="checkbox" ng-model="$editCtrl.activeProject.sweep">Set automatic sweep date (midnight on that date)</label>
+                        </div>
 
-                            <div class="checkbox">
-                                <label><input type="checkbox" ng-model="$createCtrl.activeProject.qrCode">Add QR code to wallet</label>
-                            </div>
+                        <div id="sweepDateGroup" class="input-group">
+                            <input type="text" name="sweepDate" class="form-control" ng-model="$editCtrl.activeProject.sweepDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$editCtrl.datepickerFormat}}" is-open="$editCtrl.calendar.opened" datepicker-options="$editCtrl.datepickerOptions" ng-required="$editCtrl.activeProject.sweep" close-text="Close" ng-disabled="!$editCtrl.activeProject.sweep" />
 
-                            <div class="checkbox">
-                                <label><input type="checkbox" ng-model="$createCtrl.activeProject.walletIns">Add wallet download instructions</label>
-                            </div>
-                            
-                            <div class="form-group">
-                                <div class="checkbox">
-                                    <label><input type="checkbox" ng-model="$createCtrl.activeProject.sweep">Set automatic sweep date (midnight on that date)</label>
-                                </div>
-                                
-                                <div id="sweepDateGroup" class="input-group">
-                                    <input type="text" name="sweepDate" class="form-control" ng-model="$createCtrl.activeProject.sweepDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$createCtrl.datepickerFormat}}" is-open="$createCtrl.calendar.opened" datepicker-options="$createCtrl.datepickerOptions" ng-required="$createCtrl.activeProject.sweep" close-text="Close" ng-disabled="!$createCtrl.activeProject.sweep" />
-                                    
-                                    <span class="input-group-btn">
-                                        <button id="calendarBtn" type="button" class="btn btn-default" ng-disabled="!$createCtrl.activeProject.sweep" ng-click="$createCtrl.openCalendar()"><i class="fa fa-calendar" title="Calendar"></i></button>
-                                    </span>
-                                </div>
-                            </div>
+                            <span class="input-group-btn">
+                                <button id="calendarBtn" type="button" class="btn btn-default" ng-disabled="!$editCtrl.activeProject.sweep" ng-click="$editCtrl.openCalendar()"><i class="fa fa-calendar" title="Calendar"></i></button>
+                            </span>
                         </div>
                     </div>
-
-                    <div class="form-group" style="padding-top:10px; padding-right:0; clear:both;">
-                        <p class="help-block">Creating addresses will also automatically create the project.</p>
-                        
-                        <button type="button" class="btn btn-default" ng-disabled="editProjectForm.$pristine || editProjectForm.$invalid" ng-click="$createCtrl.createAddresses(editProjectForm)">Create Addresses</button>
-                        <button type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$pristine || editProjectForm.$invalid">Create Project</button>
-                    </div>
-                    
-                    <div class="form-group" style="padding-right:0;">
-                        <div ng-include="'app/utils/formAlert.html'"></div>
-                    </div>
                 </div>
-                
-                <div class="clearfix"></div>
-            </div>
-        </form>
+
+                <div class="form-group" style="padding-top:10px; padding-right:0; clear:both;">
+                    <button type="button" class="btn btn-default" ng-disabled="!$editCtrl.hasRecvAddrs || editProjectForm.$pristine || editProjectForm.$invalid" ng-click="$editCtrl.createAddresses(editProjectForm)">Create Addresses</button>
+                    <button type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$pristine || editProjectForm.$invalid">Update Project</button>
+                </div>
+
+                <div class="form-group" style="padding-right:0;">
+                    <div ng-include="'../utils/formAlert.html'"></div>
+                </div>
+            </form>
         </div>
         
         <!-- libraries -->

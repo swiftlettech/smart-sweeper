@@ -19,13 +19,13 @@ angular.module('SmartSweeper', [
     var ctrl = this;
     
     $scope.init = function() {
-        ctrl.scrollboxBaseheight = window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
+        //ctrl.scrollboxBaseheight = window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
 		$document.find('#appAlert, .formAlert').addClass('hide');
         
-        $(window).on("resize", function(event) {
+        /*$(window).on("resize", function(event) {
             ctrl.setPageHeight();
             ctrl.setScrollboxHeight($scope.formHeight);
-		});
+		});*/
     };
     
     $scope.$watch('formAlerts', function(newValue, oldValue, scope) {
@@ -88,7 +88,7 @@ angular.module('SmartSweeper', [
 		}
 	};
     
-    ctrl.setScrollboxHeight = function(formHeight) {
+    /*ctrl.setScrollboxHeight = function(formHeight) {
         var form;
         var extra;
 
@@ -113,5 +113,5 @@ angular.module('SmartSweeper', [
                 }
             });
         }
-    };
+    };*/
 });

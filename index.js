@@ -54,7 +54,9 @@ function createModal(type, text) {
     winBounds = win.getBounds()
     
     if (type === "edit") {
-        width = Math.ceil(winBounds.width - (winBounds.width*0.4))
+        //width = Math.ceil(winBounds.width - (winBounds.width*0.6)),
+        //height = Math.ceil(winBounds.height - (winBounds.height*0.15))
+        width = winBounds.width
         height = winBounds.height
         pathname = path.join(__dirname, '/app/create/editModal.html')
         resizable = true
@@ -132,7 +134,9 @@ app.on('ready', () => {
     }
     
     // load the db or create it if it doesn't already exist
-    // saved in %APPDATA%/smart-sweeper on Win, $XDG_CONFIG_HOME or ~/.config on Linux, ~/Library/Application Support on Mac
+    // saved in %APPDATA%/smart-sweeper on Win
+    // saved in $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper on Linux
+    // saved in ~/Library/Application Support/smart-sweeper on Mac
     db = new Store({name: "smart-sweeper"})    
     global.availableProjects = db.get("projects")    
     if (global.availableProjects === undefined) {

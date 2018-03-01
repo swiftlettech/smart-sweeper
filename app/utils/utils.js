@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('SmartSweeper')
-.directive('calculateTotalFunds', function() {
+.directive('calculateAddrFunds', function() {
     return {
         require: 'ngModel',
 		link: function(scope, element, attrs, ngModel) {
@@ -9,8 +9,8 @@ angular.module('SmartSweeper')
 				//console.log(scope.newProject.addrAmt);
                 //console.log(scope.newProject.numAddr);
                 //console.log(scope.newProject.addrAmt * scope.newProject.numAddr);
-                if (scope.newProject !== undefined)
-                    return scope.newProject.addrAmt * scope.newProject.numAddr;
+                if (scope.activeProject !== undefined)
+                    return scope.activeProject.totalFunds / scope.activeProject.numAddr;
                 else
                     return 0;
 			});
@@ -52,8 +52,7 @@ angular.module('SmartSweeper')
     return function(scope, element, attrs) {
         var scrollbox = $document.find('.scrollbox').get(0);
 
-        console.log(scope);
-
+        //console.log(scope);
         //$document.find('.scrollbox').css('height', '');
 
         // from: https://stackoverflow.com/a/5038256/7843806

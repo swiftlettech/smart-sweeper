@@ -4,7 +4,7 @@
     angular.module('SmartSweeper.create', []).controller('CreateController', CreateController);
 
     function CreateController($rootScope, $scope, $document, $filter, filterCompare, greaterThanZeroIntPattern, greaterThanZeroAllPattern) {
-        var electron = window.nodeRequire('electron');
+        const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         var $mainCtrl = $scope.$parent.$mainCtrl;
         
@@ -42,21 +42,22 @@
             ipcRenderer.on('projectsReady', (event, arg) => {
                 $scope.$apply(function() {
                     ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                    // display the project list as 10 per page?
                 });
             });
         };
         
-        $scope.$on('$viewContentLoaded', function(event) {
+        /*$scope.$on('$viewContentLoaded', function(event) {
             $mainCtrl.setPageHeight();
-        });
+        });*/
         
-        $scope.$watch('formHeight', function(newValue, oldValue, scope) {
+        /*$scope.$watch('formHeight', function(newValue, oldValue, scope) {
             console.log(oldValue);
             console.log(newValue);
             
             if (newValue != oldValue)
                 $mainCtrl.setScrollboxHeight(newValue);
-        });
+        });*/
         
         /* Create the wallet addresses for the project. */
         ctrl.createAddresses = function(form) {
@@ -116,7 +117,9 @@
         };
 
         /* Create a new project. */
-        ctrl.new = function(form) {            
+        ctrl.new = function(form) {
+            ctrl.newProject.numAddr = parseInt(ctrl.newProject.numAddr);
+            
             ipcRenderer.send('newProject', {newProject: ctrl.newProject});
             ipcRenderer.on('newProjectAdded', (event, arg) => {                
                 ctrl.newProject = {};
@@ -140,7 +143,7 @@
             //if (!ctrl.showAddNewProject)
                 //formHeight = $document.find('#newProjectShowBtn');
                 
-            $mainCtrl.setScrollboxHeight(formHeight);
+            //$mainCtrl.setScrollboxHeight(formHeight);
         };
 
         /* Sort the project list. */
@@ -148,7 +151,7 @@
             ctrl.sortOptions.property = type;
             ctrl.sortOptions.reverse = reverse;
             
-            console.log(jsMultisort);
+            //console.log(jsMultisort);
         };
     }
 })();

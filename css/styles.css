@@ -93,10 +93,6 @@ button, .btn, .form-control, .input-group-addon {
     width: 15%;
 }
 
-#addNewProjectForm input[name='addrAmt'] {
-    width: 25%;
-}
-
 #addNewProjectForm #sweepDateGroup {
     width: 45%;
 }
@@ -111,6 +107,22 @@ button, .btn, .form-control, .input-group-addon {
     font-weight: 700;
 }
 
+#editProjectForm input[name='name'] {
+    width: 40%;
+}
+
+#editProjectForm input[name='numAddr'] {
+    width: 15%;
+}
+
+#editProjectForm input[name='addrAmt'], #editProjectForm input[name='totalFunds'] {
+    width: 25%;
+}
+
+#editProjectForm  #sweepDateGroup {
+    width: 35%;
+}
+
 #projectList {
     padding-top: 15px;
     clear:both;
@@ -123,6 +135,7 @@ button, .btn, .form-control, .input-group-addon {
 
 #projectList #tableHeading .scrollCol {
     width: 1px;
+    display:none;
 }
 
 #projectList .innerTable {
