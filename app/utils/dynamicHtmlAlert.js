@@ -2,7 +2,7 @@
 (function() {
     'use strict';
   
-    var app = angular.module('SmartSweeper');
+    var app = angular.module('SmartSweeperUtils');
 	app.directive('dynamicHtmlAlert', function($compile) {
 	  return {
 		restrict: 'A',

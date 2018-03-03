@@ -7,7 +7,7 @@ const Store = require('electron-store')
 const isDev = require('electron-is-dev')
 require('electron-debug')({showDevTools: true})
 
-let win, modal, db, projects, smartapi, referrer
+let win, modals, modalType, db, projects, smartapi
 
 // create the main window
 function createWindow () {
@@ -15,6 +15,7 @@ function createWindow () {
     
     // Create the browser window.
     win = new BrowserWindow({
+        title: "SMART Sweeper",
         width: width, //1000,
         height: height, //600,
         webPreferences: {
@@ -42,6 +43,9 @@ function createWindow () {
 
 // create a modal
 function createModal(type, text) {
+    var parent
+    var modal
+    var title
     var width
     var height
     var pathname
@@ -54,6 +58,8 @@ function createModal(type, text) {
     winBounds = win.getBounds()
     
     if (type === "edit") {
+        title = "Edit Project"
+        parent = win
         //width = Math.ceil(winBounds.width - (winBounds.width*0.6)),
         //height = Math.ceil(winBounds.height - (winBounds.height*0.15))
         width = winBounds.width
@@ -66,6 +72,8 @@ function createModal(type, text) {
         fullscreenable = true
     }
     else if (type === "confirmation") {
+        title = "Confirmation"
+        modals.length > 0 ? parent = modals[modals.length-1] : parent = win
         width = Math.ceil(winBounds.width - (winBounds.width*0.75))
         height = Math.ceil(winBounds.height - (winBounds.height*0.75))
         pathname = path.join(__dirname, '/app/utils/confirmationModal.html')
@@ -77,6 +85,7 @@ function createModal(type, text) {
     }
     
     modal = new BrowserWindow({
+        title: title,
         width: width,
         height: height,
         resizable: resizable,
@@ -84,7 +93,7 @@ function createModal(type, text) {
         maximizable: maximizable,
         alwaysOnTop: alwaysOnTop,
         fullscreenable: fullscreenable,
-        parent: win,
+        parent: parent,
         modal: true,
         show: false,
         webPreferences: {
@@ -108,11 +117,33 @@ function createModal(type, text) {
     modal.on('closed', () => {
         modal = null
     })
+    
+    modals.push(modal)
+}
+
+// create the receiver addresses for a project
+function createRecvAddresses(project) {
+    for (var i=0; i<project.numAddr; i++) {
+        addressPair = smartapi.generateAddress()        
+        project.recvAddrs.push(addressPair)
+        //{publicKey: addressPair.publicKey, privateKey: addressPair.privateKey}
+    }
+    
+    var index = getDbIndex(project.id)
+    global.availableProjects.list[index] = project
+    db.set("projects", global.availableProjects)
 }
 
 // return the index of a project in the database
 function getDbIndex(projectID) {
+    var arrayIndex;
     
+    global.availableProjects.list.forEach(function(project, index) {
+        if (project.id == projectID)
+            arrayIndex = index
+    })
+    
+    return arrayIndex;
 }
 
 // This method will be called when Electron has finished
@@ -143,7 +174,8 @@ app.on('ready', () => {
         db.set("projects", {index: 0, list: []})
         global.availableProjects = db.get("projects")
     }
-    
+    global.referrer = ""
+    modals = []
     smartapi = require('./smartapi')
 })
 
@@ -165,29 +197,49 @@ app.on('activate', () => {
     }
 })
 
+// set which function opened a modal
+ipcMain.on('setReferrer', (event, args) => {
+    global.referrer = args.referrer
+})
+
 // load a confirmation modal
-ipcMain.on('loadConfirmation', (event, text) => {
+ipcMain.on('showConfirmation', (event, text) => {
+    modalType = "confirmation"
     createModal('confirmation', text)
 })
 
 // confirmation modal "yes"
 ipcMain.on('modalYes', (event, args) => {
-    modal.close()
-    win.webContents.send('modalYes')
+    console.log('modalYes');
+    modals.pop().close()
+    
+    if (modals.length > 0)
+        modals[modals.length-1].webContents.send('modalYes')
+    else
+        win.webContents.send('modalYes')
 })
 
-// confirmation modal "no"
+// confirmation modal "no" and regular modal "cancel"
 ipcMain.on('modalNo', (event, args) => {
-    modal.close()
-    win.webContents.send('modalNo')
+    if (modalType.indexOf('confirmation') == -1)
+        global.activeProject = null;
+    
+    modals.pop().close()
+    
+    /*if (modals.length > 0) {
+        modals[modals.length-1].webContents.send('modalNo')
+    }
+    else*/
+        win.webContents.send('modalNo')
 })
 
 // create a project
 ipcMain.on('newProject', (event, args) => {
     var newProject = args.newProject
     newProject.id = global.availableProjects.index + 1
+    newProject.totalFunds = 0
     newProject.address = {}
-    newProject.recvAddrs = {}
+    newProject.recvAddrs = []
     
     var addressPair = smartapi.generateAddress()
     newProject.address.publicKey = addressPair.publicKey
@@ -197,26 +249,18 @@ ipcMain.on('newProject', (event, args) => {
     global.availableProjects.list.push(newProject)
     db.set("projects", global.availableProjects)
     
+    createRecvAddresses(newProject);
+    
     event.sender.send('newProjectAdded')
-    event.sender.send('projectsReady')
+    win.webContents.send('projectsReady')
 })
 
 // create the sender addresses for a project
-ipcMain.on('createSenderAddresses', (event, args) => {    
-    /*var activeProject = args.activeProject
-    var addressPair;
-    
-    for (var i=0 i<activeProject.numAddr i++) {
-        addressPair = smartapi.generateAddress()        
-        activeProject.recvAddrs.push({publicKey: addressPair.publicKey, privateKey: addressPair.privateKey})
-    }
-    
-    var index = getDbIndex(activeProject.id)    
-    global.availableProjects.list[index] = activeProject
-    db.set("projects", global.availableProjects)
+ipcMain.on('createRecvAddresses', (event, args) => {    
+    createRecvAddresses(args.activeProject)
     
     event.sender.send('addressesCreated')
-    event.sender.send('projectsReady')*/
+    win.webContents.send('projectsReady')
 })
 
 // delete a project
@@ -224,22 +268,29 @@ ipcMain.on('deleteProject', (event, args) => {
     var index = getDbIndex(args.id)
     global.availableProjects.list.splice(index, 1)
     db.set("projects", global.availableProjects)
-    event.sender.send('projectsReady', global.availableProjects)
+    win.webContents.send('projectsReady')
 })
 
 // get all projects
 ipcMain.on('getProjects', (event, args) => {
     global.availableProjects = db.get("projects")
-    event.sender.send('projectsReady')
+    win.webContents.send('projectsReady')
 })
 
-// edit a project
+// load a modal to edit a project
 ipcMain.on('editProject', (event, args) => {
-    //args.id
-    
+    modalType = "edit"
     global.activeProject = args.project
-    
     createModal('edit')
+})
+
+// update a project
+ipcMain.on('updateProject', (event, args) => {
+    modals.pop().close()
+    var index = getDbIndex(global.activeProject.id)
+    global.availableProjects.list[index] = global.activeProject
+    db.set("projects", global.availableProjects)
+    win.webContents.send('projectsReady')
 })
 
 // send funds to a project

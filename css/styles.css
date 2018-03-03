@@ -75,7 +75,7 @@ button, .btn, .form-control, .input-group-addon {
 }
 
 #confirmationModal #okBtn {
-    margin-left: 10px;
+    margin-right: 10px;
 }
 
 /* Dashboard */
@@ -154,7 +154,11 @@ button, .btn, .form-control, .input-group-addon {
     width: 175px;
 }
 
-#projectList .numAddrCol, #projectList .expCol {
+#projectList .totalFundsCol, #projectList .numAddrCol {
+    width: 125px;
+}
+
+#projectList .expCol {
     width: 150px;
 }
 

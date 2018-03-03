@@ -8,7 +8,6 @@
         
         <link type="text/css" rel="stylesheet" href="../../css/bootstrap-3.3.7.min.css?v=20180206" />
         <link type="text/css" rel="stylesheet" href="../../css/sb-admin.css?v=20180213">
-        <link type="text/css" rel="stylesheet" href="../../css/font-awesome-4.7.0.min.css?v=20180210" />
 		<link type="text/css" rel="stylesheet" href="../../css/styles.css?v=20180206" />
     </head>
     
@@ -16,12 +15,9 @@
         <p class="body"></p>
 
         <div class="footer">
-            <button id="okBtn" type="button" class="btn btn-primary pull-right">OK</button>
             <button id="cancelBtn" type="button" class="btn btn-default pull-right">Cancel</button>
+            <button id="okBtn" type="button" class="btn btn-primary pull-right">OK</button>
         </div>
-        
-        <!-- libraries -->
-        <script type="text/javascript" src="../../js/jquery-3.3.1.js"></script>
         
         <!-- bootstrapping -->
         <script type="text/javascript">
@@ -31,14 +27,14 @@
                 const {ipcRenderer} = window.nodeRequire('electron');
 
                 ipcRenderer.on('setModalText', (event, text) => {
-                    $('.body').html(text);
+                    document.body.getElementsByClassName('body')[0].innerHTML = text;
                 });                
 
-                $('#okBtn').on('click', function(event) {
+                document.getElementById('okBtn').addEventListener('click', function(event) {
                     ipcRenderer.send('modalYes');
                 });
                 
-                $('#cancelBtn').on('click', function(event) {
+                document.getElementById('cancelBtn').addEventListener('click', function(event) {
                     ipcRenderer.send('modalNo');
                 });
             })();

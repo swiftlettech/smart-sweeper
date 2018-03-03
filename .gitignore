@@ -1,6 +1,7 @@
 #directories
-node_modules
 dist
+node_modules
+PaperWalletGenerator-3.3.0
 startbootstrap-sb-admin-3.3.7
 
 #files

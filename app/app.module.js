@@ -7,6 +7,7 @@ angular.module('SmartSweeper', [
     'SmartSweeper.sweep',
     'SmartSweeper.log',
     'SmartSweeper.help',
+    'SmartSweeperUtils',
     'ui.bootstrap',
 	'ngAnimate',
     'router',
@@ -20,6 +21,7 @@ angular.module('SmartSweeper', [
     
     $scope.init = function() {
         //ctrl.scrollboxBaseheight = window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
+        ctrl.setPageHeight();
 		$document.find('#appAlert, .formAlert').addClass('hide');
         
         /*$(window).on("resize", function(event) {
@@ -49,11 +51,6 @@ angular.module('SmartSweeper', [
     ctrl.setActivePage = function(page) {
         ctrl.activePage = page;
         console.log('active page: ' + ctrl.activePage);
-    };
-    
-    /* Set which renderer launched a confirmation alert so that the return value goes to the right place. */
-    ctrl.setConfirmationReferrer = function(referrer) {
-        ctrl.confirmationReferrer = referrer;  
     };
     
     /* Set the app or form alert message. */
@@ -103,15 +100,15 @@ angular.module('SmartSweeper', [
         console.log(formHeight);
         console.log(parseInt($document.find(form).css('margin-top')));
         console.log(extra);
-    };
+    };*/
     
     ctrl.setPageHeight = function() {
-        if (window.innerWidth >= 1000 && window.innerHeight >= 600) {
+        if (window.innerWidth >= 700 && window.innerHeight >= 600) {
             $document.find('#page-wrapper').css({
                 height: function() {
                     return window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
                 }
             });
         }
-    };*/
+    };
 });

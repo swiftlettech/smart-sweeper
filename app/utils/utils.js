@@ -1,22 +1,30 @@
 'use strict';
 
-angular.module('SmartSweeper')
-.directive('calculateAddrFunds', function() {
+angular.module('SmartSweeperUtils')
+/*.directive('calculateAddrFunds', function() {
     return {
         require: 'ngModel',
 		link: function(scope, element, attrs, ngModel) {
+            console.log(ngModel.$modelValue);
+            console.log(ngModel.$viewValue);
+            
             ngModel.$formatters.push(function(val) {
 				//console.log(scope.newProject.addrAmt);
                 //console.log(scope.newProject.numAddr);
                 //console.log(scope.newProject.addrAmt * scope.newProject.numAddr);
-                if (scope.activeProject !== undefined)
-                    return scope.activeProject.totalFunds / scope.activeProject.numAddr;
+                
+                ngModel.$viewValue = ngModel.$modelValue;
+                
+                if (scope.$editCtrl.activeProject.totalFunds !== undefined)
+                    scope.$editCtrl.activeProject.addrAmt = scope.$editCtrl.activeProject.totalFunds / ngModel.$viewValue;
                 else
-                    return 0;
+                    scope.$editCtrl.activeProject.addrAmt = 0;
+                
+                return ngModel.$viewValue;
 			});
 		}
     };
-})
+})*/
 .directive('convertToNumber', function() {
     /* from: https://docs.angularjs.org/api/ng/directive/select#binding-select-to-a-non-string-value-via-ngmodel-parsing-formatting */
     return {
@@ -61,4 +69,10 @@ angular.module('SmartSweeper')
         //else
             //$document.find('#tableHeading .scrollCol').css('width', '1px');
     }
+})
+.filter('toFixedNum', function() {
+	/* Formats a number to a fixed number of decimals. */
+    return function(value, decimals) {
+        return value.toFixed(decimals);
+    };
 });

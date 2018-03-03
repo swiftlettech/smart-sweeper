@@ -42,6 +42,7 @@
             ipcRenderer.on('projectsReady', (event, arg) => {
                 $scope.$apply(function() {
                     ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                    console.log(ctrl.availableProjects);
                     // display the project list as 10 per page?
                 });
             });
@@ -65,19 +66,19 @@
             $document.find('#addNewProjectForm button[type=submit]').attr('disabled', 'disabled');
             
             if (form.$valid) {
-                $mainCtrl.setConfirmationReferrer('createAddresses'); 
-                ipcRenderer.send('loadConfirmation', 'Are you sure you want to create addresses for this project?');
+                ipcRenderer.send('setReferrer', {referrer: 'createAddresses'});
+                ipcRenderer.send('showConfirmation', 'Are you sure you want to create addresses for this project?');
             }
             
             ipcRenderer.on('modalNo', (event, arg) => {
-                if ($mainCtrl.confirmationReferrer !== 'createAddresses')
+                if (electron.remote.getGlobal('referrer') !== 'createAddresses')
                     return;
                 
                 $document.find('#addNewProjectForm button[type=submit]').removeAttr('disabled');
             });
             
             ipcRenderer.on('modalYes', (event, arg) => {                
-                if ($mainCtrl.confirmationReferrer !== 'createAddresses')
+                if (electron.remote.getGlobal('referrer') !== 'createAddresses')
                     return;
                 
                 console.log('modal yes in create addresses');
@@ -94,19 +95,19 @@
 
         /* Delete a project. */
         ctrl.delete = function(id) {
-            $mainCtrl.setConfirmationReferrer(deleteProject);            
-            ipcRenderer.send('loadConfirmation', 'Are you sure you want to delete this project?');
+            ctrl.activeProjectID = id;
+            ipcRenderer.send('setReferrer', {referrer: 'deleteProject'});
+            ipcRenderer.send('showConfirmation', 'Are you sure you want to delete this project?');
             
             ipcRenderer.on('modalYes', (event, arg) => {
-                if ($mainCtrl.confirmationReferrer !== 'deleteProject')
+                if (electron.remote.getGlobal('referrer') !== 'deleteProject')
                     return;
-                    
-                ctrl.activeProjectID = id;
+                
                 ipcRenderer.send('deleteProject', {id: id});
             });
         };
 
-        /* Edit a project. */
+        /* Load a modal used to edit a project. */
         ctrl.edit = function(id) {
             ctrl.activeProjectID = id;
             ctrl.activeProject = $filter('filter')(ctrl.availableProjects, {id: id}, filterCompare)[0];
@@ -136,9 +137,14 @@
         
         /* Called when the "new project" button is clicked. */
         ctrl.showAddForm = function() {
-            var formHeight = $scope.formHeight;
+            //var formHeight = $scope.formHeight;
             
             ctrl.showAddNewProject = !ctrl.showAddNewProject;
+            
+            if (ctrl.showAddNewProject && ctrl.availableProjects.length > 3)
+                $document.find('#page-wrapper').css('height', '');
+            else
+                $mainCtrl.setPageHeight();
             
             //if (!ctrl.showAddNewProject)
                 //formHeight = $document.find('#newProjectShowBtn');
