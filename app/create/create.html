@@ -50,8 +50,8 @@
                     <div class="form-group" style="padding-top:10px; padding-right:0; clear:both;">
                         <p class="help-block">Creating addresses will also automatically create the project.</p>
                         
-                        <button type="button" class="btn btn-default" ng-disabled="addNewProjectForm.$pristine || addNewProjectForm.$invalid" ng-click="$createCtrl.createAddresses(addNewProjectForm)">Create Addresses</button>
-                        <button type="submit" class="btn btn-primary" ng-disabled="addNewProjectForm.$pristine || addNewProjectForm.$invalid">Create Project</button>
+                        <button id="createAddrBtn" type="button" class="btn btn-default" ng-disabled="addNewProjectForm.$pristine || addNewProjectForm.$invalid" ng-click="$createCtrl.createAddresses(addNewProjectForm)">Create Addresses</button>
+                        <button id="submitBtn" type="submit" class="btn btn-primary" ng-disabled="addNewProjectForm.$pristine || addNewProjectForm.$invalid">Create Project</button>
                     </div>
                     
                     <div class="form-group" style="padding-right:0;">
@@ -88,7 +88,7 @@
 
         <div class="scrollbox" style="height:{{scrollboxHeight}};">
             <table id="tableBody" class="table">
-                <tr id="project.id" ng-class="{active: $createCtrl.activeProjectID == project.id}" ng-model="$createCtrl.availableProjects" ng-repeat="project in $createCtrl.availableProjects track by project.id"> <!-- repeat-done js-multisort="$createCtrl.sortOptions"-->
+                <tr id="project.id" ng-class="{active: $createCtrl.activeProjectID == project.id}" ng-model="$createCtrl.availableProjects" ng-repeat="project in $createCtrl.availableProjects track by project.id"> <!-- js-multisort="$createCtrl.sortOptions"-->
                     <td colspan="6" style="padding:0;">
                         <table class="innerTable">
                             <tr>

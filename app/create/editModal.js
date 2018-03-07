@@ -7,9 +7,10 @@
     ])
     .controller('EditController', EditController);
 
-    function EditController($scope, $document, $filter, uibDateParser) {
+    function EditController($rootScope, $scope, $document, $filter, alertservice, uibDateParser) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
+        
         var ctrl = this;
 
         $scope.init = function() {
@@ -23,39 +24,53 @@
                 showWeeks: false
             };
             ctrl.datepickerFormat = "MM/dd/yyyy";
+            
+            /*$rootScope.$watch('formAlerts', function(newValue, oldValue, scope) {
+                console.log(oldValue);
+                console.log(newValue);
+                
+                if (newValue !== oldValue)
+                    ctrl.formAlerts = newValue;
+            });*/
         };        
 
         ctrl.cancel = function() {
             ipcRenderer.send('modalNo');
         };
         
+        ctrl.closeAlert = function(index) {
+            ctrl.formAlerts.splice(index, 1);
+        };
+        
         ctrl.createAddresses = function(form) {
-            // disable the create project button
-            $document.find('#editProjectForm button[type=submit]').attr('disabled', 'disabled');
+            // disable the create addresses button
+            $document.find('#editProjectForm #createAddrBtn').attr('disabled', 'disabled');
+            
+            ipcRenderer.on('dialogNo', (event, arg) => {
+                if (electron.remote.getGlobal('referrer') !== "createAddressesEdit")
+                    return;
+
+                $document.find('#editProjectForm #createAddrBtn').removeAttr('disabled');
+            });
+
+            ipcRenderer.on('dialogYes', (event, arg) => {
+                if (electron.remote.getGlobal('referrer') !== "createAddressesEdit")
+                    return;
+                
+                ctrl.activeProject = electron.remote.getGlobal('activeProject');
+                
+                if (ctrl.activeProject.recvAddrs.length == 0) {
+                    // create the addresses and add them to the project
+                    ipcRenderer.send('createRecvAddresses', {project: ctrl.activeProject, newProjectFlag: false});
+                    ipcRenderer.on('addressesCreated', (event, arg) => {
+                        ctrl.formAlerts = alertservice.createAlert('formAlert', 'success', 'Addresses created.');
+                    });
+                }
+            });
             
             if (form.$valid) {
                 ipcRenderer.send('setReferrer', {referrer: 'createAddressesEdit'});
-                ipcRenderer.send('showConfirmation', 'Are you sure you want to create addresses for this project?');
-                
-                ipcRenderer.on('modalNo', (event, arg) => {
-                    if (electron.remote.getGlobal('referrer') !== 'createAddressesEdit')
-                        return;
-
-                    $document.find('#editProjectForm button[type=submit]').removeAttr('disabled');
-                });
-
-                ipcRenderer.on('modalYes', (event, arg) => {
-                    console.log('modal yes in create addresses');
-                    
-                    if (electron.remote.getGlobal('referrer') !== 'createAddressesEdit')
-                        return;
-
-                    // create the addresses and add them to the project
-                    /*ipcRenderer.send('createRecvAddresses', {activeProject: ctrl.activeProject});
-                    ipcRenderer.on('addressesCreated', (event, arg) => {
-                        $scope.$parent.setAppAlert('formAlert', 'success', 'Addresses created.');
-                    });*/
-                });
+                ipcRenderer.send('showConfirmation', {title: 'Create receiver addresses?', body: 'Are you sure you want to create receiver addresses for this project?'});
             }
         };
         

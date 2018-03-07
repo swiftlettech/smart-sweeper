@@ -13,7 +13,7 @@
     </head>
     
     <body ng-controller="EditController as $editCtrl" style="margin:20px 0;" ng-init="init()">
-        <div id="page-wrapper" style="padding:15px;">            
+        <div id="page-wrapper" style="padding:15px;">
             <form id="editProjectForm" name="editProjectForm" ng-submit="$editCtrl.update(editProjectForm)">
                 <div class="form-group">
                     <label for="name" class="control-label">Project name<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
@@ -25,7 +25,7 @@
                     <input name="numAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.numAddr" ng-pattern="$editCtrl.greaterThanZeroIntPattern" ng-change="$editCtrl.updateAddrAmt()" required /> <!--calculate-addr-funds-->
 
                     <div ng-show="editProjectForm.numAddr.$error.pattern" role="alert">
-                        <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
+                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
                     </div>
                 </div>
 
@@ -39,7 +39,7 @@
                     <p>{{$editCtrl.activeProject.totalFunds | toFixedNum: 8}}</p>
                     
                     <div ng-show="$editCtrl.activeProject.totalFunds == 0" role="alert">
-                        <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Funds have not been sent to the project address.</span>
+                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Funds have not been sent to the project address.</span>
                     </div>
                 </div>
 
@@ -63,18 +63,19 @@
                             <input type="text" name="sweepDate" class="form-control" ng-model="$editCtrl.calendarDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$editCtrl.datepickerFormat}}" is-open="$editCtrl.calendar.opened" datepicker-options="$editCtrl.datepickerOptions" ng-required="$editCtrl.activeProject.sweep" close-text="Close" ng-disabled="!$editCtrl.activeProject.sweep" />
 
                             <span class="input-group-btn">
-                                <button id="calendarBtn" type="button" class="btn btn-default" ng-disabled="!$editCtrl.activeProject.sweep" ng-click="$editCtrl.openCalendar()"><i class="fa fa-calendar" title="Calendar"></i></button>
+                                <button id="calendarBtn" type="button" class="btn btn-default" ng-disabled="!$editCtrl.activeProject.sweep" ng-click="$editCtrl.openCalendar()"><i class="fa fa-fw fa-calendar" title="Calendar"></i></button>
                             </span>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group" style="padding-top:10px; padding-right:0; clear:both;">
-                    <p class="help-block">Creating addresses will also automatically update the project info.</p>
+                    <p ng-hide="$editCtrl.hasRecvAddrs"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Creating receiver addresses will also automatically update the project info.</p>
+                    <p ng-show="$editCtrl.hasRecvAddrs"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Receiver addresses have already been created.</p>
                     
-                    <button type="button" class="btn btn-default" ng-disabled="$editCtrl.hasRecvAddrs || editProjectForm.$invalid" ng-click="$editCtrl.createAddresses(editProjectForm)">Create Addresses</button>
-                    <button type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$invalid">Update Project</button>
-                    <button type="button" class="btn btn-default" ng-click="$editCtrl.cancel()">Cancel</button>
+                    <button id="createAddrBtn" type="button" class="btn btn-default" ng-disabled="$editCtrl.hasRecvAddrs || editProjectForm.$invalid" ng-click="$editCtrl.createAddresses(editProjectForm)">Create Addresses</button>
+                    <button id="submitBtn" type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$invalid">Update Project</button>
+                    <button id="cancelBtn" type="button" class="btn btn-default" ng-click="$editCtrl.cancel()">Cancel</button>
                 </div>
 
                 <div class="form-group" style="padding-right:0;">
@@ -97,7 +98,8 @@
         
         <!-- utilities -->
         <script type="text/javascript" src="../utils/app.module.js"></script>
-        <script type="text/javascript" src="../utils/config.js"></script>
+        <script type="text/javascript" src="../utils/alert.service.js"></script>
+        <!--<script type="text/javascript" src="../utils/config.js"></script>-->
         <script type="text/javascript" src="../utils/constants.js"></script>
         <script type="text/javascript" src="../utils/dynamicHtmlAlert.js"></script>
         <script type="text/javascript" src="../utils/utils.js"></script>

@@ -1,9 +1,9 @@
 (function() {
     'use strict';
 
-    angular.module('SmartSweeper.create', []).controller('CreateController', CreateController);
+    angular.module('SmartSweeper.create', ['SmartSweeperUtils']).controller('CreateController', CreateController);
 
-    function CreateController($rootScope, $scope, $document, $filter, filterCompare, greaterThanZeroIntPattern, greaterThanZeroAllPattern) {
+    function CreateController($rootScope, $scope, $document, $filter, alertservice, filterCompare, greaterThanZeroIntPattern, greaterThanZeroAllPattern) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         var $mainCtrl = $scope.$parent.$mainCtrl;
@@ -60,47 +60,56 @@
                 $mainCtrl.setScrollboxHeight(newValue);
         });*/
         
-        /* Create the wallet addresses for the project. */
         ctrl.createAddresses = function(form) {
             // disable the create project button
-            $document.find('#addNewProjectForm button[type=submit]').attr('disabled', 'disabled');
+            $document.find('#addNewProjectForm button').attr('disabled', 'disabled');
             
+            ipcRenderer.on('dialogNo', (event, arg) => {
+                if (electron.remote.getGlobal('referrer') !== "createAddresses")
+                    return;
+
+                $document.find('#addNewProjectForm button').removeAttr('disabled');
+            });
+
+            ipcRenderer.on('dialogYes', (event, arg) => {
+                if (electron.remote.getGlobal('referrer') !== "createAddresses")
+                    return;
+                
+                if (ctrl.newProject.recvAddrs !== undefined && ctrl.newProject.recvAddrs.length == 0) {
+                    // create the addresses and add them to the project
+                    ipcRenderer.send('createRecvAddresses', {project: ctrl.newProject, newProjectFlag: true});
+                    ipcRenderer.on('addressesCreated', (event, arg) => {
+                        ctrl.newProject = {};
+                        form.$setPristine();
+                        form.$setUntouched();
+                        form.$submitted = false;
+                        
+                        ctrl.formAlerts = alertservice.createAlert('formAlert', 'success', 'Addresses created.');
+                    });
+                }
+                else {
+                    console.log('receiver addresses already created')   
+                }
+            });
+            
+            form.$submitted = true;
             if (form.$valid) {
+                ctrl.newProject.numAddr = parseInt(ctrl.newProject.numAddr);
+                ctrl.newProject.recvAddrs = [];
+                
                 ipcRenderer.send('setReferrer', {referrer: 'createAddresses'});
-                ipcRenderer.send('showConfirmation', 'Are you sure you want to create addresses for this project?');
+                ipcRenderer.send('showConfirmation', {title: 'Create receiver addresses?', body: 'Are you sure you want to create receiver addresses for this project?'});
             }
-            
-            ipcRenderer.on('modalNo', (event, arg) => {
-                if (electron.remote.getGlobal('referrer') !== 'createAddresses')
-                    return;
-                
-                $document.find('#addNewProjectForm button[type=submit]').removeAttr('disabled');
-            });
-            
-            ipcRenderer.on('modalYes', (event, arg) => {                
-                if (electron.remote.getGlobal('referrer') !== 'createAddresses')
-                    return;
-                
-                console.log('modal yes in create addresses');
-                
-                // submit the form and create the project
-                form.$submitted = true;
-                //ctrl.new(form);
-                
-                // create the addresses and add them to the project
-                
-                // save the updated project
-            });
         };
 
         /* Delete a project. */
         ctrl.delete = function(id) {
             ctrl.activeProjectID = id;
             ipcRenderer.send('setReferrer', {referrer: 'deleteProject'});
-            ipcRenderer.send('showConfirmation', 'Are you sure you want to delete this project?');
+            ipcRenderer.send('showConfirmation', {title: 'Delete project?', body: 'Are you sure you want to delete this project?'});
             
-            ipcRenderer.on('modalYes', (event, arg) => {
-                if (electron.remote.getGlobal('referrer') !== 'deleteProject')
+            ipcRenderer.on('dialogYes', (event, arg) => {
+                if (electron.remote.getGlobal('referrer') !== "deleteProject")
                     return;
                 
                 ipcRenderer.send('deleteProject', {id: id});
@@ -120,6 +129,7 @@
         /* Create a new project. */
         ctrl.new = function(form) {
             ctrl.newProject.numAddr = parseInt(ctrl.newProject.numAddr);
+            ctrl.newProject.recvAddrs = [];
             
             ipcRenderer.send('newProject', {newProject: ctrl.newProject});
             ipcRenderer.on('newProjectAdded', (event, arg) => {                

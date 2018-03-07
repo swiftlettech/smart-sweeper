@@ -30,60 +30,10 @@ angular.module('SmartSweeper', [
 		});*/
     };
     
-    $scope.$watch('formAlerts', function(newValue, oldValue, scope) {
-        $scope.$broadcast('formAlertsAvailable');
-    });
-	
-	$scope.$watch('appAlerts', function(newValue, oldValue, scope) {
-        $scope.$broadcast('appAlertsAvailable');
-    });
-    
-    ctrl.closeFormAlert = function(index) {
-		if ($scope.formAlerts)
-			$scope.formAlerts.splice(index, 1);
-	};
-	
-	ctrl.closeAppAlert = function(index) {
-		if ($scope.appAlerts)
-			$scope.appAlerts.splice(index, 1);
-	};
-    
     ctrl.setActivePage = function(page) {
         ctrl.activePage = page;
         console.log('active page: ' + ctrl.activePage);
     };
-    
-    /* Set the app or form alert message. */
-	ctrl.setAppAlert = function(alertType, msgType, msg) {
-		var prefix;
-		var timeout;
-		
-		if (msgType === 'error') {
-			msgType = 'danger';
-			msg = "Error! " + msg;
-		}
-		else if (msgType === 'success') {
-			msg = "Success! " + msg;
-			timeout = alertTimeout;
-		}
-		
-		if (alertType === "formAlert") {
-			prefix = ".";
-			$scope.formAlerts = [{
-				'type': msgType,
-				'msg': msg,
-				'timeout': timeout
-			}];
-		}
-		else if (alertType === "appAlert") {
-			prefix = "#";
-			$scope.appAlerts = [{
-				'type': msgType,
-				'msg': msg,
-				'timeout': timeout
-			}];
-		}
-	};
     
     /*ctrl.setScrollboxHeight = function(formHeight) {
         var form;
