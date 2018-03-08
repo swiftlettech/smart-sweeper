@@ -7,7 +7,7 @@
     ])
     .controller('EditController', EditController);
 
-    function EditController($rootScope, $scope, $document, $filter, alertservice, uibDateParser) {
+    function EditController($scope, $document) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         
@@ -24,14 +24,6 @@
                 showWeeks: false
             };
             ctrl.datepickerFormat = "MM/dd/yyyy";
-            
-            /*$rootScope.$watch('formAlerts', function(newValue, oldValue, scope) {
-                console.log(oldValue);
-                console.log(newValue);
-                
-                if (newValue !== oldValue)
-                    ctrl.formAlerts = newValue;
-            });*/
         };        
 
         ctrl.cancel = function() {
@@ -63,7 +55,8 @@
                     // create the addresses and add them to the project
                     ipcRenderer.send('createRecvAddresses', {project: ctrl.activeProject, newProjectFlag: false});
                     ipcRenderer.on('addressesCreated', (event, arg) => {
-                        ctrl.formAlerts = alertservice.createAlert('formAlert', 'success', 'Addresses created.');
+                        form.$submitted = true;
+                        ipcRenderer.send('showInfoDialog', {title: 'Receiver addresses', body: 'Addresses were created successfully.'});
                     });
                 }
             });

@@ -11,6 +11,11 @@ a:focus {
   color: #FFF;
 }
 
+.side-nav li {
+    border-top: 1px solid #222;
+    border-bottom: 1px solid #222;
+}
+
 .active {
     background-color: #111;
     border-top: 1px solid #000;
@@ -70,17 +75,9 @@ button, .btn, .form-control, .input-group-addon {
   border-color: #3e4245;
 }
 
-.scrollbox {
-	overflow-y:auto;
-}
-
-#confirmationModal #okBtn {
-    margin-right: 10px;
-}
-
 /* Dashboard */
 
-/* Send */
+/* Create/Edit */
 #addNewProjectForm {
     margin-top: 15px;
 }
@@ -150,7 +147,7 @@ button, .btn, .form-control, .input-group-addon {
     
 }
 
-#projectList .addrAmtCol {
+#projectList .addrCol, #projectList .addrAmtCol {
     width: 175px;
 }
 

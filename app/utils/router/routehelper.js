@@ -52,7 +52,7 @@
                     angular.extend(route.config.resolve || {}, routehelperConfig.config.resolveAlways);
                 $routeProvider.when(route.url, route.config);
             });
-            $routeProvider.otherwise({redirectTo: '/create'});
+            $routeProvider.otherwise({redirectTo: '/logs'});
         }
 
         function handleRoutingErrors() {

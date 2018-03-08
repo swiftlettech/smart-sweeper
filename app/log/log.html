@@ -1,5 +1,3 @@
-<div id="log">
-    <form id="logFilter" name="logFilter"></form>
-    
-    <table id="log" class="table"></table>
+<div id="log" ng-init="init()">
+    <textarea class="form-control" value="$logCtrl.mostRecentLog"></textarea>
 </div>

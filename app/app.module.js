@@ -15,12 +15,11 @@ angular.module('SmartSweeper', [
     //'mj.jsNatMultisort'
 ])
 .controller('SmartController', function($scope, $document, $filter) {
-    const {ipcRenderer} = window.nodeRequire('electron');
+    const electron = window.nodeRequire('electron');
     
     var ctrl = this;
     
     $scope.init = function() {
-        //ctrl.scrollboxBaseheight = window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
         ctrl.setPageHeight();
 		$document.find('#appAlert, .formAlert').addClass('hide');
         
@@ -53,7 +52,7 @@ angular.module('SmartSweeper', [
     };*/
     
     ctrl.setPageHeight = function() {
-        if (window.innerWidth >= 700 && window.innerHeight >= 600) {
+        if (window.innerWidth >= 700 && window.innerHeight >= 600 && electron.remote.getGlobal('availableProjects').list.length < 8) {
             $document.find('#page-wrapper').css({
                 height: function() {
                     return window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);

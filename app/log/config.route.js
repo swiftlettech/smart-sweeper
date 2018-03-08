@@ -12,7 +12,7 @@
 	function getRoutes() {
         return [
             {
-                url: '/log',
+                url: '/logs',
                 config: {
                     templateUrl: 'app/log/log.html',
                     controller: 'LogController',

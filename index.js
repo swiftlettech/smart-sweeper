@@ -1,14 +1,18 @@
 /* Main app logic. */
 const electron = require('electron')
-const {app, BrowserWindow, dialog, ipcMain} = electron
+const {app, BrowserWindow, dialog, ipcMain, shell} = electron
 const path = require('path')
 const url = require('url')
 const Store = require('electron-store')
 const smartapi = require('./smartapi')
+const fs = require('fs')
+const util = require('util')
+const log = require('electron-log')
+const logPath = app.getPath('userData') + "/logs/"
 const isDev = require('electron-is-dev')
 require('electron-debug')({showDevTools: true})
 
-let win, modal, modalType, db, projects
+let win, modal, modalType, logFile, db, projects
 
 // create the main window
 function createWindow () {
@@ -98,10 +102,17 @@ function createModal(type, text) {
     })
 }
 
-function createDialog(event, window, text) {
+function createDialog(event, window, type, text) {
+    let buttons
+    
+    if (type === 'question')
+        buttons = ['OK', 'Cancel']
+    else if (type === 'info')
+        buttons = ['OK']
+    
     dialog.showMessageBox(window, {
-        type: 'question',
-        buttons: ['OK', 'Cancel'],
+        type: type,
+        buttons: buttons,
         title: text.title,
         message: text.body
     }, function(resp) {        
@@ -134,6 +145,7 @@ function createRecvAddresses(project) {
     global.availableProjects.list[index] = project
     global.activeProject = project
     db.set("projects", global.availableProjects)
+    log.info('Receiver addresses for project ' + project.name + ' were created.')
 }
 
 // return the index of a project in the database
@@ -146,6 +158,31 @@ function getDbIndex(projectID) {
     })
     
     return arrayIndex
+}
+
+// get the current date and format it as YYYYMMDD
+function getCurrentDate() {
+    let today = new Date()
+    let year = today.getUTCFullYear()
+    let month = today.getUTCMonth()
+    let day = today.getUTCDate()
+    
+    if (month < 10)
+        month = String('0' + month)
+    else
+        month = String(month)
+    
+    if (day < 10)
+        day = String('0' + day)
+    else
+        day = String(day)
+    
+    return year + month + day;
+}
+
+// refresh the currently-loaded log file
+function refreshLogFile() {
+    
 }
 
 // set the active project based on a project ID
@@ -169,6 +206,7 @@ function newProject(event, project) {
     global.availableProjects.list.push(newProject)
     db.set("projects", global.availableProjects)
     
+    log.info('Project ' + newProject.name + ' was created.')
     event.sender.send('newProjectAdded')
     win.webContents.send('projectsReady')
 }
@@ -190,6 +228,25 @@ app.on('ready', () => {
             ]
         })
     }
+    
+    // setup logging
+    let today = getCurrentDate()
+    logFile = today + ".txt"
+    
+    try {
+        fs.accessSync(logPath, fs.constants.F_OK)        
+    }
+    catch (err) {
+        if (err.code === "ENOENT")
+            fs.mkdir(logPath)
+    }
+    
+    log.transports.file.level = "info"
+    log.transports.file.format = "[{h}:{i}:{s}] - {text}"
+    log.transports.file.maxSize = 5 * 1024 * 1024
+    log.transports.file.file = logPath + logFile
+    //log.transports.file.stream = fs.createWriteStream(log.transports.file.file, {});
+    log.transports.file.streamConfig = {flags: 'a+', start: 0}
     
     // load the db or create it if it doesn't exist
     // saved in %APPDATA%/smart-sweeper on Win
@@ -228,12 +285,20 @@ ipcMain.on('setReferrer', (event, args) => {
     global.referrer = args.referrer
 })
 
-// load a confirmation modal
+// load a confirmation dialog
 ipcMain.on('showConfirmation', (event, text) => {    
     if (modal === undefined || modal == null)
-        createDialog(event, win, text)
+        createDialog(event, win, 'question', text)
     else
-        createDialog(event, modal, text)
+        createDialog(event, modal, 'question', text)
+})
+
+// load an info dialog
+ipcMain.on('showInfoDialog', (event, text) => {    
+    if (modal === undefined || modal == null)
+        createDialog(event, win, 'info', text)
+    else
+        createDialog(event, modal, 'info', text)
 })
 
 // modal "cancel"
@@ -265,8 +330,10 @@ ipcMain.on('createRecvAddresses', (event, args) => {
 // delete a project
 ipcMain.on('deleteProject', (event, args) => {
     let index = getDbIndex(args.id)
+    let name = global.availableProjects[index].name
     global.availableProjects.list.splice(index, 1)
     db.set("projects", global.availableProjects)
+    log.info('Project ' + name + ' was deleted.')
     win.webContents.send('projectsReady')
 })
 
@@ -289,6 +356,7 @@ ipcMain.on('updateProject', (event, args) => {
     let index = getDbIndex(global.activeProject.id)
     global.availableProjects.list[index] = global.activeProject
     db.set("projects", global.availableProjects)
+    log.info('Project ' + global.activeProject.name + ' was edited.')
     global.activeProject = null
     win.webContents.send('projectsReady')
 })
@@ -296,24 +364,34 @@ ipcMain.on('updateProject', (event, args) => {
 // send funds to a project
 ipcMain.on('fundProject', (event, args) => {
     
+    log.info('Project ' + global.activeProject.name + ' was funded.')
 })
 
 // create wallets
 ipcMain.on('createWallets', (event, args) => {
     
+    log.info('Paper wallets for project ' + global.activeProject.name + ' were created.')
 })
 
-// add an action to the log
-ipcMain.on('writeToLog', (event, args) => {
-    
-})
-
-// load log file
+// load the most recent log file
 ipcMain.on('loadLog', (event, args) => {
+    let files = fs.readdirSync(logPath)
+    let stats = fs.statSync(logPath + '/' + files[0])
+    let mostRecent = {file: files[0], lastModified: stats.mtime}
     
+    files.forEach(function(file, index) {
+        stats = fs.statSync(logPath + '/' + file)        
+        if (stats.mtime > mostRecent.lastModified)
+            mostRecent = {file: file, lastModified: stats.mtime}
+    })
+    
+    console.log(mostRecent)
+    
+    //global.availableLog
+    //logFile
 })
 
 // open the log folder
 ipcMain.on('openLogFolder', (event, args) => {
-    //app.getPath('userData')
+    shell.showItemInFolder(logPath)
 })

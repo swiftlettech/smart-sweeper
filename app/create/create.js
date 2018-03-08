@@ -3,7 +3,7 @@
 
     angular.module('SmartSweeper.create', ['SmartSweeperUtils']).controller('CreateController', CreateController);
 
-    function CreateController($rootScope, $scope, $document, $filter, alertservice, filterCompare, greaterThanZeroIntPattern, greaterThanZeroAllPattern) {
+    function CreateController($rootScope, $scope, $document, $filter, filterCompare, greaterThanZeroIntPattern, greaterThanZeroAllPattern) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         var $mainCtrl = $scope.$parent.$mainCtrl;
@@ -84,11 +84,8 @@
                         form.$setUntouched();
                         form.$submitted = false;
                         
-                        ctrl.formAlerts = alertservice.createAlert('formAlert', 'success', 'Addresses created.');
+                        ipcRenderer.send('showInfoDialog', {title: 'Receiver addresses', body: 'Addresses were created successfully.'});
                     });
-                }
-                else {
-                    console.log('receiver addresses already created')   
                 }
             });
             
