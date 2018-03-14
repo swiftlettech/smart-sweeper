@@ -7,7 +7,7 @@ Sweeper application for SMART cryptocurrency (http://smartcash.cc) to allow easy
 
 Releases
 ---------------
-Releases are forthcoming. SMART Sweeper is still in the development stage.
+Releases are forthcoming. SMART Sweeper is still in the development stage. Please see the [dev branch](https://github.com/swiftlettech/smart-sweeper/tree/dev).
 
 Requirements
 ---------------
