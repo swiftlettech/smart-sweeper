@@ -52,7 +52,7 @@
                     angular.extend(route.config.resolve || {}, routehelperConfig.config.resolveAlways);
                 $routeProvider.when(route.url, route.config);
             });
-            $routeProvider.otherwise({redirectTo: '/logs'});
+            $routeProvider.otherwise({redirectTo: '/dashboard'});
         }
 
         function handleRoutingErrors() {

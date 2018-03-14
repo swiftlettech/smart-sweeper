@@ -62,6 +62,7 @@
 
     <div id="projectList">
         <h4>Projects</h4>
+        
         <table id="tableHeading" class="table">
             <tr>
                 <td class="nameCol">
@@ -79,31 +80,26 @@
                 </td>
                 <td class="editCol text-center"><strong>Edit</strong></td>
                 <td class="deleteCol text-center"><strong>Delete</strong></td>
-                <td class="scrollCol">&nbsp;</td>
+            </tr>
+            
+            <tr id="project.id" ng-class="{active: $createCtrl.activeProjectID == project.id}" ng-model="$createCtrl.availableProjects" ng-repeat="project in $createCtrl.availableProjects track by project.id"> <!-- js-multisort="$createCtrl.sortOptions"-->
+                <td colspan="7" style="padding:0;">
+                    <table class="innerTable">
+                        <tr>
+                            <td class="nameCol">{{project.name}}</td>
+                            <td class="totalFundsCol text-center">{{project.totalFunds | toFixedNum: 8}}</td>
+                            <td class="numAddrCol text-center">{{project.numAddr}}</td>
+                            <td class="addrCol text-center"><i class="fa fa-fw fa-check" aria-hidden="false" title="yes" ng-show="project | hasAddresses"></i></td>
+                            <td class="expCol text-center">{{project.sweepDate | date: 'mediumDate'}}</td>
+                            <td class="editCol text-center"><i class="fa fa-fw fa-cog" title="Edit project" ng-click="$createCtrl.edit(project.id)"></i></td>
+                            <td class="deleteCol text-center"><i class="fa fa-fw fa-trash" title="Delete project" ng-click="$createCtrl.delete(project.id)" ng-hide="project.totalFunds > 0"></i></td>
+                        </tr>
+                        <tr>
+                            <td colspan="7" class="addrCol"><strong>Address:</strong> {{project.address.publicKey}}</td>
+                        </tr>
+                    </table>
+                </td>
             </tr>
         </table>
-
-        <div class="scrollbox" style="height:{{scrollboxHeight}};">
-            <table id="tableBody" class="table">
-                <tr id="project.id" ng-class="{active: $createCtrl.activeProjectID == project.id}" ng-model="$createCtrl.availableProjects" ng-repeat="project in $createCtrl.availableProjects track by project.id"> <!-- js-multisort="$createCtrl.sortOptions"-->
-                    <td colspan="6" style="padding:0;">
-                        <table class="innerTable">
-                            <tr>
-                                <td class="nameCol">{{project.name}}</td>
-                                <td class="totalFundsCol text-center">{{project.totalFunds | toFixedNum: 8}}</td>
-                                <td class="numAddrCol text-center">{{project.numAddr}}</td>
-                                <td class="addrCol text-center"><i class="fa fa-fw fa-check" aria-hidden="false" title="yes" ng-show="project | hasAddresses"></i></td>
-                                <td class="expCol text-center">{{project.sweepDate | date: 'mediumDate'}}</td>
-                                <td class="editCol text-center"><i class="fa fa-fw fa-cog" title="Edit project" ng-click="$createCtrl.edit(project.id)"></i></td>
-                                <td class="deleteCol text-center"><i class="fa fa-fw fa-trash" title="Delete project" ng-click="$createCtrl.delete(project.id)"></i></td>
-                            </tr>
-                            <tr>
-                                <td colspan="6" class="addrCol"><strong>Address:</strong> {{project.address.publicKey}}</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </div>
     </div>
 </div>

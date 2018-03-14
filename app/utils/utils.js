@@ -41,6 +41,9 @@ angular.module('SmartSweeperUtils')
 .filter('toFixedNum', function() {
 	/* Formats a number to a fixed number of decimals. */
     return function(value, decimals) {
+        if (decimals === undefined)
+            decimals = 0;
+        
         return value.toFixed(decimals);
     };
 });

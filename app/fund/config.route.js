@@ -16,7 +16,7 @@
                 config: {
                     templateUrl: 'app/fund/fund.html',
                     controller: 'FundController',
-                    controllerAs: '$fundctrlCtrl',
+                    controllerAs: '$fundCtrl',
                     title: ''
                 }
             }

@@ -3,16 +3,49 @@ const electron = require('electron')
 const {app, BrowserWindow, dialog, ipcMain, shell} = electron
 const path = require('path')
 const url = require('url')
+const winston = require('winston')
+const Transport = require('winston-transport')
+const {createLogger, format, transports} = winston
+const {combine, timestamp, prettyPrint} = format
 const Store = require('electron-store')
 const smartapi = require('./smartapi')
 const fs = require('fs')
 const util = require('util')
-const log = require('electron-log')
-const logPath = app.getPath('userData') + "/logs/"
+const baseLogPath = "logs"
+const sysLogsPath = baseLogPath + path.sep + 'system' + path.sep
+const userLogsPath = baseLogPath + path.sep + 'user' + path.sep
 const isDev = require('electron-is-dev')
 require('electron-debug')({showDevTools: true})
 
-let win, modal, modalType, logFile, db, projects
+let win, modal, modalType, logger, logFile, db, projects
+
+// create a custom transport to save winston logs into a json database using electron store
+module.exports = {
+    JsonDBTransport: class JsonDBTransport extends Transport {    
+        constructor(options) {
+            super(options)
+            
+            this.logDB = new Store({name: options.filename})
+            
+            if (this.logDB.get('log') === undefined)
+                this.logDB.set('log', [])
+        }
+
+        log(info, callback) {
+            let self = this
+            
+            setImmediate(function () {
+                self.emit('logged', info)
+            })
+            
+            let log = self.logDB.get('log')
+            log.push(info)
+            self.logDB.set('log', log)
+            
+            if (callback) { callback() }
+        }
+    }
+}
 
 // create the main window
 function createWindow () {
@@ -59,7 +92,7 @@ function createModal(type, text) {
         //height = Math.ceil(winBounds.height - (winBounds.height*0.15))
         width = winBounds.width
         height = winBounds.height
-        pathname = path.join(__dirname, '/app/create/editModal.html')
+        pathname = path.join(__dirname, 'app', 'create', 'editModal.html')
         resizable = true
         minimizable = true
         maximizable = true
@@ -107,7 +140,7 @@ function createDialog(event, window, type, text) {
     
     if (type === 'question')
         buttons = ['OK', 'Cancel']
-    else if (type === 'info')
+    else if (type === 'info' || type === 'error')
         buttons = ['OK']
     
     dialog.showMessageBox(window, {
@@ -115,19 +148,21 @@ function createDialog(event, window, type, text) {
         buttons: buttons,
         title: text.title,
         message: text.body
-    }, function(resp) {        
-        if (resp == 0) {
-            if (modal === undefined || modal == null)
-                event.sender.send('dialogYes')
-            else
-                window.webContents.send('dialogYes')
-                
-        }
-        else {
-            if (modal === undefined || modal == null)
-                event.sender.send('dialogNo')
-            else
-                window.webContents.send('dialogNo')
+    }, function(resp) {
+        if (event != null) {
+            if (resp == 0) {
+                if (modal === undefined || modal == null)
+                    event.sender.send('dialogYes')
+                else
+                    window.webContents.send('dialogYes')
+
+            }
+            else {
+                if (modal === undefined || modal == null)
+                    event.sender.send('dialogNo')
+                else
+                    window.webContents.send('dialogNo')
+            }
         }
     })
 }
@@ -137,15 +172,16 @@ function createRecvAddresses(project) {
     let addressPair
     
     for (let i=0; i<project.numAddr; i++) {
-        addressPair = smartapi.generateAddress()        
+        addressPair = smartapi.generateAddresses()
         project.recvAddrs.push(addressPair)
     }
     
     let index = getDbIndex(project.id)
     global.availableProjects.list[index] = project
     global.activeProject = project
-    db.set("projects", global.availableProjects)
-    log.info('Receiver addresses for project ' + project.name + ' were created.')
+    db.set('projects', global.availableProjects)
+    logger.info('Receiver addresses for project ' + project.name + ' were created.')
+    refreshLogFile()
 }
 
 // return the index of a project in the database
@@ -164,25 +200,29 @@ function getDbIndex(projectID) {
 function getCurrentDate() {
     let today = new Date()
     let year = today.getUTCFullYear()
-    let month = today.getUTCMonth()
+    let month = today.getUTCMonth() + 1
     let day = today.getUTCDate()
     
     if (month < 10)
-        month = String('0' + month)
+        month = "0" + String(month)
     else
         month = String(month)
     
     if (day < 10)
-        day = String('0' + day)
+        day = "0" + String(day)
     else
         day = String(day)
     
-    return year + month + day;
+    return String(year) + month + day;
 }
 
 // refresh the currently-loaded log file
 function refreshLogFile() {
-    
+    let stats = fs.statSync(app.getPath('userData') + path.sep + logFile + '.json')
+    let logDB = new Store({name: logFile})
+    let log = logDB.get('log')
+    global.availableLog = {date: stats.mtime, content: log}
+    win.webContents.send('logReady')
 }
 
 // set the active project based on a project ID
@@ -198,26 +238,70 @@ function newProject(event, project) {
     newProject.totalFunds = 0
     newProject.address = {}
     
-    let addressPair = smartapi.generateAddress()
+    let addressPair = smartapi.generateAddresses()
     newProject.address.publicKey = addressPair.publicKey
     newProject.address.privateKey = addressPair.privateKey
     
     global.availableProjects.index = global.availableProjects.index + 1
     global.availableProjects.list.push(newProject)
-    db.set("projects", global.availableProjects)
+    db.set('projects', global.availableProjects)
     
-    log.info('Project ' + newProject.name + ' was created.')
+    logger.info('Project ' + newProject.name + ' was created.')
+    refreshLogFile()
     event.sender.send('newProjectAdded')
     win.webContents.send('projectsReady')
+}
+
+// automatically sweep project funds if sweep date has expired
+function autoSweepFunds() {
+    /*global.availableProjects.list.forEach(function(project, projectKey) {
+        project.recvAddrs.forEach(function(address, addrKey) {
+            
+        })
+    })*/
+    
+    logger.info('Funds were automatically swept for project ' + global.activeProject.name + '.')
+    refreshLogFile()
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
+    // setup logging
+    let today = getCurrentDate()
+    logFile = String(today)
+    
+    logger = createLogger({
+        level: 'info',
+        format: combine(timestamp(), prettyPrint()),
+        transports: [
+            new module.exports.JsonDBTransport({ filename: sysLogsPath + path.sep + logFile, level: 'error' }),
+            new module.exports.JsonDBTransport({ filename: userLogsPath + path.sep + logFile })
+        ],
+        exitOnError: false
+    })
+    logger.emitErrs = false
+    
+    // load the db or create it if it doesn't exist
+    // saved in %APPDATA%/smart-sweeper on Win
+    // saved in $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper on Linux
+    // saved in ~/Library/Application Support/smart-sweeper on Mac
+    db = new Store({name: "smart-sweeper"})
+    global.availableProjects = db.get('projects')    
+    if (global.availableProjects === undefined) {
+        db.set('projects', {index: 0, list: []})
+        global.availableProjects = db.get('projects')
+        
+        // automatically sweep funds if necessary
+        //sweepFunds()
+    }
+    
+    global.referrer = ""
+    
     createWindow()
     
-    // only load these modules if in dev mode
+    // extras for dev mode
     if (isDev) {
         const elemon = require('elemon')
         elemon({
@@ -227,39 +311,9 @@ app.on('ready', () => {
               {bw: win, res: []}
             ]
         })
+        
+        logger.add(new transports.Console({format: format.simple()}))
     }
-    
-    // setup logging
-    let today = getCurrentDate()
-    logFile = today + ".txt"
-    
-    try {
-        fs.accessSync(logPath, fs.constants.F_OK)        
-    }
-    catch (err) {
-        if (err.code === "ENOENT")
-            fs.mkdir(logPath)
-    }
-    
-    log.transports.file.level = "info"
-    log.transports.file.format = "[{h}:{i}:{s}] - {text}"
-    log.transports.file.maxSize = 5 * 1024 * 1024
-    log.transports.file.file = logPath + logFile
-    //log.transports.file.stream = fs.createWriteStream(log.transports.file.file, {});
-    log.transports.file.streamConfig = {flags: 'a+', start: 0}
-    
-    // load the db or create it if it doesn't exist
-    // saved in %APPDATA%/smart-sweeper on Win
-    // saved in $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper on Linux
-    // saved in ~/Library/Application Support/smart-sweeper on Mac
-    db = new Store({name: "smart-sweeper"})    
-    global.availableProjects = db.get("projects")    
-    if (global.availableProjects === undefined) {
-        db.set("projects", {index: 0, list: []})
-        global.availableProjects = db.get("projects")
-    }
-    
-    global.referrer = ""
 })
 
 // quit when all windows are closed.
@@ -285,8 +339,80 @@ ipcMain.on('setReferrer', (event, args) => {
     global.referrer = args.referrer
 })
 
+// get the total amount of funds that have been redeemed
+ipcMain.on('getClaimedFundsInfo', (event, args) => {
+    let totalAddrs = 0
+    let callbackCounter = 0
+    let claimedWallets = 0
+    let claimedFunds = 0
+    
+    function callback(resp, addrAmt) {
+        console.log(resp)
+        
+        if (resp.type === "data" && parseInt(resp.msg) == 0) {
+            claimedFunds += addrAmt
+            claimedWallets++
+        }
+        else if (resp.type === "error") {
+            logger.error('getClaimedFundsInfo: ' + resp.msg)
+        }
+        
+        callbackCounter++
+        
+        if (callbackCounter == totalAddrs)
+            event.sender.send('claimedFundsInfo', {claimedFunds: claimedFunds, claimedWallets: claimedWallets})
+    }
+    
+    global.availableProjects.list.forEach(function(project, projectKey) {
+        project.recvAddrs.forEach(function(address, addrKey) {
+            smartapi.checkBalance(address.publicKey, project.addrAmt, callback)
+            totalAddrs++
+        })
+    })
+})
+
+// get the total amount of transactions that have yet to be confirmed
+ipcMain.on('getPendingFundsInfo', (event, args) => {
+    let totalAddrs = 0
+    let callbackCounter = 0
+    let pendingWallets = 0
+    let pendingFunds = 0
+    
+    function callback(resp, addrAmt) {
+        
+    }
+    
+    global.availableProjects.list.forEach(function(project, projectKey) {
+        project.recvAddrs.forEach(function(address, addrKey) {
+            //if (address.txid != undefined)
+                
+            
+            totalAddrs++
+        })
+    })
+})
+
+// get the total amount of transactions that have been confirmed
+ipcMain.on('getSentFundsInfo', (event, args) => {
+    let totalAddrs = 0
+    let callbackCounter = 0
+    let sentWallets = 0
+    let sentFunds = 0
+    
+    function callback(resp, addrAmt) {
+        
+    }
+    
+    global.availableProjects.list.forEach(function(project, projectKey) {
+        project.recvAddrs.forEach(function(address, addrKey) {
+            
+            totalAddrs++
+        })
+    })
+})
+
 // load a confirmation dialog
-ipcMain.on('showConfirmation', (event, text) => {    
+ipcMain.on('showConfirmationDialog', (event, text) => {    
     if (modal === undefined || modal == null)
         createDialog(event, win, 'question', text)
     else
@@ -332,14 +458,15 @@ ipcMain.on('deleteProject', (event, args) => {
     let index = getDbIndex(args.id)
     let name = global.availableProjects[index].name
     global.availableProjects.list.splice(index, 1)
-    db.set("projects", global.availableProjects)
-    log.info('Project ' + name + ' was deleted.')
+    db.set('projects', global.availableProjects)
+    logger.info('Project ' + name + ' was deleted.')
+    refreshLogFile()
     win.webContents.send('projectsReady')
 })
 
 // get all projects
 ipcMain.on('getProjects', (event, args) => {
-    global.availableProjects = db.get("projects")
+    global.availableProjects = db.get('projects')
     win.webContents.send('projectsReady')
 })
 
@@ -355,43 +482,79 @@ ipcMain.on('updateProject', (event, args) => {
     modal.close()
     let index = getDbIndex(global.activeProject.id)
     global.availableProjects.list[index] = global.activeProject
-    db.set("projects", global.availableProjects)
-    log.info('Project ' + global.activeProject.name + ' was edited.')
+    db.set('projects', global.availableProjects)
+    logger.info('Project ' + global.activeProject.name + ' was edited.');
+    refreshLogFile()
     global.activeProject = null
     win.webContents.send('projectsReady')
 })
 
 // send funds to a project
 ipcMain.on('fundProject', (event, args) => {
+    // create and broadcast the transaction    
+    // calculate and save the amount per address
     
-    log.info('Project ' + global.activeProject.name + ' was funded.')
+    logger.info('Project ' + global.activeProject.name + ' was funded.')
+    refreshLogFile()
+})
+
+// send funds to receiver addresses
+ipcMain.on('sendFunds', (event, args) => {
+    
+    logger.info('Funds were send to wallets for project ' + global.activeProject.name + '.')
+    refreshLogFile()
 })
 
 // create wallets
 ipcMain.on('createWallets', (event, args) => {
     
-    log.info('Paper wallets for project ' + global.activeProject.name + ' were created.')
+    //txid
+    
+    logger.info('Paper wallets for project ' + global.activeProject.name + ' were created.')
+    refreshLogFile()
+})
+
+// manually sweep project funds
+ipcMain.on('sweepFunds', (event, projectID) => {
+    let index = getDbIndex(projectID)
+    let project = global.availableProjects.list[index]
+    
+    /*project.recvAddrs.forEach(function(addr, addrKey) {
+        smartapi.sweepFunds({sender: addr, receiver: project.publicKey})
+    })*/
+    
+    logger.info('Funds were manually swept for project ' + global.activeProject.name + '.')
+    refreshLogFile()
 })
 
 // load the most recent log file
 ipcMain.on('loadLog', (event, args) => {
+    let logPath = app.getPath('userData') + path.sep + userLogsPath + path.sep
     let files = fs.readdirSync(logPath)
-    let stats = fs.statSync(logPath + '/' + files[0])
+    if (files.length == 0) {
+        global.availableLog = null
+        event.sender.send('logReady')
+        return
+    }
+    
+    let stats = fs.statSync(logPath + files[0])
     let mostRecent = {file: files[0], lastModified: stats.mtime}
     
     files.forEach(function(file, index) {
-        stats = fs.statSync(logPath + '/' + file)        
+        stats = fs.statSync(logPath + file)        
         if (stats.mtime > mostRecent.lastModified)
             mostRecent = {file: file, lastModified: stats.mtime}
     })
     
-    console.log(mostRecent)
+    logFile = userLogsPath + path.parse(mostRecent.file).name
     
-    //global.availableLog
-    //logFile
+    let logDB = new Store({name: logFile})
+    let log = logDB.get('log')    
+    global.availableLog = {date: mostRecent.lastModified, content: log}
+    event.sender.send('logReady')
 })
 
 // open the log folder
 ipcMain.on('openLogFolder', (event, args) => {
-    shell.showItemInFolder(logPath)
+    shell.showItemInFolder(app.getPath('userData') + path.sep + logFile + '.json')
 })

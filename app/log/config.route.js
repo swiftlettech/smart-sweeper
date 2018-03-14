@@ -16,6 +16,7 @@
                 config: {
                     templateUrl: 'app/log/log.html',
                     controller: 'LogController',
+                    controllerAs: '$logCtrl',
                     title: ''
                 }
             }

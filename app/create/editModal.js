@@ -63,7 +63,7 @@
             
             if (form.$valid) {
                 ipcRenderer.send('setReferrer', {referrer: 'createAddressesEdit'});
-                ipcRenderer.send('showConfirmation', {title: 'Create receiver addresses?', body: 'Are you sure you want to create receiver addresses for this project?'});
+                ipcRenderer.send('showConfirmationDialog', {title: 'Create receiver addresses?', body: 'Are you sure you want to create receiver addresses for this project?'});
             }
         };
         

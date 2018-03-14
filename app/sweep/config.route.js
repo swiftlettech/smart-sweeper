@@ -16,6 +16,7 @@
                 config: {
                     templateUrl: 'app/sweep/sweep.html',
                     controller: 'SweepController',
+                    controllerAs: '$sweepCtrl',
                     title: ''
                 }
             }

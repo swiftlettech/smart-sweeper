@@ -10,3 +10,4 @@ startbootstrap-sb-admin-3.3.7
 *.zip
 /db/smart-sweeper.json
 /app/utils/js-nat-multisort.js
+/smart-sweeper.json

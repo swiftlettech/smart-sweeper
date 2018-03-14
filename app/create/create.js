@@ -36,7 +36,7 @@
                 showWeeks: false
             };
             ctrl.datepickerFormat = "MM/dd/yyyy";
-
+            
             // load all projects
             ipcRenderer.send('getProjects');
             ipcRenderer.on('projectsReady', (event, arg) => {
@@ -45,20 +45,10 @@
                     console.log(ctrl.availableProjects);
                     // display the project list as 10 per page?
                 });
+                
+                $mainCtrl.setPageHeight();
             });
         };
-        
-        /*$scope.$on('$viewContentLoaded', function(event) {
-            $mainCtrl.setPageHeight();
-        });*/
-        
-        /*$scope.$watch('formHeight', function(newValue, oldValue, scope) {
-            console.log(oldValue);
-            console.log(newValue);
-            
-            if (newValue != oldValue)
-                $mainCtrl.setScrollboxHeight(newValue);
-        });*/
         
         ctrl.createAddresses = function(form) {
             // disable the create project button
@@ -95,7 +85,7 @@
                 ctrl.newProject.recvAddrs = [];
                 
                 ipcRenderer.send('setReferrer', {referrer: 'createAddresses'});
-                ipcRenderer.send('showConfirmation', {title: 'Create receiver addresses?', body: 'Are you sure you want to create receiver addresses for this project?'});
+                ipcRenderer.send('showConfirmationDialog', {title: 'Create receiver addresses?', body: 'Are you sure you want to create receiver addresses for this project?'});
             }
         };
 
@@ -103,7 +93,7 @@
         ctrl.delete = function(id) {
             ctrl.activeProjectID = id;
             ipcRenderer.send('setReferrer', {referrer: 'deleteProject'});
-            ipcRenderer.send('showConfirmation', {title: 'Delete project?', body: 'Are you sure you want to delete this project?'});
+            ipcRenderer.send('showConfirmationDialog', {title: 'Delete project?', body: 'Are you sure you want to delete this project?'});
             
             ipcRenderer.on('dialogYes', (event, arg) => {
                 if (electron.remote.getGlobal('referrer') !== "deleteProject")
@@ -144,19 +134,12 @@
         
         /* Called when the "new project" button is clicked. */
         ctrl.showAddForm = function() {
-            //var formHeight = $scope.formHeight;
-            
             ctrl.showAddNewProject = !ctrl.showAddNewProject;
             
             if (ctrl.showAddNewProject && ctrl.availableProjects.length > 3)
                 $document.find('#page-wrapper').css('height', '');
             else
                 $mainCtrl.setPageHeight();
-            
-            //if (!ctrl.showAddNewProject)
-                //formHeight = $document.find('#newProjectShowBtn');
-                
-            //$mainCtrl.setScrollboxHeight(formHeight);
         };
 
         /* Sort the project list. */

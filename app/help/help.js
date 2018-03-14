@@ -7,7 +7,7 @@
         var ctrl = this;
 
         $scope.init = function() {
-
+            $mainCtrl.setActivePage('help');
         };
     }
 })();

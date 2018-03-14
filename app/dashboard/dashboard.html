@@ -2,23 +2,37 @@
     <div class="row">
         <div class="col-md-4">
             <div class="panel panel-default">
-                <div class="panel-heading">Available Balance</div>
+                <div class="panel-heading">Available Balance (<span ng-bind="$dashboardCtrl.projectCount"></span> projects)</div>
                 <div class="panel-body">
-             
+                    <span ng-bind="$dashboardCtrl.availableBalance"></span>
                 </div>
             </div>
             
             <div class="panel panel-default">
-                <div class="panel-heading">Pending</div>
+                <div class="panel-heading">Pending Transactions (<span ng-bind="$dashboardCtrl.pendingWalletsCount"></span> wallets)</div>
                 <div class="panel-body">
-             
+                    <span ng-bind="$dashboardCtrl.pendingFunds"></span>
                 </div>
             </div>
             
             <div class="panel panel-default">
-                <div class="panel-heading">Sent</div>
+                <div class="panel-heading">Confirmed Transactions (<span ng-bind="$dashboardCtrl.sentWalletsCount"></span> wallets)</div>
                 <div class="panel-body">
-             
+                    <span ng-bind="$dashboardCtrl.sentFunds"></span>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">Claimed Funds (<span ng-bind="$dashboardCtrl.claimedWalletsCount"></span> wallets)</div>
+                <div class="panel-body">
+                    <span ng-bind="$dashboardCtrl.claimedFunds"></span>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">Swept Funds (<span ng-bind="$dashboardCtrl.sweptWalletsCount"></span> wallets)</div>
+                <div class="panel-body">
+                    <span ng-bind="$dashboardCtrl.sweptFunds"></span>
                 </div>
             </div>
         </div>

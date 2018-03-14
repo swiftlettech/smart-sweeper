@@ -20,12 +20,10 @@ angular.module('SmartSweeper', [
     var ctrl = this;
     
     $scope.init = function() {
-        ctrl.setPageHeight();
-		$document.find('#appAlert, .formAlert').addClass('hide');
+		//$document.find('#appAlert, .formAlert').addClass('hide');
         
         /*$(window).on("resize", function(event) {
             ctrl.setPageHeight();
-            ctrl.setScrollboxHeight($scope.formHeight);
 		});*/
     };
     
@@ -34,25 +32,13 @@ angular.module('SmartSweeper', [
         console.log('active page: ' + ctrl.activePage);
     };
     
-    /*ctrl.setScrollboxHeight = function(formHeight) {
-        var form;
-        var extra;
-
-        if (ctrl.activePage === "create") {
-            form = "#addNewProjectForm";
-            extra = $document.find('#newProjectShowBtn').height() + 90;
+    ctrl.setPageHeight = function() {        
+        if ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && electron.remote.getGlobal('availableProjects').list.length > 7) {
+            $document.find('#page-wrapper').css('height', '');
+            return;
         }
         
-        $scope.scrollboxHeight = ctrl.scrollboxBaseheight - formHeight - parseInt($document.find(form).css('margin-top')) - extra + "px";
-        
-        console.log(ctrl.scrollboxBaseheight);
-        console.log(formHeight);
-        console.log(parseInt($document.find(form).css('margin-top')));
-        console.log(extra);
-    };*/
-    
-    ctrl.setPageHeight = function() {
-        if (window.innerWidth >= 700 && window.innerHeight >= 600 && electron.remote.getGlobal('availableProjects').list.length < 8) {
+        if (window.innerWidth >= 700 && window.innerHeight >= 600) {
             $document.find('#page-wrapper').css({
                 height: function() {
                     return window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);

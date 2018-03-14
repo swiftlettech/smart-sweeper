@@ -22,7 +22,7 @@ a:focus {
     border-bottom: 1px solid #333;
 }
 
-.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-cog, .fa-trash {
+.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-cog, .fa-trash, .sigma, .fa-print {
     cursor: pointer;
 }
 
@@ -151,7 +151,7 @@ button, .btn, .form-control, .input-group-addon {
     width: 175px;
 }
 
-#projectList .totalFundsCol, #projectList .numAddrCol {
+#projectList .totalFundsCol, #projectList .numAddrCol, #projectList .printCol {
     width: 125px;
 }
 
@@ -159,7 +159,7 @@ button, .btn, .form-control, .input-group-addon {
     width: 150px;
 }
 
-#projectList .editCol, #projectList .deleteCol {
+#projectList .editCol, #projectList .deleteCol, #projectList .fundCol {
     width: 65px;
 }
 
@@ -177,3 +177,13 @@ button, .btn, .form-control, .input-group-addon {
 /* Sweep */
 
 /* Log */
+
+#log button {
+    margin-bottom:15px;
+}
+
+#log textarea {
+    
+}
+
+/* Help */
