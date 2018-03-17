@@ -12,8 +12,8 @@ const smartapi = require('./smartapi')
 const fs = require('fs')
 const util = require('util')
 const baseLogPath = "logs"
-const sysLogsPath = baseLogPath + path.sep + 'system' + path.sep
-const userLogsPath = baseLogPath + path.sep + 'user' + path.sep
+const sysLogsPath = baseLogPath + path.sep + 'system'
+const userLogsPath = baseLogPath + path.sep + 'user'
 const isDev = require('electron-is-dev')
 require('electron-debug')({showDevTools: true})
 
@@ -25,10 +25,18 @@ module.exports = {
         constructor(options) {
             super(options)
             
-            this.logDB = new Store({name: options.filename})
-            
-            if (this.logDB.get('log') === undefined)
-                this.logDB.set('log', [])
+            if (options.level === "error") {
+                this.logDBSystem = new Store({name: options.filename})
+                
+                if (this.logDBSystem.get('log') === undefined)
+                    this.logDBSystem.set('log', [])
+            }
+            else {
+                this.logDBUser = new Store({name: options.filename})
+                
+                if (this.logDBUser.get('log') === undefined)
+                    this.logDBUser.set('log', [])
+            }
         }
 
         log(info, callback) {
@@ -38,9 +46,18 @@ module.exports = {
                 self.emit('logged', info)
             })
             
-            let log = self.logDB.get('log')
-            log.push(info)
-            self.logDB.set('log', log)
+            let logDB
+            
+            if (info.level === "error")
+                logDB = self.logDBSystem
+            else
+                logDB = self.logDBUser
+            
+            if (logDB !== undefined) {
+                let log = logDB.get('log')
+                log.push(info)
+                logDB.set('log', log)
+            }
             
             if (callback) { callback() }
         }
@@ -88,11 +105,23 @@ function createModal(type, text) {
     if (type === "edit") {
         title = "Edit Project"
         parent = win
-        //width = Math.ceil(winBounds.width - (winBounds.width*0.6)),
+        //width = Math.ceil(winBounds.width - (winBounds.width*0.6))
         //height = Math.ceil(winBounds.height - (winBounds.height*0.15))
         width = winBounds.width
         height = winBounds.height
-        pathname = path.join(__dirname, 'app', 'create', 'editModal.html')
+        pathname = path.join(__dirname, 'app', 'utils', 'editModal.html')
+        resizable = true
+        minimizable = true
+        maximizable = true
+        alwaysOnTop = false
+        fullscreenable = true
+    }
+    else if (type === "paperWallets") {
+        title = "Paper Wallet Generator"
+        parent = win
+        width = Math.ceil(winBounds.width - (winBounds.width*0.52))
+        height = winBounds.height
+        pathname = path.join(__dirname, 'app', 'fund', 'paperWallet.html')
         resizable = true
         minimizable = true
         maximizable = true
@@ -126,7 +155,11 @@ function createModal(type, text) {
     }))
     
     modal.once('ready-to-show', () => {
-        modal.webContents.send('setModalText', text)
+        if (type === "paperWallets")
+            modal.webContents.send('paperWalletsModal', {project: global.activeProject})
+        //else
+            //modal.webContents.send('setModalText', text)
+        
         modal.show()
     })
     
@@ -180,7 +213,7 @@ function createRecvAddresses(project) {
     global.availableProjects.list[index] = project
     global.activeProject = project
     db.set('projects', global.availableProjects)
-    logger.info('Receiver addresses for project ' + project.name + ' were created.')
+    logger.info('Receiver addresses for project "' + project.name + '" were created.')
     refreshLogFile()
 }
 
@@ -218,8 +251,8 @@ function getCurrentDate() {
 
 // refresh the currently-loaded log file
 function refreshLogFile() {
-    let stats = fs.statSync(app.getPath('userData') + path.sep + logFile + '.json')
-    let logDB = new Store({name: logFile})
+    let stats = fs.statSync(app.getPath('userData') + path.sep + userLogsPath + path.sep + logFile + '.json')
+    let logDB = new Store({name: getCurrentDate()})
     let log = logDB.get('log')
     global.availableLog = {date: stats.mtime, content: log}
     win.webContents.send('logReady')
@@ -246,7 +279,7 @@ function newProject(event, project) {
     global.availableProjects.list.push(newProject)
     db.set('projects', global.availableProjects)
     
-    logger.info('Project ' + newProject.name + ' was created.')
+    logger.info('Project "' + newProject.name + '" was created.')
     refreshLogFile()
     event.sender.send('newProjectAdded')
     win.webContents.send('projectsReady')
@@ -260,7 +293,7 @@ function autoSweepFunds() {
         })
     })*/
     
-    logger.info('Funds were automatically swept for project ' + global.activeProject.name + '.')
+    logger.info('Funds were automatically swept for project "' + global.activeProject.name + '".')
     refreshLogFile()
 }
 
@@ -268,22 +301,24 @@ function autoSweepFunds() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
+    // app config
+    ipcMain.setMaxListeners(0);    
+    
     // setup logging
-    let today = getCurrentDate()
-    logFile = String(today)
+    logFile = getCurrentDate()
     
     logger = createLogger({
-        level: 'info',
+        //level: 'error',
         format: combine(timestamp(), prettyPrint()),
         transports: [
             new module.exports.JsonDBTransport({ filename: sysLogsPath + path.sep + logFile, level: 'error' }),
-            new module.exports.JsonDBTransport({ filename: userLogsPath + path.sep + logFile })
+            new module.exports.JsonDBTransport({ filename: userLogsPath + path.sep + logFile, level: 'info' })
         ],
         exitOnError: false
     })
     logger.emitErrs = false
     
-    // load the db or create it if it doesn't exist
+    // load the project db or create it if it doesn't exist
     // saved in %APPDATA%/smart-sweeper on Win
     // saved in $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper on Linux
     // saved in ~/Library/Application Support/smart-sweeper on Mac
@@ -339,16 +374,14 @@ ipcMain.on('setReferrer', (event, args) => {
     global.referrer = args.referrer
 })
 
-// get the total amount of funds that have been redeemed
+// get the total amount of gift funds that have been claimed
 ipcMain.on('getClaimedFundsInfo', (event, args) => {
     let totalAddrs = 0
     let callbackCounter = 0
-    let claimedWallets = 0
     let claimedFunds = 0
+    let claimedWallets = 0
     
-    function callback(resp, addrAmt) {
-        console.log(resp)
-        
+    function callback(resp, addrAmt) {        
         if (resp.type === "data" && parseInt(resp.msg) == 0) {
             claimedFunds += addrAmt
             claimedWallets++
@@ -363,12 +396,23 @@ ipcMain.on('getClaimedFundsInfo', (event, args) => {
             event.sender.send('claimedFundsInfo', {claimedFunds: claimedFunds, claimedWallets: claimedWallets})
     }
     
-    global.availableProjects.list.forEach(function(project, projectKey) {
+    if (args === undefined) {
+        global.availableProjects.list.forEach(function(project, projectKey) {
+            project.recvAddrs.forEach(function(address, addrKey) {
+                smartapi.checkBalance(address.publicKey, project.addrAmt, callback)
+                totalAddrs++
+            })
+        })
+    }
+    else {
+        let index = getDbIndex(args.projectID)
+        let project  = global.availableProjects.list[index]
+        
         project.recvAddrs.forEach(function(address, addrKey) {
             smartapi.checkBalance(address.publicKey, project.addrAmt, callback)
             totalAddrs++
         })
-    })
+    }
 })
 
 // get the total amount of transactions that have yet to be confirmed
@@ -379,36 +423,69 @@ ipcMain.on('getPendingFundsInfo', (event, args) => {
     let pendingFunds = 0
     
     function callback(resp, addrAmt) {
+        console.log(resp)
         
+        if (resp.type === "data" && resp.msg < 6) {
+            pendingFunds += addrAmt
+            pendingWallets++
+        }
+        else if (resp.type === "error") {
+            logger.error('getPendingFundsInfo: ' + resp.msg)
+        }
+        
+        callbackCounter++
+        
+        if (callbackCounter == totalAddrs)
+            event.sender.send('pendingFundsInfo', {pendingFunds: pendingFunds, pendingWallets: pendingWallets})
     }
     
     global.availableProjects.list.forEach(function(project, projectKey) {
         project.recvAddrs.forEach(function(address, addrKey) {
-            //if (address.txid != undefined)
-                
-            
-            totalAddrs++
+            if (address.txid !== undefined) {
+                smartapi.checkTransaction(address.txid, project.addrAmt, callback)
+                totalAddrs++
+            }
         })
     })
 })
 
 // get the total amount of transactions that have been confirmed
-ipcMain.on('getSentFundsInfo', (event, args) => {
+ipcMain.on('getConfirmedFundsInfo', (event, args) => {
     let totalAddrs = 0
     let callbackCounter = 0
-    let sentWallets = 0
-    let sentFunds = 0
+    let confirmedFunds = 0
+    let confirmedWallets = 0
     
     function callback(resp, addrAmt) {
+        console.log(resp)
         
+        if (resp.type === "data" && resp.msg >= 6) {
+            confirmedFunds += addrAmt
+            confirmedWallets++
+        }
+        else if (resp.type === "error") {
+            logger.error('getConfirmedFundsInfo: ' + resp.msg)
+        }
+        
+        callbackCounter++
+        
+        if (callbackCounter == totalAddrs)
+            event.sender.send('confirmedFundsInfo', {confirmedFunds: confirmedFunds, confirmedWallets: confirmedWallets})
     }
     
     global.availableProjects.list.forEach(function(project, projectKey) {
         project.recvAddrs.forEach(function(address, addrKey) {
-            
-            totalAddrs++
+            if (address.txid !== undefined) {
+                smartapi.checkTransaction(address.txid, project.addrAmt, callback)
+                totalAddrs++
+            }
         })
     })
+})
+
+// get the current balance of a project address
+ipcMain.on('checkProjectBalance', (event, args) => {
+    
 })
 
 // load a confirmation dialog
@@ -459,7 +536,7 @@ ipcMain.on('deleteProject', (event, args) => {
     let name = global.availableProjects[index].name
     global.availableProjects.list.splice(index, 1)
     db.set('projects', global.availableProjects)
-    logger.info('Project ' + name + ' was deleted.')
+    logger.info('Project "' + name + '" was deleted.')
     refreshLogFile()
     win.webContents.send('projectsReady')
 })
@@ -483,7 +560,7 @@ ipcMain.on('updateProject', (event, args) => {
     let index = getDbIndex(global.activeProject.id)
     global.availableProjects.list[index] = global.activeProject
     db.set('projects', global.availableProjects)
-    logger.info('Project ' + global.activeProject.name + ' was edited.');
+    logger.info('Project "' + global.activeProject.name + '" was edited.');
     refreshLogFile()
     global.activeProject = null
     win.webContents.send('projectsReady')
@@ -494,24 +571,35 @@ ipcMain.on('fundProject', (event, args) => {
     // create and broadcast the transaction    
     // calculate and save the amount per address
     
-    logger.info('Project ' + global.activeProject.name + ' was funded.')
+    logger.info('Project "' + global.activeProject.name + '" was funded.')
     refreshLogFile()
+})
+
+// show a print dialog for the wallets modal
+ipcMain.on('showPrintDialog', (event, args) => {
+    modal.webContents.print({printBackground: true})
 })
 
 // send funds to receiver addresses
 ipcMain.on('sendFunds', (event, args) => {
     
-    logger.info('Funds were send to wallets for project ' + global.activeProject.name + '.')
+    //txid
+    // one message per receiver address (project - address - txid)
+    
+    //logger.info('Funds were send to wallets for project "' + global.activeProject.name + '".')
+    
     refreshLogFile()
 })
 
-// create wallets
-ipcMain.on('createWallets', (event, args) => {
+// create paper wallets
+ipcMain.on('createPaperWallets', (event, args) => {   
+    let index = getDbIndex(args.projectID)
+    global.activeProject = global.availableProjects.list[index]
+    modalType = "paperWallets"
+    createModal('paperWallets')
     
-    //txid
-    
-    logger.info('Paper wallets for project ' + global.activeProject.name + ' were created.')
-    refreshLogFile()
+    //logger.info('Paper wallets for project ' + global.activeProject.name + ' were created.')
+    //refreshLogFile()
 })
 
 // manually sweep project funds
@@ -523,7 +611,7 @@ ipcMain.on('sweepFunds', (event, projectID) => {
         smartapi.sweepFunds({sender: addr, receiver: project.publicKey})
     })*/
     
-    logger.info('Funds were manually swept for project ' + global.activeProject.name + '.')
+    logger.info('Funds were manually swept for project "' + global.activeProject.name + '".')
     refreshLogFile()
 })
 
@@ -546,10 +634,10 @@ ipcMain.on('loadLog', (event, args) => {
             mostRecent = {file: file, lastModified: stats.mtime}
     })
     
-    logFile = userLogsPath + path.parse(mostRecent.file).name
+    logFile = userLogsPath + path.sep + path.parse(mostRecent.file).name
     
     let logDB = new Store({name: logFile})
-    let log = logDB.get('log')    
+    let log = logDB.get('log')
     global.availableLog = {date: mostRecent.lastModified, content: log}
     event.sender.send('logReady')
 })

@@ -11,10 +11,7 @@
         var ctrl = this;
 
         $scope.init = function() {
-            $mainCtrl.setActivePage('create');
-            
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
-            ctrl.greaterThanZeroAllPattern = greaterThanZeroAllPattern;
             
             ctrl.showAddNewProject = false;
             ctrl.newProject = {
@@ -23,7 +20,10 @@
                 qrCode: false,
                 walletIns: false,
                 sweep: false,
-                sweepDate: ''
+                sweepDate: '',
+                fundsSwept: false,
+                projectFunded: false,
+                fundsSent: false
             };
             ctrl.nameSortFlag = 1;
             ctrl.sweepDateSortFlag = 1;
@@ -36,6 +36,7 @@
                 showWeeks: false
             };
             ctrl.datepickerFormat = "MM/dd/yyyy";
+            ctrl.today = new Date();
             
             // load all projects
             ipcRenderer.send('getProjects');
@@ -44,12 +45,27 @@
                     ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                     console.log(ctrl.availableProjects);
                     // display the project list as 10 per page?
+                    
+                    // check the funding amt for each project on load
+                    
+                    /*ipcRenderer.send('checkProjectBalance');
+                    ipcRenderer.on('projectsReady', (event, arg) => {
+                    });*/
                 });
                 
                 $mainCtrl.setPageHeight();
             });
         };
         
+        /* Is the calendar date in the future? */
+        ctrl.checkCalendarDate = function() {
+            if (ctrl.newProject.sweepDate > ctrl.today)
+                $scope.addNewProjectForm.sweepDate.$setValidity('invalidDate', true);
+            else
+                $scope.addNewProjectForm.sweepDate.$setValidity('invalidDate', false);
+        };
+        
+        /* Create sender addresses for a project. */
         ctrl.createAddresses = function(form) {
             // disable the create project button
             $document.find('#addNewProjectForm button').attr('disabled', 'disabled');
@@ -110,6 +126,7 @@
 
             console.log(ctrl.activeProject);
             
+            ipcRenderer.send('setReferrer', {referrer: 'createPage'});
             ipcRenderer.send('editProject', {project: ctrl.activeProject});
         };
 

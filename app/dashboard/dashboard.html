@@ -4,35 +4,35 @@
             <div class="panel panel-default">
                 <div class="panel-heading">Available Balance (<span ng-bind="$dashboardCtrl.projectCount"></span> projects)</div>
                 <div class="panel-body">
-                    <span ng-bind="$dashboardCtrl.availableBalance"></span>
+                    <span ng-bind="$dashboardCtrl.availableBalance | toFixedNum: 8"></span>
                 </div>
             </div>
             
             <div class="panel panel-default">
                 <div class="panel-heading">Pending Transactions (<span ng-bind="$dashboardCtrl.pendingWalletsCount"></span> wallets)</div>
                 <div class="panel-body">
-                    <span ng-bind="$dashboardCtrl.pendingFunds"></span>
+                    <span ng-bind="$dashboardCtrl.pendingFunds | toFixedNum: 8"></span>
                 </div>
             </div>
             
             <div class="panel panel-default">
-                <div class="panel-heading">Confirmed Transactions (<span ng-bind="$dashboardCtrl.sentWalletsCount"></span> wallets)</div>
+                <div class="panel-heading">Confirmed Transactions (<span ng-bind="$dashboardCtrl.confirmedWalletsCount"></span> wallets)</div>
                 <div class="panel-body">
-                    <span ng-bind="$dashboardCtrl.sentFunds"></span>
+                    <span ng-bind="$dashboardCtrl.confirmedFunds | toFixedNum: 8"></span>
                 </div>
             </div>
             
             <div class="panel panel-default">
                 <div class="panel-heading">Claimed Funds (<span ng-bind="$dashboardCtrl.claimedWalletsCount"></span> wallets)</div>
                 <div class="panel-body">
-                    <span ng-bind="$dashboardCtrl.claimedFunds"></span>
+                    <span ng-bind="$dashboardCtrl.claimedFunds | toFixedNum: 8"></span>
                 </div>
             </div>
             
             <div class="panel panel-default">
                 <div class="panel-heading">Swept Funds (<span ng-bind="$dashboardCtrl.sweptWalletsCount"></span> wallets)</div>
                 <div class="panel-body">
-                    <span ng-bind="$dashboardCtrl.sweptFunds"></span>
+                    <span ng-bind="$dashboardCtrl.sweptFunds | toFixedNum: 8"></span>
                 </div>
             </div>
         </div>

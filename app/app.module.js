@@ -25,6 +25,8 @@ angular.module('SmartSweeper', [
         /*$(window).on("resize", function(event) {
             ctrl.setPageHeight();
 		});*/
+        
+        ctrl.setActivePage('dashboard');
     };
     
     ctrl.setActivePage = function(page) {

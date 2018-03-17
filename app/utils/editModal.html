@@ -6,10 +6,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Edit Project</title>
         
-        <link type="text/css" rel="stylesheet" href="../../css/bootstrap-3.3.7.min.css?v=20180206" />
-        <link type="text/css" rel="stylesheet" href="../../css/sb-admin.css?v=20180213">
-        <link type="text/css" rel="stylesheet" href="../../css/font-awesome-4.7.0.min.css?v=20180210" />
-		<link type="text/css" rel="stylesheet" href="../../css/styles.css?v=20180206" />
+        <link type="text/css" rel="stylesheet" href="../../css/bootstrap-3.3.7.min.css" />
+        <link type="text/css" rel="stylesheet" href="../../css/sb-admin.css">
+        <link type="text/css" rel="stylesheet" href="../../css/font-awesome-4.7.0.min.css" />
+		<link type="text/css" rel="stylesheet" href="../../css/styles.css" />
     </head>
     
     <body ng-controller="EditController as $editCtrl" style="margin:20px 0;" ng-init="init()">
@@ -22,7 +22,7 @@
 
                 <div class="form-group">
                     <label for="numAddr" class="control-label">Number of addresses to create<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
-                    <input name="numAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.numAddr" ng-pattern="$editCtrl.greaterThanZeroIntPattern" ng-change="$editCtrl.updateAddrAmt()" ng-disabled="$editCtrl.hasRecvAddrs" required /> <!--calculate-addr-funds-->
+                    <input name="numAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.numAddr" ng-pattern="$editCtrl.greaterThanZeroIntPattern" ng-change="$editCtrl.updateAddrAmt()" ng-disabled="$editCtrl.hasRecvAddrs" required />
 
                     <div ng-show="editProjectForm.numAddr.$error.pattern" role="alert">
                         <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
@@ -41,6 +41,13 @@
                     <div ng-show="$editCtrl.activeProject.totalFunds == 0" role="alert">
                         <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Funds have not been sent to the project address.</span>
                     </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sweepAddr" class="control-label">Sweep address<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <input name="sweepAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.sweepAddr" required />
+
+                    <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This is the address that unclaimed funds will be swept to.</p>
                 </div>
 
                 <div class="form-group">

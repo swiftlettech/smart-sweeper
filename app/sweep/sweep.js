@@ -3,7 +3,7 @@
 
     angular.module('SmartSweeper.sweep', []).controller('SweepController', SweepController);
 
-    function SweepController($scope, $document) {
+    function SweepController($scope, $document, $filter, filterCompare) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         var $mainCtrl = $scope.$parent.$mainCtrl;
@@ -11,7 +11,13 @@
         var ctrl = this;
 
         $scope.init = function() {
-            $mainCtrl.setActivePage('sweep');
+            /* some form code from: http://embed.plnkr.co/ScqA4aqno5XFSp9n3q6d */
+            
+            ctrl.projectsToSweep = {};
+            ctrl.projectsToSweepCount = 0;
+            ctrl.formData = {
+                projectsToSweep: ctrl.projectsToSweep
+            };
             
             // load all projects
             ipcRenderer.send('getProjects');
@@ -20,13 +26,55 @@
                     ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                     console.log(ctrl.availableProjects);
                     // display the project list as 10 per page?
+                    
+                    angular.forEach(ctrl.availableProjects, function(project, index) {
+                        claimedFunds(project.id, index);
+                    });
+                    
                     $mainCtrl.setPageHeight();
                 });
             });
         };
         
-        // return funds back to project address manually after expiration date
-        function sweep(projectID) {
+        /* Funds that have been transferred from a promotional wallet to a different wallet (per project). */
+        function claimedFunds(projectID, index) {
+            ipcRenderer.send('getClaimedFundsInfo', {projectID: projectID});
+            ipcRenderer.on('claimedFundsInfo', (event, args) => {
+                $scope.$apply(function() {
+                    var project = ctrl.availableProjects[index];
+                    
+                    project.claimedAddrTotal = args.claimedWallets;
+                    project.percentClaimed = args.claimedWallets / project.recvAddrs.length;
+                    if (Number.isNaN(project.percentClaimed)) { project.percentClaimed = 0; }
+                });
+            });
         }
+        
+        /* Update the total number of projects selected. */
+        ctrl.checkboxChanged = function() {
+            ctrl.projectsToSweepCount = Object.keys(ctrl.projectsToSweep).some(function (key) {
+                return ctrl.projectsToSweep[key];
+            });
+        };
+        
+        /* Load a modal used to edit a project. */
+        ctrl.edit = function(id) {
+            ctrl.activeProjectID = id;
+            ctrl.activeProject = $filter('filter')(ctrl.availableProjects, {id: id}, filterCompare)[0];
+            
+            ipcRenderer.send('setReferrer', {referrer: 'sweepPage'});
+            ipcRenderer.send('editProject', {project: ctrl.activeProject});
+        };
+        
+        /* Return funds back to project address manually after expiration date. */
+        ctrl.sweep = function() {
+            console.log(ctrl.projectsToSweep)
+            
+            /*angular.forEach(, function(checkbox, index) {
+                console.log();
+            });*/
+            
+            //project.hasBeenSwept (true/false)
+        };
     }
 })();

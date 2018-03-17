@@ -1,7 +1,7 @@
 <div id="log" ng-init="init()">
     <button type="button" class="btn btn-default" ng-click="$logCtrl.openLogFolder()">Open log folder</button>
     
-    <h5><strong>Most recent log:</strong>
+    <h5><strong>Current log:</strong>
         <span ng-bind="$logCtrl.logDate" ng-hide="$logCtrl.logDate === undefined"></span>
         <span ng-show="$logCtrl.logDate === undefined">No logs found.</span>
     </h5>

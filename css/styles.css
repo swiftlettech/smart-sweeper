@@ -22,7 +22,7 @@ a:focus {
     border-bottom: 1px solid #333;
 }
 
-.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-cog, .fa-trash, .sigma, .fa-print {
+.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc {
     cursor: pointer;
 }
 
@@ -82,8 +82,8 @@ button, .btn, .form-control, .input-group-addon {
     margin-top: 15px;
 }
 
-#addNewProjectForm input[name='name'] {
-    width: 75%;
+#addNewProjectForm input[name='name'], #addNewProjectForm input[name='sweepAddr'] {
+    width: 60%;
 }
 
 #addNewProjectForm input[name='numAddr'] {
@@ -104,7 +104,7 @@ button, .btn, .form-control, .input-group-addon {
     font-weight: 700;
 }
 
-#editProjectForm input[name='name'] {
+#editProjectForm input[name='name'], #editProjectForm input[name='sweepAddr'] {
     width: 40%;
 }
 
@@ -143,11 +143,12 @@ button, .btn, .form-control, .input-group-addon {
     padding: 8px;
 }
 
-#projectList .nameCol {
-    
+#projectList .btn-link {
+    padding:0;
+    color:inherit;
 }
 
-#projectList .addrCol, #projectList .addrAmtCol {
+#projectList .addrCol, #projectList .addrAmtCol, #projectList .claimedAddrCol {
     width: 175px;
 }
 
@@ -159,8 +160,12 @@ button, .btn, .form-control, .input-group-addon {
     width: 150px;
 }
 
-#projectList .editCol, #projectList .deleteCol, #projectList .fundCol {
+#projectList .editCol, #projectList .deleteCol, #projectList .fundCol, #projectList .sendCol, #projectList .sweepCol {
     width: 65px;
+}
+
+#projectList .perClaimedCol {
+    width: 90px;
 }
 
 #editProjectForm {
@@ -175,6 +180,10 @@ button, .btn, .form-control, .input-group-addon {
 }
 
 /* Sweep */
+
+#sweepForm input[type=checkbox] {
+    margin:0 auto;
+}
 
 /* Log */
 

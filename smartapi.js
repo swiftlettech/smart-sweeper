@@ -2,6 +2,7 @@
 const electron = require('electron')
 const smartcash = require('smartcashjs-lib')
 const http = require('http')
+const util = require('util')
 
 //console.log(smartcash)
 
@@ -9,19 +10,31 @@ const http = require('http')
 function checkBalance(address, addrAmt, callback) {
     http.get({
         host: 'explorer3.smartcash.cc',
-        path: '/ext/getbalance/' + address
+        path: '/ext/getaddress/' + address
     }, (resp) => {
-        //const {statusCode} = resp
+        const {statusCode} = resp
+        
+        if (statusCode !== 200) {
+            let error = new Error('Request Failed. Status Code: ' + statusCode);
+            callback({type: 'error', msg: error.message})
+            return
+        }
+        
         let rawData = ""
         
         resp.on('data', (chunk) => { rawData += chunk })  
-        resp.on('end', () => {
-                try {
-                    callback({type: 'data', msg: rawData}, addrAmt)
-                }
-                catch (e) {
-                   callback({type: 'error', msg: e.message})
-                }
+        resp.on('end', () => {            
+            try {
+                const parsedData = JSON.parse(rawData)
+                
+                if (parsedData.balance !== undefined)
+                    callback({type: 'data', msg: parseFloat(parsedData.balance)}, addrAmt)
+                else
+                    callback({type: 'error', msg: parsedData.error + util.format(' (%s)', parsedData.hash)})
+            }
+            catch (e) {
+                callback({type: 'error', msg: e.message})
+            }
         })
         .on('error', (e) => {
             callback({type: 'error', msg: e.message})
@@ -30,23 +43,34 @@ function checkBalance(address, addrAmt, callback) {
 }
 
 /* Check the status of a transaction. */
-function checkTransaction(txid) {
+function checkTransaction(txid, addrAmt, callback) {
     http.get({
         host: 'explorer3.smartcash.cc',
-        path: '/ext/getrawtransaction/' + txid
+        path: '/api/getrawtransaction?txid=' + txid + '&decrypt=1'
     }, (resp) => {
-        //const {statusCode} = resp
+        const {statusCode} = resp
+        
+        if (statusCode !== 200) {
+            let error = new Error('Request Failed. Status Code: ' + statusCode);
+            callback({type: 'error', msg: error.message})
+            return
+        }
+        
         let rawData = ""
         
-        resp.on('data', (chunk) => { rawData += chunk })  
+        resp.on('data', (chunk) => { rawData += chunk })
         resp.on('end', () => {
-                try {
-                    const parsedData = JSON.parse(rawData)
-                    callback({type: 'data', msg: parsedData}, addrAmt)
-                }
-                catch (e) {
-                   callback({type: 'error', msg: e.message})
-                }
+            try {
+                const parsedData = JSON.parse(rawData)
+
+                if (parsedData.confirmations !== undefined)
+                    callback({type: 'data', msg: parsedData.confirmations}, addrAmt)
+                else
+                    callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)})
+            }
+            catch (e) {
+               callback({type: 'error', msg: e.message})
+            }
         })
         .on('error', (e) => {
             callback({type: 'error', msg: e.message})

@@ -3,16 +3,14 @@
 
     angular.module('SmartSweeper.fund', []).controller('FundController', FundController);
 
-    function FundController($scope, $document) {
+    function FundController($scope, $document, $filter, filterCompare) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         var $mainCtrl = $scope.$parent.$mainCtrl;
         
         var ctrl = this;
 
-        $scope.init = function() {
-            $mainCtrl.setActivePage('fund');
-            
+        $scope.init = function() {            
             // load all projects
             ipcRenderer.send('getProjects');
             ipcRenderer.on('projectsReady', (event, arg) => {
@@ -24,17 +22,27 @@
                 });
             });
         };
+        
+        /* Load a modal used to edit a project. */
+        ctrl.edit = function(id) {
+            ctrl.activeProjectID = id;
+            ctrl.activeProject = $filter('filter')(ctrl.availableProjects, {id: id}, filterCompare)[0];
+            
+            ipcRenderer.send('setReferrer', {referrer: 'fundPage'});
+            ipcRenderer.send('editProject', {project: ctrl.activeProject});
+        };
 
         // transfer money to the project address
-        function fundProject(projectID) {
-        }
+        ctrl.fundProject = function(projectID) {
+        };
         
-        // print paper wallets for a project
-        function printWallets(projectID) {
-        }
+        // create paper wallets for a project
+        ctrl.createPaperWallets = function(projectID) {
+            ipcRenderer.send('createPaperWallets', {projectID: projectID});
+        };
         
         // transfer money from the project address to the receiver wallets
-        function sendFunds(projectID) {
-        }
+        ctrl.sendFunds = function(projectID) {
+        };
     }
 })();

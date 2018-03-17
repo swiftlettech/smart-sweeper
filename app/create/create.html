@@ -2,7 +2,7 @@
     <div id="newProject">
         <button id="newProjectShowBtn" type="button" class="btn btn-primary" ng-class="{active: $createCtrl.showAddNewProject}" ng-click="$createCtrl.showAddForm()">New Project</button>
         
-        <form id="addNewProjectForm" name="addNewProjectForm" class="ng-hide" ng-show="$createCtrl.showAddNewProject" ng-submit="$createCtrl.new(addNewProjectForm)"> <!--  height-bind height-value="formHeight" -->
+        <form id="addNewProjectForm" name="addNewProjectForm" class="ng-hide" ng-show="$createCtrl.showAddNewProject" ng-submit="$createCtrl.new(addNewProjectForm)">
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -17,6 +17,13 @@
                         <div ng-show="addNewProjectForm.numAddr.$error.pattern" role="alert">
                             <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
                         </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sweepAddr" class="control-label">Sweep address</label>
+                        <input name="sweepAddr" type="text" class="form-control" ng-model="$createCtrl.newProject.sweepAddr" />
+                        
+                        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This is the address that unclaimed funds will be swept to.</p>
                     </div>
                 </div>
                 
@@ -38,11 +45,15 @@
                             </div>
 
                             <div id="sweepDateGroup" class="input-group">
-                                <input type="text" name="sweepDate" class="form-control" ng-model="$createCtrl.newProject.sweepDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$createCtrl.datepickerFormat}}" is-open="$createCtrl.calendar.opened" datepicker-options="$createCtrl.datepickerOptions" ng-required="$createCtrl.newProject.sweep" close-text="Close" ng-disabled="!$createCtrl.newProject.sweep" />
+                                <input type="text" name="sweepDate" class="form-control" ng-model="$createCtrl.newProject.sweepDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$createCtrl.datepickerFormat}}" is-open="$createCtrl.calendar.opened" datepicker-options="$createCtrl.datepickerOptions" ng-required="$createCtrl.newProject.sweep" close-text="Close" ng-change="$createCtrl.checkCalendarDate()" ng-disabled="!$createCtrl.newProject.sweep" />
 
                                 <span class="input-group-btn">
                                     <button id="calendarBtn" type="button" class="btn btn-default" ng-disabled="!$createCtrl.newProject.sweep" ng-click="$createCtrl.openCalendar()"><i class="fa fa-calendar" title="Calendar"></i></button>
                                 </span>
+                            </div>
+                                
+                            <div style="margin-top:15px;" ng-show="addNewProjectForm.sweepDate.$error.invalidDate" role="alert">
+                                <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Sweep date must be in the future.</span>
                             </div>
                         </div>
                     </div>
@@ -61,6 +72,8 @@
     </div>
 
     <div id="projectList">
+        <p style="margin-bottom:25px;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> A project can't be deleted unless its balance is zero.</p>
+        
         <h4>Projects</h4>
         
         <table id="tableHeading" class="table">
@@ -71,7 +84,7 @@
                     <i class="fa fa-fw fa-sort-alpha-desc" title="Sort Z to A" ng-show="$createCtrl.nameSortFlag == -1" ng-click="$createCtrl.sort('name', true)"></i>
                 </td>
                 <td class="totalFundsCol text-center"><strong>Total SMART</strong></td>
-                <td class="numAddrCol text-center"><strong># of addresses</strong></td>
+                <td class="numAddrCol text-center"><strong>Total Addresses</strong></td>
                 <td class="addrCol text-center"><strong>Addresses created?</strong></td>
                 <td class="expCol text-center">
                     <strong>Sweep Date</strong>
@@ -91,11 +104,11 @@
                             <td class="numAddrCol text-center">{{project.numAddr}}</td>
                             <td class="addrCol text-center"><i class="fa fa-fw fa-check" aria-hidden="false" title="yes" ng-show="project | hasAddresses"></i></td>
                             <td class="expCol text-center">{{project.sweepDate | date: 'mediumDate'}}</td>
-                            <td class="editCol text-center"><i class="fa fa-fw fa-cog" title="Edit project" ng-click="$createCtrl.edit(project.id)"></i></td>
-                            <td class="deleteCol text-center"><i class="fa fa-fw fa-trash" title="Delete project" ng-click="$createCtrl.delete(project.id)" ng-hide="project.totalFunds > 0"></i></td>
+                            <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$createCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
+                            <td class="deleteCol text-center"><button class="btn btn-link" title="Delete project" ng-click="$createCtrl.delete(project.id)" ng-disable="project.totalFunds > 0"><i class="fa fa-fw fa-trash"></i></button></td>
                         </tr>
                         <tr>
-                            <td colspan="7" class="addrCol"><strong>Address:</strong> {{project.address.publicKey}}</td>
+                            <td colspan="7" class="addrCol"><strong>Project Address:</strong> {{project.address.publicKey}}</td>
                         </tr>
                     </table>
                 </td>

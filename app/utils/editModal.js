@@ -7,13 +7,15 @@
     ])
     .controller('EditController', EditController);
 
-    function EditController($scope, $document) {
+    function EditController($scope, $document, greaterThanZeroIntPattern) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         
         var ctrl = this;
 
         $scope.init = function() {
+            ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
+            
             ctrl.activeProject = electron.remote.getGlobal('activeProject');
             ctrl.activeProject.sweepDate !== "" ? ctrl.calendarDate = new Date(ctrl.activeProject.sweepDate) : ctrl.calendarDate = "";
             ctrl.activeProject.recvAddrs.length > 0 ? ctrl.hasRecvAddrs = true : ctrl.hasRecvAddrs = false;
@@ -26,14 +28,20 @@
             ctrl.datepickerFormat = "MM/dd/yyyy";
         };        
 
+        /* Close the modal without updating the project. */
         ctrl.cancel = function() {
             ipcRenderer.send('modalNo');
         };
         
-        ctrl.closeAlert = function(index) {
-            ctrl.formAlerts.splice(index, 1);
+        /* Is the calendar date in the future? */
+        ctrl.checkCalendarDate = function() {
+            if (ctrl.newProject.sweepDate > ctrl.today)
+                $scope.addNewProjectForm.sweepDate.$setValidity('invalidDate', true);
+            else
+                $scope.addNewProjectForm.sweepDate.$setValidity('invalidDate', false);
         };
         
+        /* Create sender addresses for a project. */
         ctrl.createAddresses = function(form) {
             // disable the create addresses button
             $document.find('#editProjectForm #createAddrBtn').attr('disabled', 'disabled');
@@ -67,6 +75,7 @@
             }
         };
         
+        /* Update the project. */
         ctrl.update = function(form) {
             ctrl.activeProject.addrAmt = parseInt(ctrl.activeProject.addrAmt);
             ctrl.activeProject.numAddr = parseInt(ctrl.activeProject.numAddr);
@@ -80,15 +89,12 @@
             });
         };
         
+        /* Calculate the amount of SMART to send to each receiving address. */
         ctrl.updateAddrAmt = function() {
             if (ctrl.activeProject.totalFunds > 0)
                 ctrl.activeProject.addrAmt = (ctrl.activeProject.totalFunds / ctrl.activeProject.numAddr).toFixed(8);
             else
                 ctrl.activeProject.addrAmt = (0).toFixed(8);
         };
-        
-        //TODO: paper wallet generator
-        //TODO: QR code generator
-        //TODO: add wallet instructions
     }
 })();
