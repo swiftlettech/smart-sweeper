@@ -1,7 +1,7 @@
 <div id="fund" ng-init="init()">
     <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Fund is disabled if the project has already been funded.</p>
-    <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Send is disabled if funds have already been sent to the receving addresses.</p>
-    <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Print is disabled if funds haven't been sent to the receving addresses.</p>
+    <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Send is disabled if funds have already been sent to the promotional wallets or the project hasn't been funded.</p>
+    <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Print is disabled if funds haven't been sent to the promotional wallets.</p>
     
     <div id="projectList">
         <h4>Projects</h4>
@@ -10,16 +10,16 @@
             <tr>
                 <td class="nameCol">
                     <strong>Name</strong>
-                    <i class="fa fa-fw fa-sort-alpha-asc" title="Sort A to Z" ng-show="$createCtrl.nameSortFlag == 1" ng-click="$fundCtrl.sort('name', false)"></i>
-                    <i class="fa fa-fw fa-sort-alpha-desc" title="Sort Z to A" ng-show="$createCtrl.nameSortFlag == -1" ng-click="$fundCtrl.sort('name', true)"></i>
+                    <i class="fa fa-fw fa-sort-alpha-asc" title="Sort A to Z" ng-show="$mainCtrl.nameSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('name', false)"></i>
+                    <i class="fa fa-fw fa-sort-alpha-desc" title="Sort Z to A" ng-show="$mainCtrl.nameSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('name', true)"></i>
                 </td>
                 <td class="numAddrCol text-center"><strong>Total Addresses</strong></td>
                 <td class="totalFundsCol text-center"><strong>Total SMART</strong></td>
                 <td class="addrAmtCol text-center"><strong>SMART per Address</strong></td>
                 <td class="expCol text-center">
                     <strong>Sweep Date</strong>
-                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$fundCtrl.sweepDateSortFlag == 1" ng-click="$fundCtrl.sort('sweepDate', false)"></i>
-                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$fundCtrl.sweepDateSortFlag == -1" ng-click="$fundCtrl.sort('sweepDate', true)"></i>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.sweepDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('sweepDate', false)"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.sweepDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('sweepDate', true)"></i>
                 </td>
                 <td class="fundCol text-center"><strong>Fund</strong></td>
                 <td class="sendCol text-center"><strong>Send</strong></td>
@@ -27,7 +27,7 @@
                 <td class="editCol text-center"><strong>Edit</strong></td>
             </tr>
 
-            <tr id="project.id" ng-class="{active: $fundCtrl.activeProjectID == project.id}" ng-model="$fundCtrl.availableProjects" ng-repeat="project in $fundCtrl.availableProjects track by project.id"> <!-- js-multisort="$createCtrl.sortOptions"-->
+            <tr id="project.id" ng-class="{active: $fundCtrl.activeProjectID == project.id}" ng-model="$fundCtrl.availableProjects" ng-repeat="project in $fundCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
                 <td colspan="9" style="padding:0;">
                     <table class="innerTable">
                         <tr>
@@ -36,8 +36,8 @@
                             <td class="totalFundsCol text-center">{{project.totalFunds | toFixedNum: 8}}</td>
                             <td class="addrAmtCol text-center">{{project.addrAmt | toFixedNum: 8}}</td>
                             <td class="expCol text-center">{{project.sweepDate | date: 'mediumDate'}}</td>
-                            <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-click="$fundCtrl.fundProject(project.id)" ng-disabled="project.projectFunded"><i class="fa fa-fw sigma">Σ</i></button></td>
-                            <td class="sendCol text-center" ng-disabled="project.fundsSent"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project.id)"><i class="fa fa-fw fa-share"></i></button></td>
+                            <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-click="$fundCtrl.fundProject(project)" ng-disabled="project.projectFunded"><i class="fa fa-fw sigma">Σ</i></button></td>
+                            <td class="sendCol text-center"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project.id)" ng-disabled="!project.projectFunded || project.fundsSent"><i class="fa fa-fw fa-share"></i></button></td>
                             <td class="printCol text-center"><button class="btn btn-link" title="Print paper wallets" ng-click="$fundCtrl.createPaperWallets(project.id)" ng-disabled="!project.fundsSent"><i class="fa fa-fw fa-print"></i></button></td>
                             <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$fundCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
                         </tr>

@@ -1,7 +1,7 @@
 {
     "name": "smart-sweeper",
     "version": "0.1.0",
-    "description": "Sweeper application for SMART cryptocurrency to allow easy retrieval of gift funds.",
+    "description": "Sweeper application for SmartCash cryptocurrency to allow easy retrieval of gift funds.",
     "keywords": "",
     "license": "GPL-3.0",
     "repository": "github:swiftlettech/smart-sweeper",

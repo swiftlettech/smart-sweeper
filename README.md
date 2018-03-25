@@ -3,7 +3,7 @@ SMART Sweeper
 
 Description
 ---------------
-Sweeper application for SMART cryptocurrency (http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac.
+Sweeper application for SmartCash cryptocurrency (http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac.
 
 Releases
 ---------------
@@ -48,7 +48,7 @@ Software | License
 [electron-is-dev](https://github.com/sindresorhus/electron-is-dev) | MIT
 [elemon](https://github.com/manidlou/elemon) | MIT
 [smartcashjs-lib](https://github.com/SmartCash/SmartCashjs-lib) | MIT
-[Smartcash Paper Wallet Generator](https://github.com/SmartCash/PaperWalletGenerator) | ?
+[SmartCash Paper Wallet Generator](https://github.com/SmartCash/PaperWalletGenerator) | ?
 [winston](https://github.com/winstonjs/winston) | MIT
 
 [The SmartExplorer API](http://explorer3.smartcash.cc) is used to check wallet balances and transactions.

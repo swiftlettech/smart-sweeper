@@ -17,17 +17,16 @@
             ctrl.newProject = {
                 numAddr: 0,
                 addrAmt: 0,
-                qrCode: false,
-                walletIns: false,
-                sweep: false,
+                qrCode: true,
+                walletIns: true,
+                autoSweep: false,
                 sweepDate: '',
                 fundsSwept: false,
                 projectFunded: false,
                 fundsSent: false
             };
-            ctrl.nameSortFlag = 1;
-            ctrl.sweepDateSortFlag = 1;
-            ctrl.sortOptions = {property: 'name'};
+            $mainCtrl.nameSortFlag = 1;
+            $mainCtrl.sweepDateSortFlag = 1;
             
             ctrl.calendar = {
                 opened: false
@@ -42,15 +41,15 @@
             ipcRenderer.send('getProjects');
             ipcRenderer.on('projectsReady', (event, arg) => {
                 $scope.$apply(function() {
-                    ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                    ctrl.availableProjects = [];
+                    
+                    if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
+                        ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                    //else
+                        //ctrl.availableProjects.push(electron.remote.getGlobal('availableProjects').list);
+                    
                     console.log(ctrl.availableProjects);
                     // display the project list as 10 per page?
-                    
-                    // check the funding amt for each project on load
-                    
-                    /*ipcRenderer.send('checkProjectBalance');
-                    ipcRenderer.on('projectsReady', (event, arg) => {
-                    });*/
                 });
                 
                 $mainCtrl.setPageHeight();

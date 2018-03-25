@@ -20,8 +20,8 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="sweepAddr" class="control-label">Sweep address</label>
-                        <input name="sweepAddr" type="text" class="form-control" ng-model="$createCtrl.newProject.sweepAddr" />
+                        <label for="sweepAddr" class="control-label">Sweep address<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                        <input name="sweepAddr" type="text" class="form-control" ng-model="$createCtrl.newProject.sweepAddr" /> <!--required-->
                         
                         <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This is the address that unclaimed funds will be swept to.</p>
                     </div>
@@ -36,7 +36,7 @@
                         </div>
 
                         <div class="checkbox">
-                            <label><input type="checkbox" ng-model="$createCtrl.newProject.walletIns">Add wallet instructions</label>
+                            <label><input type="checkbox" ng-model="$createCtrl.newProject.walletIns">Add URL to instructions</label>
                         </div>
 
                         <div class="form-group">
@@ -80,22 +80,22 @@
             <tr>
                 <td class="nameCol">
                     <strong>Name</strong>
-                    <i class="fa fa-fw fa-sort-alpha-asc" title="Sort A to Z" ng-show="$createCtrl.nameSortFlag == 1" ng-click="$createCtrl.sort('name', false)"></i>
-                    <i class="fa fa-fw fa-sort-alpha-desc" title="Sort Z to A" ng-show="$createCtrl.nameSortFlag == -1" ng-click="$createCtrl.sort('name', true)"></i>
+                    <i class="fa fa-fw fa-sort-alpha-asc" title="Sort A to Z" ng-show="$mainCtrl.nameSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('name', false)"></i>
+                    <i class="fa fa-fw fa-sort-alpha-desc" title="Sort Z to A" ng-show="$mainCtrl.nameSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('name', true)"></i>
                 </td>
                 <td class="totalFundsCol text-center"><strong>Total SMART</strong></td>
                 <td class="numAddrCol text-center"><strong>Total Addresses</strong></td>
                 <td class="addrCol text-center"><strong>Addresses created?</strong></td>
                 <td class="expCol text-center">
                     <strong>Sweep Date</strong>
-                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$createCtrl.sweepDateSortFlag == 1" ng-click="$createCtrl.sort('sweepDate', false)"></i>
-                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$createCtrl.sweepDateSortFlag == -1" ng-click="$createCtrl.sort('sweepDate', true)"></i>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.sweepDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('sweepDate', false)"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.sweepDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('sweepDate', true)"></i>
                 </td>
                 <td class="editCol text-center"><strong>Edit</strong></td>
                 <td class="deleteCol text-center"><strong>Delete</strong></td>
             </tr>
             
-            <tr id="project.id" ng-class="{active: $createCtrl.activeProjectID == project.id}" ng-model="$createCtrl.availableProjects" ng-repeat="project in $createCtrl.availableProjects track by project.id"> <!-- js-multisort="$createCtrl.sortOptions"-->
+            <tr id="project.id" ng-class="{active: $createCtrl.activeProjectID == project.id}" ng-model="$createCtrl.availableProjects" ng-repeat="project in $createCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
                 <td colspan="7" style="padding:0;">
                     <table class="innerTable">
                         <tr>

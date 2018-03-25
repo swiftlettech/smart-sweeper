@@ -1,16 +1,18 @@
 /* Smart Cash API calls. */
 const electron = require('electron')
 const smartcash = require('smartcashjs-lib')
+const testnet = smartcash.networks.testnet
 const http = require('http')
+//const https = require('https')
 const util = require('util')
 
 //console.log(smartcash)
 
 /* Check the balance for a given address. */
-function checkBalance(address, addrAmt, callback) {
+function checkBalance(projectInfo, callback) {
     http.get({
         host: 'explorer3.smartcash.cc',
-        path: '/ext/getaddress/' + address
+        path: '/ext/getaddress/' + projectInfo.address
     }, (resp) => {
         const {statusCode} = resp
         
@@ -23,16 +25,17 @@ function checkBalance(address, addrAmt, callback) {
         let rawData = ""
         
         resp.on('data', (chunk) => { rawData += chunk })  
-        resp.on('end', () => {            
+        resp.on('end', () => {
             try {
                 const parsedData = JSON.parse(rawData)
                 
                 if (parsedData.balance !== undefined)
-                    callback({type: 'data', msg: parseFloat(parsedData.balance)}, addrAmt)
+                    callback({type: 'data', msg: parseFloat(parsedData.balance)}, projectInfo)
                 else
-                    callback({type: 'error', msg: parsedData.error + util.format(' (%s)', parsedData.hash)})
+                    callback({type: 'error', msg: parsedData.error + util.format(' (%s)', parsedData.hash)}, projectInfo)
             }
             catch (e) {
+                console.log(e)
                 callback({type: 'error', msg: e.message})
             }
         })
@@ -79,22 +82,31 @@ function checkTransaction(txid, addrAmt, callback) {
 }
 
 /* Generate a random public/private key pair. */
-function generateAddresses() {
-    let ecPair = smartcash.ECPair.makeRandom()
+function generateAddress() {
+    let ecPair = smartcash.ECPair.makeRandom({network: testnet})
     let privateKey = ecPair.toWIF()
     let publicKey = ecPair.getAddress()
 
     return {privateKey: privateKey, publicKey: publicKey}
 }
 
-/* Send funds from the project address to a wallet address. */
+/* Send funds from the from one address to another. */
 function sendFunds(addresses) {
     let receiver = addresses.receiver
     let sender = addresses.sender
     
+    var tx = new smartcash.TransactionBuilder(testnet)
+   
+    // get address info and get all unspent outputs for each txhash associated with sender address
+    tx.addInput(txHash, vout)
+    
+    tx.addOutput(addrout, amttosend)
+    tx.addOutput(sender, remainder) // the "change"
+    
+    // broadcast to network
 }
 
-/* Sweep (send) funds back from a wallet address to a project address. */
+/* Sweep (send) funds back from a promotional wallet address. */
 function sweepFunds(addresses) {
     let receiver = addresses.receiver
     let sender = addresses.sender
@@ -105,7 +117,7 @@ function sweepFunds(addresses) {
 module.exports = {
     checkBalance: checkBalance,
     checkTransaction: checkTransaction,
-    generateAddresses: generateAddresses,
+    generateAddress: generateAddress,
     sendFunds: sendFunds,
     sweepFunds: sweepFunds
 };

@@ -75,51 +75,6 @@ button, .btn, .form-control, .input-group-addon {
   border-color: #3e4245;
 }
 
-/* Dashboard */
-
-/* Create/Edit */
-#addNewProjectForm {
-    margin-top: 15px;
-}
-
-#addNewProjectForm input[name='name'], #addNewProjectForm input[name='sweepAddr'] {
-    width: 60%;
-}
-
-#addNewProjectForm input[name='numAddr'] {
-    width: 15%;
-}
-
-#addNewProjectForm #sweepDateGroup {
-    width: 45%;
-}
-
-#addNewProjectForm .uib-datepicker-popup.dropdown-menu {
-    padding: 5px;
-    border-radius: 0;
-}
-
-#addNewProjectForm .uib-button-bar .btn {
-    color: #000;
-    font-weight: 700;
-}
-
-#editProjectForm input[name='name'], #editProjectForm input[name='sweepAddr'] {
-    width: 40%;
-}
-
-#editProjectForm input[name='numAddr'] {
-    width: 15%;
-}
-
-#editProjectForm input[name='addrAmt'], #editProjectForm input[name='totalFunds'] {
-    width: 25%;
-}
-
-#editProjectForm  #sweepDateGroup {
-    width: 35%;
-}
-
 #projectList {
     padding-top: 15px;
     clear:both;
@@ -168,7 +123,49 @@ button, .btn, .form-control, .input-group-addon {
     width: 90px;
 }
 
-#editProjectForm {
+/* Dashboard */
+
+/* Create/Edit */
+#addNewProjectForm {
+    margin-top: 15px;
+}
+
+#addNewProjectForm input[name='name'], #addNewProjectForm input[name='sweepAddr'] {
+    width: 60%;
+}
+
+#addNewProjectForm input[name='numAddr'] {
+    width: 15%;
+}
+
+#addNewProjectForm #sweepDateGroup {
+    width: 45%;
+}
+
+#addNewProjectForm .uib-datepicker-popup.dropdown-menu {
+    padding: 5px;
+    border-radius: 0;
+}
+
+#addNewProjectForm .uib-button-bar .btn {
+    color: #000;
+    font-weight: 700;
+}
+
+#editProjectForm input[name='name'], #editProjectForm input[name='sweepAddr'] {
+    width: 40%;
+}
+
+#editProjectForm input[name='numAddr'] {
+    width: 15%;
+}
+
+#editProjectForm input[name='addrAmt'], #editProjectForm input[name='totalFunds'] {
+    width: 25%;
+}
+
+#editProjectForm  #sweepDateGroup {
+    width: 35%;
 }
 
 #editProjectForm #calendarBtn {
@@ -177,6 +174,16 @@ button, .btn, .form-control, .input-group-addon {
 
 #editProjectForm #calendarBtn:hover {
     color: inherit;
+}
+
+/* Fund */
+
+#fundProjectForm input[name='totalFunds'] {
+    width: 10%;
+}
+
+#fundProjectForm input[name='name'], #fundProjectForm input[name='fundingAddr'] {
+    width: 40%;
 }
 
 /* Sweep */

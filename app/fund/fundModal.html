@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html ng-app="SmartSweeper.fundModal" lang="en-US">
+    <head>
+        <meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Fund Project</title>
+        
+        <link type="text/css" rel="stylesheet" href="../../css/bootstrap-3.3.7.min.css" />
+        <link type="text/css" rel="stylesheet" href="../../css/sb-admin.css">
+        <link type="text/css" rel="stylesheet" href="../../css/font-awesome-4.7.0.min.css" />
+		<link type="text/css" rel="stylesheet" href="../../css/styles.css" />
+    </head>
+    
+    <body ng-controller="FundProjectController as $fundCtrl" style="margin:20px 0;" ng-init="init()">
+        <div id="page-wrapper" style="padding:15px;">
+            <form id="fundProjectForm" name="fundProjectForm" ng-submit="$fundCtrl.fundInfo(fundProjectForm)">
+                <div class="form-group">
+                    <label for="name" class="control-label">Project name</label>
+                    <input name="name" type="text" class="form-control" ng-model="$fundCtrl.activeProject.name" disabled />
+                </div>
+
+                <div class="form-group">
+                    <label for="totalFunds" class="control-label">Total SMART to be sent<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <input name="totalFunds" type="text" class="form-control" ng-model="$fundCtrl.totalFunds" ng-pattern="$fundCtrl.greaterThanZeroIntPattern" required />
+                    
+                    <div ng-show="fundProjectForm.totalFunds.$error.pattern" role="alert">
+                        <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fundingAddr" class="control-label">Funding address<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <input name="fundingAddr" type="text" class="form-control" ng-model="$fundCtrl.fundingAddr" required />
+                </div>
+
+                <div class="form-group" style="padding-top:10px; padding-right:0; clear:both;">
+                    <button id="submitBtn" type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$invalid">Fund Project</button>
+                    <button id="cancelBtn" type="button" class="btn btn-default" ng-click="$fundCtrl.cancel()">Cancel</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- libraries -->
+        <script type="text/javascript" src="../../js/jquery-3.3.1.js"></script>
+        <script type="text/javascript" src="../../js/angular-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/angular-animate-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/angular-route-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/angular-touch-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/ui-bootstrap-tpls-2.5.0.min.js"></script>
+        
+        <!-- bootstrapping -->
+        <script type="text/javascript" src="../app.module.js"></script>
+        <script type="text/javascript" src="fundModal.js"></script>
+        
+        <!-- utilities -->
+        <script type="text/javascript" src="../utils/app.module.js"></script>
+        <script type="text/javascript" src="../utils/constants.js"></script>
+        <script type="text/javascript" src="../utils/utils.js"></script>
+    </body>
+</html>

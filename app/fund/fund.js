@@ -10,7 +10,10 @@
         
         var ctrl = this;
 
-        $scope.init = function() {            
+        $scope.init = function() {
+            $mainCtrl.nameSortFlag = 1;
+            $mainCtrl.sweepDateSortFlag = 1;
+            
             // load all projects
             ipcRenderer.send('getProjects');
             ipcRenderer.on('projectsReady', (event, arg) => {
@@ -33,7 +36,8 @@
         };
 
         // transfer money to the project address
-        ctrl.fundProject = function(projectID) {
+        ctrl.fundProject = function(project) {
+            ipcRenderer.send('showFundModal', {project: project});
         };
         
         // create paper wallets for a project

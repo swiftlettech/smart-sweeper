@@ -18,6 +18,8 @@
             ctrl.formData = {
                 projectsToSweep: ctrl.projectsToSweep
             };
+            $mainCtrl.nameSortFlag = 1;
+            $mainCtrl.sweepDateSortFlag = 1;
             
             // load all projects
             ipcRenderer.send('getProjects');
@@ -27,9 +29,9 @@
                     console.log(ctrl.availableProjects);
                     // display the project list as 10 per page?
                     
-                    angular.forEach(ctrl.availableProjects, function(project, index) {
+                    /*angular.forEach(ctrl.availableProjects, function(project, index) {
                         claimedFunds(project.id, index);
-                    });
+                    });*/
                     
                     $mainCtrl.setPageHeight();
                 });
@@ -38,7 +40,7 @@
         
         /* Funds that have been transferred from a promotional wallet to a different wallet (per project). */
         function claimedFunds(projectID, index) {
-            ipcRenderer.send('getClaimedFundsInfo', {projectID: projectID});
+            ipcRenderer.send('getClaimedFundsInfo', {projectID: projectID, type: 'receivers'});
             ipcRenderer.on('claimedFundsInfo', (event, args) => {
                 $scope.$apply(function() {
                     var project = ctrl.availableProjects[index];
