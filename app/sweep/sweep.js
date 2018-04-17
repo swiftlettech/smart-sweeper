@@ -11,27 +11,30 @@
         var ctrl = this;
 
         $scope.init = function() {
-            /* some form code from: http://embed.plnkr.co/ScqA4aqno5XFSp9n3q6d */
+            $mainCtrl.nameSortFlag = 1;
+            $mainCtrl.totalFundsSortFlag = 1;
+            $mainCtrl.percentClaimedSortFlag = 1;
+            $mainCtrl.sweepDateSortFlag = 1;
             
+            /* some form code from: http://embed.plnkr.co/ScqA4aqno5XFSp9n3q6d */
             ctrl.projectsToSweep = {};
             ctrl.projectsToSweepCount = 0;
             ctrl.formData = {
                 projectsToSweep: ctrl.projectsToSweep
             };
-            $mainCtrl.nameSortFlag = 1;
-            $mainCtrl.sweepDateSortFlag = 1;
             
             // load all projects
             ipcRenderer.send('getProjects');
             ipcRenderer.on('projectsReady', (event, arg) => {
                 $scope.$apply(function() {
                     ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                    ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
                     console.log(ctrl.availableProjects);
                     // display the project list as 10 per page?
                     
-                    /*angular.forEach(ctrl.availableProjects, function(project, index) {
+                    angular.forEach(ctrl.availableProjectsCopy, function(project, index) {
                         claimedFunds(project.id, index);
-                    });*/
+                    });
                     
                     $mainCtrl.setPageHeight();
                 });
@@ -43,7 +46,7 @@
             ipcRenderer.send('getClaimedFundsInfo', {projectID: projectID, type: 'receivers'});
             ipcRenderer.on('claimedFundsInfo', (event, args) => {
                 $scope.$apply(function() {
-                    var project = ctrl.availableProjects[index];
+                    var project = ctrl.availableProjectsCopy[index];
                     
                     project.claimedAddrTotal = args.claimedWallets;
                     project.percentClaimed = args.claimedWallets / project.recvAddrs.length;

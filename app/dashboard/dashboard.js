@@ -22,17 +22,25 @@
             ctrl.sweptWalletsCount = 0;            
             
             // load all projects
-            ipcRenderer.send('getProjects');
             ipcRenderer.on('projectsReady', (event, arg) => {
                 $scope.$apply(function() {
                     ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                     ctrl.projectCount = ctrl.availableProjects.length;
                     
-                    if (ctrl.projectCount > 0) {
-                        //availableFunds();
+                    console.log(ctrl.availableProjects);
+                });
+            });
+            
+            ipcRenderer.on('onlineCheck', (event, arg) => {
+                $scope.$apply(function() {
+                    ctrl.online = arg.online
+                    
+                    if (ctrl.online && ctrl.projectCount > 0) {
+                        availableFunds();
                         //pendingFunds();
                         //confirmedFunds();
                         //claimedFunds();
+                        //sweptFunds();
                     }
                     else {
                         ctrl.availableBalance = "n/a";
@@ -41,8 +49,6 @@
                         ctrl.claimedFunds = "n/a";
                         ctrl.sweptFunds = "n/a";
                     }
-                    
-                    console.log(ctrl.availableProjects);
                 });
             });
             
@@ -96,13 +102,13 @@
         
         /* Funds that have been swept back to a project address (all projects). */
         function sweptFunds() {
-            ipcRenderer.send('getSweptFundsInfo');
+            /*ipcRenderer.send('getSweptFundsInfo');
             ipcRenderer.on('sweptFundsInfo', (event, args) => {
                 $scope.$apply(function() {
                     ctrl.sweptFunds = args.sweptFunds;
                     ctrl.sweptWalletsCount = args.sweptWallets;
                 });
-            });
+            });*/
         }
     }
 })();

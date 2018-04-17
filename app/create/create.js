@@ -11,8 +11,11 @@
         var ctrl = this;
 
         $scope.init = function() {
-            ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
+            $mainCtrl.nameSortFlag = 1;
+            $mainCtrl.totalFundsSortFlag = 1;
+            $mainCtrl.sweepDateSortFlag = 1;
             
+            ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;            
             ctrl.showAddNewProject = false;
             ctrl.newProject = {
                 numAddr: 0,
@@ -25,8 +28,6 @@
                 projectFunded: false,
                 fundsSent: false
             };
-            $mainCtrl.nameSortFlag = 1;
-            $mainCtrl.sweepDateSortFlag = 1;
             
             ctrl.calendar = {
                 opened: false

@@ -6,7 +6,6 @@ delete window.module;
 
 const isDev = require('electron-is-dev');
 
-//if (process.env.NODE_ENV === 'development')
 if (isDev) {
     window.__devtron = {require: require, process: process};
 }

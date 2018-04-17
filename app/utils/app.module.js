@@ -1,2 +1,4 @@
-'use strict';
-angular.module('SmartSweeperUtils', []);
+(function() {
+    'use strict';
+    angular.module('SmartSweeperUtils', []);
+})();

@@ -1,6 +1,7 @@
 #directories
 dist
 node_modules
+rpc-explorer\node_modules
 PaperWalletGenerator-3.3.0
 startbootstrap-sb-admin-3.3.7
 
@@ -8,6 +9,7 @@ startbootstrap-sb-admin-3.3.7
 *.tgz
 *.log
 *.zip
+*.pdf
 /db/smart-sweeper.json
 /app/utils/js-nat-multisort.js
 /smart-sweeper.json

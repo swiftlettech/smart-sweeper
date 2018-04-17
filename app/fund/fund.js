@@ -12,6 +12,8 @@
 
         $scope.init = function() {
             $mainCtrl.nameSortFlag = 1;
+            $mainCtrl.totalFundsSortFlag = 1;
+            $mainCtrl.addrAmtSortFlag = 1;
             $mainCtrl.sweepDateSortFlag = 1;
             
             // load all projects
@@ -46,7 +48,8 @@
         };
         
         // transfer money from the project address to the receiver wallets
-        ctrl.sendFunds = function(projectID) {
+        ctrl.sendFunds = function(project) {            
+            ipcRenderer.send('sendFunds', {addressPair: project.addressPair, wallets: project.recvAddrs});
         };
     }
 })();

@@ -35,12 +35,12 @@
                 if (electron.remote.getGlobal('referrer') !== "fundProjectModal")
                     return;
                 
+                ipcRenderer.send('fundProject', {projectID: ctrl.activeProject.id, totalFunds: parseFloat(ctrl.totalFunds), projectAddr: ctrl.activeProject.addressPair.publicKey, sourceAddr: ctrl.fundingAddr, sourcePK: ctrl.fundingPK});
+                
                 ctrl.activeProject = null;
                 form.$setPristine();
                 form.$setUntouched();
                 form.$submitted = false;
-                
-                ipcRenderer.send('fundProject', {projectID: ctrl.activeProject.id, totalFunds: ctrl.totalFunds, fundingAddr: ctrl.fundingAddr});
             });
             
             if (form.$valid) {

@@ -83,7 +83,11 @@
                     <i class="fa fa-fw fa-sort-alpha-asc" title="Sort A to Z" ng-show="$mainCtrl.nameSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('name', false)"></i>
                     <i class="fa fa-fw fa-sort-alpha-desc" title="Sort Z to A" ng-show="$mainCtrl.nameSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('name', true)"></i>
                 </td>
-                <td class="totalFundsCol text-center"><strong>Total SMART</strong></td>
+                <td class="totalFundsCol text-center">
+                    <strong>Total SMART</strong>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.totalFundsSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('totalFunds', false)"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.totalFundsSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('totalFunds', true)"></i>
+                </td>
                 <td class="numAddrCol text-center"><strong>Total Addresses</strong></td>
                 <td class="addrCol text-center"><strong>Addresses created?</strong></td>
                 <td class="expCol text-center">
@@ -108,7 +112,10 @@
                             <td class="deleteCol text-center"><button class="btn btn-link" title="Delete project" ng-click="$createCtrl.delete(project.id)" ng-disable="project.totalFunds > 0"><i class="fa fa-fw fa-trash"></i></button></td>
                         </tr>
                         <tr>
-                            <td colspan="7" class="addrCol"><strong>Project Address:</strong> {{project.address.publicKey}}</td>
+                            <td colspan="7" class="addrCol">
+                                <strong>Project Address:</strong> {{project.addressPair.publicKey}}<br />
+                                <strong>Private Key:</strong> {{project.addressPair.privateKey}}
+                            </td>
                         </tr>
                     </table>
                 </td>

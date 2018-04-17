@@ -75,6 +75,21 @@ button, .btn, .form-control, .input-group-addon {
   border-color: #3e4245;
 }
 
+#page-wrapper {
+    /*background-image: url('../images/SmartSweeper-logo.png');*/
+    background-repeat: no-repeat;
+    background-size: 35%;
+    background-position: 85% 50%; 
+    image-rendering: auto;
+}
+
+@media(min-width:992px) {
+    #page-wrapper {
+        background-size: 25%;
+        background-position: 75% 50%;
+    }
+}
+
 #projectList {
     padding-top: 15px;
     clear:both;
@@ -123,7 +138,13 @@ button, .btn, .form-control, .input-group-addon {
     width: 90px;
 }
 
+
 /* Dashboard */
+
+#dashboard .panel:last-child {
+    margin-bottom: 0;
+}
+
 
 /* Create/Edit */
 #addNewProjectForm {
@@ -176,6 +197,7 @@ button, .btn, .form-control, .input-group-addon {
     color: inherit;
 }
 
+
 /* Fund */
 
 #fundProjectForm input[name='totalFunds'] {
@@ -186,11 +208,17 @@ button, .btn, .form-control, .input-group-addon {
     width: 40%;
 }
 
+#fundProjectForm input[name='fundingPK'] {
+    width: 50%;
+}
+
+
 /* Sweep */
 
 #sweepForm input[type=checkbox] {
     margin:0 auto;
 }
+
 
 /* Log */
 
@@ -201,5 +229,6 @@ button, .btn, .form-control, .input-group-addon {
 #log textarea {
     
 }
+
 
 /* Help */

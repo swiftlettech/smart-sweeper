@@ -14,7 +14,11 @@
                     <td class="addrAmtCol text-center"><strong>SMART per Address</strong></td>
                     <td class="numAddrCol text-center"><strong>Total Addresses</strong></td>
                     <td class="claimedAddrCol text-center"><strong>Claimed Addresses</strong></td>
-                    <td class="perClaimedCol text-center"><strong>% claimed</strong></td>
+                    <td class="perClaimedCol text-center">
+                        <strong>% claimed</strong>
+                        <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.percentClaimedSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('percentClaimed', false)"></i>
+                        <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.percentClaimedSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('percentClaimed', true)"></i>
+                    </td>
                     <td class="expCol text-center">
                         <strong>Sweep Date</strong>
                         <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.sweepDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('sweepDate', false)"></i>
@@ -23,7 +27,7 @@
                     <td class="editCol text-center"><strong>Edit</strong></td>
                 </tr>
 
-                <tr id="project.id" ng-class="{active: $sweepCtrl.activeProjectID == project.id}" ng-model="$sweepCtrl.availableProjects" ng-repeat="project in $sweepCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
+                <tr id="project.id" ng-class="{active: $sweepCtrl.activeProjectID == project.id}" ng-model="$sweepCtrl.availableProjects" ng-repeat="project in $sweepCtrl.availableProjectsCopy | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
                     <td colspan="8" style="padding:0;">
                         <table class="innerTable">
                             <tr>
@@ -37,7 +41,10 @@
                                 <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$sweepCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
                             </tr>
                             <tr>
-                                <td colspan="8" class="addrCol"><strong>Project Address:</strong> {{project.address.publicKey}}</td>
+                                <td colspan="8" class="addrCol">
+                                    <strong>Project Address:</strong> {{project.addressPair.publicKey}}<br />
+                                    <strong>Private Key:</strong> {{project.addressPair.privateKey}}
+                                </td>
                             </tr>
                         </table>
                     </td>

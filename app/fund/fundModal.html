@@ -32,6 +32,13 @@
                 <div class="form-group">
                     <label for="fundingAddr" class="control-label">Funding address<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
                     <input name="fundingAddr" type="text" class="form-control" ng-model="$fundCtrl.fundingAddr" required />
+                    <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Is not stored unless it is also the address unclaimed funds will be swept to.</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fundingPK" class="control-label">Funding private key<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <input name="fundingPK" type="text" class="form-control" ng-model="$fundCtrl.fundingPK" required />
+                    <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Is not stored.</p>
                 </div>
 
                 <div class="form-group" style="padding-top:10px; padding-right:0; clear:both;">
