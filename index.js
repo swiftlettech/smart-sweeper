@@ -126,8 +126,21 @@ function appInit() {
         smartcashPath = "C:\\Program Files\\SmartCash Core\\"
         smartcashProg = "smartcash-qt.exe"
     }
-    //else if (is.linux)
-    //else if (is.macos)
+    else if (is.linux) {
+        smartcashPath = ""
+        smartcashProg = "smartcash-qt"
+    }
+    else if (is.macos) {
+        smartcashPath = ""
+        smartcashProg = "smartcash-qt"
+    }
+    else {
+        var content = {
+            title: 'Error',
+            body: 'I\'m sorry, SMART Sweeper is not supported on your operating system.'
+        }
+        createDialog(null, win, 'error', content, true)
+    }
     
     // check to see if smartcash is already running
     ps.lookup({command: smartcashProg}, function (err, results) {
@@ -172,24 +185,32 @@ function appInit() {
             
             // launch the RPC explorer if not already running
             NodePortCheck({host: '127.0.0.1', port: 9679, output: false, maxRetries: 0}, (isPortAvailable, availablePort, initialPort) => {
+                console.log(isPortAvailable)
                 if (isPortAvailable) {
                     // not running
-                    rpcExplorer = cp.fork(path.join(__dirname, 'rpc-explorer/bin/www'), [], {
-                        silent: false
-                    })
-                    rpcExplorer.on('data', (data) => {
-                        rpcExplorerConnected = false
-                        smartcashapi.connRpcExplorer(apiCallback)
-                    })
-                    rpcExplorer.on('error', (err) => {
-                        console.log(err)
-                    })
+                    startRpcExplorer()
                 }
                 else {
-                    rpcExplorerConnected = true
+                    // free port
+                    smartcashapi.disconnRpcExplorer()
+                    startRpcExplorer()
+                    //rpcExplorerConnected = false
                     closeSplashScreen()
                 }
             })
+        }
+    })
+}
+
+function startRpcExplorer() {
+    rpcExplorer = cp.fork(path.join(__dirname, 'rpc-explorer/bin/www'), [], {})
+    rpcExplorer.on('error', (err) => {
+        logger.error('startRpcExplorer: ' + err)
+    })
+    rpcExplorer.on('message', (resp) => {
+        if (resp.msg === "success") {
+            rpcExplorerConnected = false
+            smartcashapi.connRpcExplorer(apiCallback)
         }
     })
 }
@@ -223,9 +244,12 @@ function createSplashScreen() {
 }
 
 function closeSplashScreen() {
-    splashScreen.close()
-    splashScreen = null
-    win.show()
+    console.log('splash screen closing...');
+    if (splashScreen) {
+        splashScreen.close()
+        splashScreen = null
+        win.show()
+    }
 }
 
 // create the main window
@@ -400,11 +424,12 @@ let apiCallback = function(resp, functionName, projectInfo) {
         console.log(resp.msg)
         
         if (functionName === "connRpcExplorer") {
-            if (resp.msg === "success") {
+            if (resp.success) {
                 rpcExplorerConnected = true
                 
                 global.referrer = ""
-                apiCallbackCounter = 0
+                global.client = resp.msg.client
+                win.webContents.send('rpcClientCreated')
 
                 // check to see if the local copy of the blockchain is current
                 isOnline().then(online => {
@@ -418,11 +443,13 @@ let apiCallback = function(resp, functionName, projectInfo) {
             }              
         }
         else if (functionName === "getblockcount") {
-            if (!resp.msg) {
+            smartcashapi.coreSync(apiCallback)
+            
+            /*if (!resp.msg) {
                 isOnline().then(online => {
                     smartcashapi.coreSync(apiCallback)
                 })
-            }
+            }*/
         }
         else if (functionName === "checkBalance") {
             global.availableProjects.list[projectInfo.projectIndex].totalFunds = parseFloat(resp.msg)
@@ -462,6 +489,11 @@ let apiCallback = function(resp, functionName, projectInfo) {
             db.set('projects', global.availableProjects)
             win.webContents.send('balancesChecked')
             win.webContents.send('projectsReady')
+        }
+    }
+    else if (functionName === "checkTransaction") {
+        if (apiCallbackCounter == projectInfo.totalAddresses) {
+            
         }
     }
 
@@ -867,12 +899,13 @@ ipcMain.on('getConfirmedFundsInfo', (event, args) => {
 
 // get the total amount of transactions that have yet to be confirmed
 ipcMain.on('getPendingFundsInfo', (event, args) => {
+    apiCallbackCounter = 0
     let totalAddrs = 0
-    let callbackCounter = 0
-    let pendingWallets = 0
-    let pendingFunds = 0
+    //let callbackCounter = 0
+    //let pendingWallets = 0
+    //let pendingFunds = 0
     
-    function callback(resp, addrAmt) {
+    /*function callback(resp, addrAmt) {
         console.log(resp)
         
         if (resp.type === "data" && resp.msg < 6) {
@@ -887,13 +920,17 @@ ipcMain.on('getPendingFundsInfo', (event, args) => {
         
         if (callbackCounter == totalAddrs)
             event.sender.send('pendingFundsInfo', {pendingFunds: pendingFunds, pendingWallets: pendingWallets})
-    }
+    }*/
+    
+    global.availableProjects.list.forEach(function(project, projectKey) {
+        if (project.fundsSent)
+            totalAddrs += project.numAddr
+    })
     
     global.availableProjects.list.forEach(function(project, projectKey) {
         project.recvAddrs.forEach(function(address, addrKey) {
-            if (address.txid !== undefined) {
-                smartcashapi.checkTransaction(address.txid, project.addrAmt, callback)
-                totalAddrs++
+            if (project.fundsSent) {
+                smartcashapi.checkTransaction({totalAddrs: totalAddrs, txid: address.txid, addrAmt: project.addrAmt}, apiCallback)
             }
         })
     })

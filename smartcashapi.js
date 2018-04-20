@@ -42,8 +42,15 @@ function checkBalance(projectInfo, callback) {
 }
 
 /* Check the status of a transaction. */
-function checkTransaction(txid, addrAmt, callback) {
-    http.get({
+function checkTransaction(projectInfo, callback) {
+    //console.log(rpcapi.getRawTransaction(projectInfo.txid))
+    rpcapi.getRawTransactions('4254cfa40a527a178bd353f935aed6a573bc00a1a3eef557bfa90d8b9c4ec872,f4eeeac4ec3a3e5e17b64b09afb79e9f3f614afa8303c40217c0835e4e34671a').then(function(resp) {
+        console.log(resp)
+    })
+    //4254cfa40a527a178bd353f935aed6a573bc00a1a3eef557bfa90d8b9c4ec872
+    //f4eeeac4ec3a3e5e17b64b09afb79e9f3f614afa8303c40217c0835e4e34671a
+    
+    /*http.get({
         host: 'explorer3.smartcash.cc',
         path: '/api/getrawtransaction?txid=' + txid + '&decrypt=1'
     }, (resp) => {
@@ -64,7 +71,7 @@ function checkTransaction(txid, addrAmt, callback) {
                 const parsedData = JSON.parse(rawData)
 
                 if (parsedData.confirmations !== undefined) {
-                    returnedData = callback({type: 'data', msg: parsedData.confirmations}, addrAmt)
+                    returnedData = callback({type: 'data', msg: parsedData.confirmations}, projectInfo.addrAmt)
                     return returnedData
                 }
                 else
@@ -77,7 +84,7 @@ function checkTransaction(txid, addrAmt, callback) {
         .on('error', (e) => {
             callback({type: 'error', msg: e.message})
         })
-    })
+    })*/
 }
 
 /* Start the RPC explorer. */
@@ -94,7 +101,6 @@ function connRpcExplorer(callback) {
         }
     }, function (err, resp, body) {
         if (resp && resp.body.success) {
-            console.log(resp)
             callback({type: 'data', msg: resp.body.msg}, 'connRpcExplorer')
         }
         else if (err) {
@@ -128,9 +134,7 @@ function disconnRpcExplorer() {
         url: 'http://localhost/disconnect',
         method: 'POST',
         body: ''
-    }, function (err, resp, body) {
-        
-    })
+    }, function (err, resp, body) {})
 }
 
 /* Generate a random public/private key pair. */

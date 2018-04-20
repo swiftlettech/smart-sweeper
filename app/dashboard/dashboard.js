@@ -26,7 +26,6 @@
                 $scope.$apply(function() {
                     ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                     ctrl.projectCount = ctrl.availableProjects.length;
-                    
                     console.log(ctrl.availableProjects);
                 });
             });
@@ -34,22 +33,26 @@
             ipcRenderer.on('onlineCheck', (event, arg) => {
                 $scope.$apply(function() {
                     ctrl.online = arg.online
+                });
                     
-                    if (ctrl.online && ctrl.projectCount > 0) {
-                        availableFunds();
-                        //pendingFunds();
+                if (ctrl.online && ctrl.projectCount > 0) {
+                    availableFunds();
+
+                    ipcRenderer.on('rpcClientCreated', (event, args) => {
+                        console.log('rpcClientCreated');
+                        pendingFunds();
                         //confirmedFunds();
                         //claimedFunds();
                         //sweptFunds();
-                    }
-                    else {
-                        ctrl.availableBalance = "n/a";
-                        ctrl.pendingFunds = "n/a";
-                        ctrl.confirmedFunds = "n/a";
-                        ctrl.claimedFunds = "n/a";
-                        ctrl.sweptFunds = "n/a";
-                    }
-                });
+                    })
+                }
+                else {
+                    ctrl.availableBalance = "n/a";
+                    ctrl.pendingFunds = "n/a";
+                    ctrl.confirmedFunds = "n/a";
+                    ctrl.claimedFunds = "n/a";
+                    ctrl.sweptFunds = "n/a";
+                }
             });
             
             $mainCtrl.setPageHeight();
