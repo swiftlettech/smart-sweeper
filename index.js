@@ -15,6 +15,7 @@ const {combine, timestamp, prettyPrint} = format
 
 const Store = require('electron-store')
 const smartcashapi = require('./smartcashapi')
+const rpcenv = require("./rpc-explorer/app/env")
 const isOnline = require('is-online')
 const {is} = require('electron-util')
 const ps = require('ps-node')
@@ -150,9 +151,22 @@ function appInit() {
         else {
             if (results.length == 0) {
                 // not running
-                smartCash = cp.exec('"' + smartcashPath + smartcashProg + '" -txindex=1 -server -rpcuser=rpcusername -rpcpassword=rpcpassword')
-                smartCash.on('error', (err) => {
-                    console.log(err)
+                smartCash = cp.execFile('"' + smartcashPath + smartcashProg + '" -txindex=1 -server -rpcuser=rpcusername -rpcpassword=rpcpassword',
+                (err, stdout, stderr) => {                    
+                    if (err) {
+                        console.log('tried to open the wallet')
+                        console.log(err)
+                        logger.error('appInit - start SmartCash wallet: ' + err)
+
+                        var content = {
+                            title: 'Error',
+                            body: 'SmartCash could not load. SMART Sweeper will now exit.'
+                        }
+                        createDialog(null, win, 'error', content, true)
+                    }
+                    
+                    console.log('SmartCash core started');
+                    rpcExplorerCheck()
                 })
             }
             else {
@@ -177,27 +191,31 @@ function appInit() {
                 if (!hasArgs) {
                     var content = {
                         title: 'Missing configuration',
-                        body: 'Your SmartCash wallet was not started with the -txindex=1, -server, -rpcuser=rpcusername, and -rpcpassword=rpcpassword arguments. SmartSweeper will now exit.'
+                        body: 'Your SmartCash wallet was not started with the -txindex=1, -server, -rpcuser=rpcusername, and -rpcpassword=rpcpassword arguments. SMART Sweeper will now exit.'
                     }
                     createDialog(null, win, 'error', content, true)
                 }
-            }
-            
-            // launch the RPC explorer if not already running
-            NodePortCheck({host: '127.0.0.1', port: 9679, output: false, maxRetries: 0}, (isPortAvailable, availablePort, initialPort) => {
-                console.log(isPortAvailable)
-                if (isPortAvailable) {
-                    // not running
-                    startRpcExplorer()
-                }
                 else {
-                    // free port
-                    smartcashapi.disconnRpcExplorer()
-                    startRpcExplorer()
-                    //rpcExplorerConnected = false
-                    closeSplashScreen()
+                    rpcExplorerCheck()
                 }
-            })
+            }            
+        }
+    })
+}
+
+// launch the RPC explorer if not already running
+function rpcExplorerCheck() {
+    NodePortCheck({host: rpcenv.smartcashd.host, port: rpcenv.smartcashd.port, output: false, maxRetries: 0}, (isPortAvailable, availablePort, initialPort) => {
+        console.log('isPortAvailable?')
+        console.log(isPortAvailable)
+        if (isPortAvailable) {
+            // not running
+            startRpcExplorer()
+        }
+        else {
+            // free port
+            //smartcashapi.disconnRpcExplorer()
+            startRpcExplorer()
         }
     })
 }
@@ -421,10 +439,11 @@ function createDialog(event, window, type, text, fatal = false) {
 /* Generic API callback function. */
 let apiCallback = function(resp, functionName, projectInfo) {
     if (resp.type === "data") {
-        console.log(resp.msg)
+        console.log('from ' + functionName)
+        console.log(resp)
         
         if (functionName === "connRpcExplorer") {
-            if (resp.success) {
+            if (resp.type === "data") {
                 rpcExplorerConnected = true
                 
                 global.referrer = ""
@@ -432,9 +451,9 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 win.webContents.send('rpcClientCreated')
 
                 // check to see if the local copy of the blockchain is current
-                isOnline().then(online => {
+                /*isOnline().then(online => {
                     smartcashapi.getBlockCount(online, apiCallback)
-                })
+                })8/
 
                 // automatically sweep funds if necessary
                 //autoSweepFunds()
@@ -443,7 +462,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
             }              
         }
         else if (functionName === "getblockcount") {
-            smartcashapi.coreSync(apiCallback)
+            //smartcashapi.coreSync(apiCallback)
             
             /*if (!resp.msg) {
                 isOnline().then(online => {
@@ -476,7 +495,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
 
             var content = {
                 title: 'Error',
-                body: 'Unable to connect to the RPC explorer. SmartSweeper will now exit.'
+                body: 'Unable to connect to the RPC explorer. Is there a web server running? SMART Sweeper will now exit.'
             }
             createDialog(null, win, 'error', content, true)
         }
@@ -590,7 +609,7 @@ function getDbIndex(projectID) {
     return arrayIndex
 }
 
-// find the newest log user or system log file
+// find the newest user log or system log file
 function getNewestLogFile(type) {
     let logPath
     

@@ -6,6 +6,7 @@ const smartcash = require('smartcashjs-lib')
 const smartcashExplorer = "http://explorer3.smartcash.cc"
 const rpcapi = require('./rpc-explorer/app/rpcApi')
 const rpcenv = require("./rpc-explorer/app/env")
+const rpcExplorer = 'http://' + rpcenv.smartcashd.host
 //const testnet = smartcash.networks.testnet
 const http = require('http')
 const util = require('util')
@@ -88,9 +89,9 @@ function checkTransaction(projectInfo, callback) {
 }
 
 /* Start the RPC explorer. */
-function connRpcExplorer(callback) {
+function connRpcExplorer(callback) {    
     request({
-        url: 'http://localhost/connect',
+        url: rpcExplorer + '/connect',
         method: 'POST',
         json: true,
         body: {
@@ -100,12 +101,15 @@ function connRpcExplorer(callback) {
             password: rpcenv.smartcashd.rpc.password
         }
     }, function (err, resp, body) {
-        if (resp && resp.body.success) {
-            callback({type: 'data', msg: resp.body.msg}, 'connRpcExplorer')
-        }
-        else if (err) {
+        console.log('in connRpcExplorer');
+        console.log(resp);
+        
+        if (err) {
             callback({type: 'error', msg: err.code}, 'connRpcExplorer')
+            return;
         }
+        
+        callback({type: 'data', msg: resp.body.msg}, 'connRpcExplorer')
     })
 }
 
