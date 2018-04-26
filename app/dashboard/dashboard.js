@@ -22,7 +22,7 @@
             ctrl.sweptWalletsCount = 0;            
             
             // load all projects
-            ipcRenderer.on('projectsReady', (event, arg) => {
+            ipcRenderer.on('projectsReady', (event, args) => {
                 $scope.$apply(function() {
                     ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                     ctrl.projectCount = ctrl.availableProjects.length;
@@ -30,17 +30,13 @@
                 });
             });
             
-            ipcRenderer.on('onlineCheck', (event, arg) => {
-                $scope.$apply(function() {
-                    ctrl.online = arg.online
-                });
-                    
-                if (ctrl.online && ctrl.projectCount > 0) {
+            ipcRenderer.on('onlineCheck', (event, args) => {                
+                if ($mainCtrl.isOnline && ctrl.projectCount > 0) {
                     availableFunds();
 
                     ipcRenderer.on('rpcClientCreated', (event, args) => {
                         console.log('rpcClientCreated');
-                        pendingFunds();
+                        //pendingFunds();
                         //confirmedFunds();
                         //claimedFunds();
                         //sweptFunds();

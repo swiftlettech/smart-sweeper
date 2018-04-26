@@ -34,6 +34,7 @@ function checkBalance(projectInfo, callback) {
             callback({type: 'data', msg: balance}, 'checkBalance', projectInfo)
         }
         else {
+            console.log('checkBalance')
             console.log(err)
             
             if (err)
@@ -195,6 +196,7 @@ function getBlockCount(online, callback) {
                         callback({type: 'data', msg: validFlag}, 'getBlockCount')
                     }
                     else {
+                        console.log('getBlockCount')
                         console.log(err)
                         
                         if (err)
@@ -210,6 +212,7 @@ function getBlockCount(online, callback) {
             }
         }
         else {
+            console.log('getBlockCount')
             console.log(err)
             
             if (err)
@@ -239,6 +242,7 @@ function sendFunds(projectInfo) {
     //tx.sign(vinIndex, keyPair)
     
     // broadcast to network
+    console.log('sendFunds')
     console.log(tx)
 }
 

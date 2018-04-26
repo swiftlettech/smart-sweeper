@@ -26,7 +26,8 @@ const userLogsPath = baseLogPath + path.sep + 'user'
 const isDev = require('electron-is-dev')
 require('electron-debug')({showDevTools: true})
 
-let splashScreen, win, modal, modalType, logger, logFile, db, apiCallbackCounter, smartCash, rpcExplorer, rpcExplorerConnected
+let splashScreen, win, modal, modalType, logger, logFile, db, apiCallbackCounter, isOnlineFlag
+let smartcashProg, smartcashPath, smartcash, smartcashCheckInterval, rpcExplorer, rpcExplorerCheckInterval, rpcExplorerConnected
 
 // create a custom transport to save winston logs into a json database using electron store
 module.exports = {
@@ -120,9 +121,6 @@ function appInit() {
     // load smartcash and the RPC explorer
     //https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file
     // instructions to update smartcash config (txindex=1/server=1/rpcuser=rpcusername/rpcpassword=rpcpassword)
-    var smartcashProg
-    var smartcashPath
-    
     if (is.windows) {
         smartcashPath = "C:\\Program Files\\SmartCash Core\\"
         smartcashProg = "smartcash-qt.exe"
@@ -141,44 +139,31 @@ function appInit() {
             body: 'I\'m sorry, SMART Sweeper is not supported on your operating system.'
         }
         createDialog(null, win, 'error', content, true)
+        return;
     }
+    
+    //closeSplashScreen()
     
     // check to see if smartcash is already running
     ps.lookup({command: smartcashProg}, function (err, results) {
         if (err) {
            throw new Error(err)
         }
-        else {
+        else {            
             if (results.length == 0) {
                 // not running
-                smartCash = cp.execFile('"' + smartcashPath + smartcashProg + '" -txindex=1 -server -rpcuser=rpcusername -rpcpassword=rpcpassword',
-                (err, stdout, stderr) => {                    
-                    if (err) {
-                        console.log('tried to open the wallet')
-                        console.log(err)
-                        logger.error('appInit - start SmartCash wallet: ' + err)
-
-                        var content = {
-                            title: 'Error',
-                            body: 'SmartCash could not load. SMART Sweeper will now exit.'
-                        }
-                        createDialog(null, win, 'error', content, true)
-                    }
-                    
-                    console.log('SmartCash core started');
-                    rpcExplorerCheck()
-                })
+                startSmartcashCore()
             }
             else {
                 // is running
                 // check the arguments to see if the RPC server arg is present and get the process object
-                smartCash = results[0]
+                smartcash = results[0]
                 
                 var hasArgs = false
-                if (smartCash.arguments !== "") {
+                if (smartcash.arguments !== "") {
                     var argCount = 0
                     
-                    smartCash.arguments.forEach(function(arg, index) {
+                    smartcash.arguments.forEach(function(arg, index) {
                         if (arg === "-txindex=1" || arg === "-server" || arg === "-rpcuser=rpcusername" || arg === "-rpcpassword=rpcpassword")
                             argCount++;
                     })
@@ -198,24 +183,14 @@ function appInit() {
                 else {
                     rpcExplorerCheck()
                 }
-            }            
-        }
-    })
-}
-
-// launch the RPC explorer if not already running
-function rpcExplorerCheck() {
-    NodePortCheck({host: rpcenv.smartcashd.host, port: rpcenv.smartcashd.port, output: false, maxRetries: 0}, (isPortAvailable, availablePort, initialPort) => {
-        console.log('isPortAvailable?')
-        console.log(isPortAvailable)
-        if (isPortAvailable) {
-            // not running
-            startRpcExplorer()
-        }
-        else {
-            // free port
-            //smartcashapi.disconnRpcExplorer()
-            startRpcExplorer()
+            }
+            
+            // periodic background checking for online connectivity, SmartCash Core, and the RPC Explorer
+            /*setInterval(() => {
+                checkOnlineStatus()
+                smartcashCoreCheck()
+                rpcExplorerCheck()
+            }, 30000)*/
         }
     })
 }
@@ -226,10 +201,74 @@ function startRpcExplorer() {
         logger.error('startRpcExplorer: ' + err)
     })
     rpcExplorer.on('message', (resp) => {
-        if (resp.msg === "success") {
+        if (resp.msg === "success") {            
             rpcExplorerConnected = false
             smartcashapi.connRpcExplorer(apiCallback)
         }
+    })
+}
+
+function startSmartcashCore() {    
+    smartcash = cp.spawn(smartcashPath + smartcashProg, ['-txindex=1', '-server', '-rpcuser=rpcusername', '-rpcpassword=rpcpassword'], {
+        detached: true,
+        stdio: 'ignore',
+        windowsHide: true
+    })
+    
+    smartcash.unref()
+    smartcash.on('error', (err) => {
+        console.log('tried to open the wallet and failed')
+        console.log(err)
+        logger.error('appInit - start SmartCash wallet: ' + err)
+
+        /*var content = {
+            title: 'Error',
+            body: 'SmartCash could not load. SMART Sweeper will now exit.'
+        }
+        createDialog(null, win, 'error', content, true)*/
+    })
+    
+    setTimeout(() => {rpcExplorerCheck()}, 20000)
+    
+    //setTimeout(() => {}, 5000)
+}
+
+// periodically checks to see whether or not the user is online
+function checkOnlineStatus() {
+    isOnline().then(online => {
+        isOnlineFlag = online
+        if (!online)
+            win.webContents.send('onlineCheck', {online: false})
+    })
+}
+
+// periodically checks to see if Smartcash Core is running
+function smartcashCoreCheck() {
+    ps.lookup({command: smartcashProg}, function (err, results) {
+        if (err) {
+           throw new Error(err)
+        }
+        else {
+            if (results.length != 0)
+                rpcExplorerCheck()
+            else
+                win.webContents.send('coreCheck', {core: false})
+        }
+    })
+}
+
+// periodically checks to see if the RPC explorer is running and is connected to Smartcash Core
+function rpcExplorerCheck() {
+    ps.lookup({command: 'node'}, function (err, results) {
+        var explorerRunning = false
+        
+        results.forEach(function(result, index) {
+            if (result.arguments.length == 1 && result.arguments[0].indexOf('rpc-explorer') != -1)
+                explorerRunning = true
+        })
+        
+        if (!explorerRunning)
+            startRpcExplorer()
     })
 }
 
@@ -262,7 +301,6 @@ function createSplashScreen() {
 }
 
 function closeSplashScreen() {
-    console.log('splash screen closing...');
     if (splashScreen) {
         splashScreen.close()
         splashScreen = null
@@ -295,6 +333,10 @@ function createWindow() {
         slashes: true
     }))
     
+    win.on("ready-to-show", () => {
+        win.show()
+    })
+    
     win.on('show', () => {
         win.webContents.send('projectsReady')
         
@@ -302,8 +344,6 @@ function createWindow() {
             win.webContents.send('onlineCheck', {online: true})
         })
     })
-    
-    // if there's no internet access, compare local header and block counts
 
     // Emitted when the window is closed.
     win.on('closed', () => {
@@ -451,18 +491,16 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 win.webContents.send('rpcClientCreated')
 
                 // check to see if the local copy of the blockchain is current
-                /*isOnline().then(online => {
-                    smartcashapi.getBlockCount(online, apiCallback)
-                })8/
+                //smartcashapi.getBlockCount(rpcExplorerConnected, apiCallback)
 
                 // automatically sweep funds if necessary
                 //autoSweepFunds()
-                
-                closeSplashScreen()
-            }              
+            }
+            else
+                win.webContents.send('rpcExplorerCheck', {rpcExplorer: false})
         }
         else if (functionName === "getblockcount") {
-            //smartcashapi.coreSync(apiCallback)
+            smartcashapi.coreSync(apiCallback)
             
             /*if (!resp.msg) {
                 isOnline().then(online => {
@@ -691,7 +729,7 @@ app.on('will-finish-launching', () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-    createSplashScreen()
+    //createSplashScreen()
     createWindow()
     appInit()
     

@@ -29,6 +29,24 @@
 
             ctrl.setActivePage('dashboard');
             ctrl.sortOptions = {property: 'name', reverse: false};
+            
+            ipcRenderer.on('onlineCheck', (event, args) => {
+                $scope.$apply(function() {
+                    ctrl.isOnline = args.online;
+                });
+            });
+            
+            ipcRenderer.on('coreCheck', (event, args) => {
+                $scope.$apply(function() {
+                    ctrl.coreRunning = args.core;
+                });
+            });
+            
+            ipcRenderer.on('rpcExplorerCheck', (event, args) => {
+                $scope.$apply(function() {
+                    ctrl.rpcExplorerConnected = args.rpcExplorer;
+                });
+            });
         };
 
         ctrl.setActivePage = function(page) {
