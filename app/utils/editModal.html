@@ -39,15 +39,18 @@
                     <p>{{$editCtrl.activeProject.totalFunds | toFixedNum: 8}}</p>
                     
                     <div ng-show="$editCtrl.activeProject.totalFunds == 0" role="alert">
-                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Funds have not been sent to the project address.</span>
+                        <span class="error"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Funds have not been sent to the project address.</span>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="sweepAddr" class="control-label">Sweep address<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
                     <input name="sweepAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.sweepAddr" required />
-
                     <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This is the address that unclaimed funds will be swept to.</p>
+
+                    <div ng-show="editProjectForm.sweepAddr.$error" role="alert">
+                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Cannot be blank.</span>
+                    </div>
                 </div>
 
                 <div class="form-group">

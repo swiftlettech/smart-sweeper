@@ -38,23 +38,18 @@
             ctrl.datepickerFormat = "MM/dd/yyyy";
             ctrl.today = new Date();
             
+            ctrl.availableProjects = [];
+            
             // load all projects
-            ipcRenderer.send('getProjects');
-            ipcRenderer.on('projectsReady', (event, arg) => {
-                $scope.$apply(function() {
-                    ctrl.availableProjects = [];
-                    
-                    if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
-                        ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-                    //else
-                        //ctrl.availableProjects.push(electron.remote.getGlobal('availableProjects').list);
-                    
-                    console.log(ctrl.availableProjects);
-                    // display the project list as 10 per page?
-                });
-                
-                $mainCtrl.setPageHeight();
-            });
+            if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
+                ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+            //else
+                //ctrl.availableProjects.push(electron.remote.getGlobal('availableProjects').list);
+
+            console.log(ctrl.availableProjects);
+            // display the project list as 10 per page?
+            
+            $mainCtrl.setPageHeight();
         };
         
         /* Is the calendar date in the future? */

@@ -26,6 +26,10 @@ a:focus {
     cursor: pointer;
 }
 
+.error .fa-exclamation-circle {
+    color: #FF0000;
+}
+
 input[disabled] {
     background-color: transparent;
     width: 25%;

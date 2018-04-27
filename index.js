@@ -4,7 +4,7 @@ const electron = require('electron')
 const {app, BrowserWindow, dialog, ipcMain, shell} = electron
 const path = require('path')
 const url = require('url')
-const cp = require('child_process')
+//const cp = require('child_process')
 const fs = require('fs')
 const util = require('util')
 
@@ -16,18 +16,16 @@ const {combine, timestamp, prettyPrint} = format
 const Store = require('electron-store')
 const smartcashapi = require('./smartcashapi')
 const rpcenv = require("./rpc-explorer/app/env")
+const {watch} = require('melanke-watchjs')
 const isOnline = require('is-online')
-const {is} = require('electron-util')
-const ps = require('ps-node')
-const NodePortCheck = require('node-port-check')
+//const {is} = require('electron-util')
 const baseLogPath = "logs"
 const sysLogsPath = baseLogPath + path.sep + 'system'
 const userLogsPath = baseLogPath + path.sep + 'user'
 const isDev = require('electron-is-dev')
 require('electron-debug')({showDevTools: true})
 
-let splashScreen, win, modal, modalType, logger, logFile, db, apiCallbackCounter, isOnlineFlag
-let smartcashProg, smartcashPath, smartcash, smartcashCheckInterval, rpcExplorer, rpcExplorerCheckInterval, rpcExplorerConnected
+let splashScreen, bgWin, modal, modalType, logger, logFile, db, apiCallbackCounter
 
 // create a custom transport to save winston logs into a json database using electron store
 module.exports = {
@@ -118,157 +116,24 @@ function appInit() {
     })
     logger.emitErrs = false*/
     
-    // load smartcash and the RPC explorer
-    //https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file
-    // instructions to update smartcash config (txindex=1/server=1/rpcuser=rpcusername/rpcpassword=rpcpassword)
-    if (is.windows) {
-        smartcashPath = "C:\\Program Files\\SmartCash Core\\"
-        smartcashProg = "smartcash-qt.exe"
-    }
-    else if (is.linux) {
-        smartcashPath = ""
-        smartcashProg = "smartcash-qt"
-    }
-    else if (is.macos) {
-        smartcashPath = ""
-        smartcashProg = "smartcash-qt"
-    }
-    else {
-        var content = {
-            title: 'Error',
-            body: 'I\'m sorry, SMART Sweeper is not supported on your operating system.'
-        }
-        createDialog(null, win, 'error', content, true)
-        return;
+    // create global object to be shared amongst renderer processes
+    global.sharedObject = {
+        win: null,
+        isOnline: false,
+        referrer: "",
+        client: null,        
+        rpcExplorer: null
     }
     
-    //closeSplashScreen()
+    watch(global.sharedObject, function(property, action, newValue, oldValue) {
+        console.log(property)
+        console.log(oldValue)
+        console.log(newValue)
+    }, 0, true);
     
-    // check to see if smartcash is already running
-    ps.lookup({command: smartcashProg}, function (err, results) {
-        if (err) {
-           throw new Error(err)
-        }
-        else {            
-            if (results.length == 0) {
-                // not running
-                startSmartcashCore()
-            }
-            else {
-                // is running
-                // check the arguments to see if the RPC server arg is present and get the process object
-                smartcash = results[0]
-                
-                var hasArgs = false
-                if (smartcash.arguments !== "") {
-                    var argCount = 0
-                    
-                    smartcash.arguments.forEach(function(arg, index) {
-                        if (arg === "-txindex=1" || arg === "-server" || arg === "-rpcuser=rpcusername" || arg === "-rpcpassword=rpcpassword")
-                            argCount++;
-                    })
-                    
-                    if (argCount == 4)
-                        hasArgs = true
-                }
-                
-                // show an error popup if all of the arguments aren't present
-                if (!hasArgs) {
-                    var content = {
-                        title: 'Missing configuration',
-                        body: 'Your SmartCash wallet was not started with the -txindex=1, -server, -rpcuser=rpcusername, and -rpcpassword=rpcpassword arguments. SMART Sweeper will now exit.'
-                    }
-                    createDialog(null, win, 'error', content, true)
-                }
-                else {
-                    rpcExplorerCheck()
-                }
-            }
-            
-            // periodic background checking for online connectivity, SmartCash Core, and the RPC Explorer
-            /*setInterval(() => {
-                checkOnlineStatus()
-                smartcashCoreCheck()
-                rpcExplorerCheck()
-            }, 30000)*/
-        }
-    })
-}
-
-function startRpcExplorer() {
-    rpcExplorer = cp.fork(path.join(__dirname, 'rpc-explorer/bin/www'), [], {})
-    rpcExplorer.on('error', (err) => {
-        logger.error('startRpcExplorer: ' + err)
-    })
-    rpcExplorer.on('message', (resp) => {
-        if (resp.msg === "success") {            
-            rpcExplorerConnected = false
-            smartcashapi.connRpcExplorer(apiCallback)
-        }
-    })
-}
-
-function startSmartcashCore() {    
-    smartcash = cp.spawn(smartcashPath + smartcashProg, ['-txindex=1', '-server', '-rpcuser=rpcusername', '-rpcpassword=rpcpassword'], {
-        detached: true,
-        stdio: 'ignore',
-        windowsHide: true
-    })
-    
-    smartcash.unref()
-    smartcash.on('error', (err) => {
-        console.log('tried to open the wallet and failed')
-        console.log(err)
-        logger.error('appInit - start SmartCash wallet: ' + err)
-
-        /*var content = {
-            title: 'Error',
-            body: 'SmartCash could not load. SMART Sweeper will now exit.'
-        }
-        createDialog(null, win, 'error', content, true)*/
-    })
-    
-    setTimeout(() => {rpcExplorerCheck()}, 20000)
-    
-    //setTimeout(() => {}, 5000)
-}
-
-// periodically checks to see whether or not the user is online
-function checkOnlineStatus() {
     isOnline().then(online => {
-        isOnlineFlag = online
-        if (!online)
-            win.webContents.send('onlineCheck', {online: false})
-    })
-}
-
-// periodically checks to see if Smartcash Core is running
-function smartcashCoreCheck() {
-    ps.lookup({command: smartcashProg}, function (err, results) {
-        if (err) {
-           throw new Error(err)
-        }
-        else {
-            if (results.length != 0)
-                rpcExplorerCheck()
-            else
-                win.webContents.send('coreCheck', {core: false})
-        }
-    })
-}
-
-// periodically checks to see if the RPC explorer is running and is connected to Smartcash Core
-function rpcExplorerCheck() {
-    ps.lookup({command: 'node'}, function (err, results) {
-        var explorerRunning = false
+        global.sharedObject.isOnline = online;
         
-        results.forEach(function(result, index) {
-            if (result.arguments.length == 1 && result.arguments[0].indexOf('rpc-explorer') != -1)
-                explorerRunning = true
-        })
-        
-        if (!explorerRunning)
-            startRpcExplorer()
     })
 }
 
@@ -304,12 +169,52 @@ function closeSplashScreen() {
     if (splashScreen) {
         splashScreen.close()
         splashScreen = null
-        win.show()
+        global.sharedObject.win.show()
     }
 }
 
+// create the background window used to run async tasks
+function createBgWindow() {
+    const {width, height} = electron.screen.getPrimaryDisplay().workAreaSize    
+    const windowConfig = {
+        title: "",
+        width: 800,
+        height: 700,
+        center: true,
+        //focusable: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js')
+        },
+        show: false
+    }
+
+    // Create the browser window.
+    bgWin = new BrowserWindow(windowConfig)
+    bgWin.loadURL(url.format({
+        pathname: path.join(__dirname, 'background', 'background.html'),
+        protocol: 'file',
+        slashes: true
+    }))
+    bgWin.setMenu(null)
+
+    bgWin.on("ready-to-show", () => {
+        closeSplashScreen()
+        
+        //bgWin.show()
+    })
+
+    bgWin.on('closed', () => {
+        smartcashapi.disconnRpcExplorer();
+        
+        if (global.sharedObject.rpcExplorer)
+            global.sharedObject.rpcExplorer.kill()
+        
+        bgWin = null
+    })
+}
+
 // create the main window
-function createWindow() {    
+function createWindow() {
     const {width, height} = electron.screen.getPrimaryDisplay().workAreaSize    
     const windowConfig = {
         title: "SMART Sweeper",
@@ -323,39 +228,31 @@ function createWindow() {
     }
     
     // Create the browser window.
-    win = new BrowserWindow(windowConfig)
-    win.setMenu(null)
+    global.sharedObject.win = new BrowserWindow(windowConfig)
+    global.sharedObject.win.setMenu(null)
 
     // and load the index.html of the app.
-    win.loadURL(url.format({
+    global.sharedObject.win.loadURL(url.format({
         pathname: path.join(__dirname, 'index.html'),
         protocol: 'file',
         slashes: true
     }))
     
-    win.on("ready-to-show", () => {
-        win.show()
+    global.sharedObject.win.on("ready-to-show", () => {
+        //global.sharedObject.win.show()
     })
     
-    win.on('show', () => {
-        win.webContents.send('projectsReady')
-        
-        isOnline().then(online => {
-            win.webContents.send('onlineCheck', {online: true})
-        })
+    global.sharedObject.win.on('show', () => {
+        global.sharedObject.win.webContents.send('projectsReady')
     })
 
     // Emitted when the window is closed.
-    win.on('closed', () => {
+    global.sharedObject.win.on('closed', () => {
         // Dereference the window object, usually you would store windows
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
-        if (rpcExplorer)
-            rpcExplorer.kill()
-        
-        smartcashapi.disconnRpcExplorer();
-        
-        win = null
+        bgWin.close()        
+        global.sharedObject.win = null
     })
 }
 
@@ -363,11 +260,11 @@ function createWindow() {
 function createModal(type, text) {
     let parent, title, width, height, pathname, resizable, minimizable, maximizable, alwaysOnTop, fullscreenable
     
-    winBounds = win.getBounds()
+    winBounds = global.sharedObject.win.getBounds()
     
     if (type === "edit") {
         title = "Edit Project"
-        parent = win
+        parent = global.sharedObject.win
         width = Math.ceil(winBounds.width - (winBounds.width*0.6))
         height = Math.ceil(winBounds.height - (winBounds.height*0.15))
         pathname = path.join(__dirname, 'app', 'utils', 'editModal.html')
@@ -379,7 +276,7 @@ function createModal(type, text) {
     }
     else if (type === "paperWallets") {
         title = "Paper Wallet Generator"
-        parent = win
+        parent = global.sharedObject.win
         width = Math.ceil(winBounds.width - (winBounds.width*0.52))
         height = winBounds.height
         pathname = path.join(__dirname, 'app', 'fund', 'paperWallet.html')
@@ -391,7 +288,7 @@ function createModal(type, text) {
     }
     else if (type === "fund") {
         title = "Fund Project"
-        parent = win
+        parent = global.sharedObject.win
         //width = Math.ceil(winBounds.width - (winBounds.width*0.6))
         //height = Math.ceil(winBounds.height - (winBounds.height*0.15))
         width = winBounds.width
@@ -482,24 +379,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
         console.log('from ' + functionName)
         console.log(resp)
         
-        if (functionName === "connRpcExplorer") {
-            if (resp.type === "data") {
-                rpcExplorerConnected = true
-                
-                global.referrer = ""
-                global.client = resp.msg.client
-                win.webContents.send('rpcClientCreated')
-
-                // check to see if the local copy of the blockchain is current
-                //smartcashapi.getBlockCount(rpcExplorerConnected, apiCallback)
-
-                // automatically sweep funds if necessary
-                //autoSweepFunds()
-            }
-            else
-                win.webContents.send('rpcExplorerCheck', {rpcExplorer: false})
-        }
-        else if (functionName === "getblockcount") {
+        if (functionName === "getblockcount") {
             smartcashapi.coreSync(apiCallback)
             
             /*if (!resp.msg) {
@@ -526,17 +406,6 @@ let apiCallback = function(resp, functionName, projectInfo) {
             logger.error(functionName + ': ' + resp.msg + "project " + projectInfo.projectName)
         else
             logger.error(functionName + ': ' + resp.msg)
-        
-        if (functionName === "connRpcExplorer") {
-            splashScreen.close()
-            splashScreen = null
-
-            var content = {
-                title: 'Error',
-                body: 'Unable to connect to the RPC explorer. Is there a web server running? SMART Sweeper will now exit.'
-            }
-            createDialog(null, win, 'error', content, true)
-        }
     }
 
     apiCallbackCounter++
@@ -544,8 +413,8 @@ let apiCallback = function(resp, functionName, projectInfo) {
     if (functionName === "checkBalance") {
         if (apiCallbackCounter == global.availableProjects.list.length) {
             db.set('projects', global.availableProjects)
-            win.webContents.send('balancesChecked')
-            win.webContents.send('projectsReady')
+            global.sharedObject.win.webContents.send('balancesChecked')
+            global.sharedObject.win.webContents.send('projectsReady')
         }
     }
     else if (functionName === "checkTransaction") {
@@ -579,8 +448,8 @@ let apiCallback = function(resp, functionName, projectInfo) {
         /*if (apiCallbackCounter == global.availableProjects.list.length) {
             apiCallbackCounter = 0
             db.set('projects', global.availableProjects)
-            win.webContents.send('balancesChecked')
-            win.webContents.send('projectsReady')
+            global.sharedObject.win.webContents.send('balancesChecked')
+            global.sharedObject.win.webContents.send('projectsReady')
         }
     }
 }*/
@@ -702,7 +571,7 @@ function newProject(event, project) {
     logger.info('Project "' + newProject.name + '" was created.')
     refreshLogFile()
     event.sender.send('newProjectAdded')
-    win.webContents.send('projectsReady')
+    global.sharedObject.win.webContents.send('projectsReady')
 }
 
 // refresh the log currently loaded in the app
@@ -711,7 +580,7 @@ function refreshLogFile() {
     let logDB = new Store({name: getCurrentDate()})
     let log = logDB.get('log')
     global.availableLog = {date: stats.mtime, content: log}
-    win.webContents.send('logReady')
+    global.sharedObject.win.webContents.send('logReady')
 }
 
 // set the active project based on a project ID
@@ -729,9 +598,10 @@ app.on('will-finish-launching', () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-    //createSplashScreen()
-    createWindow()
+    createSplashScreen()
     appInit()
+    createBgWindow()
+    createWindow()
     
     // extras for dev mode
     if (isDev) {
@@ -740,15 +610,15 @@ app.on('ready', () => {
             app: app,
             mainFile: 'index.js',
             bws: [
-              {bw: win, res: []}
+              {bw: global.sharedObject.win, res: []}
             ]
         })
         
         // create a testnet address and save to a file
-        let adddressPair = smartcashapi.generateAddress()
+        /*let adddressPair = smartcashapi.generateAddress()
         fs.writeFile('test_address.txt', adddressPair.publicKey + '\n' + adddressPair.privateKey, (err) => {
           if (err) throw err;
-        })
+        })*/
     }
 })
 
@@ -788,7 +658,7 @@ app.on('activate', () => {
     // dock icon is clicked and there are no other windows open.
     if (win === null) {
         createWindow()
-        win.maximize()
+        global.sharedObject.win.maximize()
     }
 })
 
@@ -810,8 +680,8 @@ ipcMain.on('checkProjectBalances', (event, args) => {
 
         if (callbackCounter == global.availableProjects.list.length) {
             db.set('projects', global.availableProjects)
-            win.webContents.send('balancesChecked')
-            win.webContents.send('projectsReady')
+            global.sharedObject.win.webContents.send('balancesChecked')
+            global.sharedObject.win.webContents.send('projectsReady')
         }
     }*/
     
@@ -842,7 +712,7 @@ ipcMain.on('createRecvAddresses', (event, args) => {
     
     createRecvAddresses(args.project)
     event.sender.send('addressesCreated')
-    win.webContents.send('projectsReady')
+    global.sharedObject.win.webContents.send('projectsReady')
 })
 
 // delete a project
@@ -853,7 +723,7 @@ ipcMain.on('deleteProject', (event, args) => {
     db.set('projects', global.availableProjects)
     logger.info('Project "' + name + '" was deleted.')
     refreshLogFile()
-    win.webContents.send('projectsReady')
+    global.sharedObject.win.webContents.send('projectsReady')
 })
 
 
@@ -954,6 +824,11 @@ ipcMain.on('getConfirmedFundsInfo', (event, args) => {
     })
 })
 
+// get all projects
+ipcMain.on('getProjects', (event, args) => {
+    
+})
+
 // get the total amount of transactions that have yet to be confirmed
 ipcMain.on('getPendingFundsInfo', (event, args) => {
     apiCallbackCounter = 0
@@ -1004,7 +879,7 @@ ipcMain.on('loadLog', (event, args) => {
 ipcMain.on('modalNo', (event, args) => {
     global.activeProject = null
     modal.close()
-    win.webContents.send('modalNo')
+    global.sharedObject.win.webContents.send('modalNo')
 })
 
 // create a project
@@ -1036,6 +911,19 @@ ipcMain.on('showConfirmationDialog', (event, text) => {
         createDialog(event, win, 'question', text)
     else
         createDialog(event, modal, 'question', text)
+})
+
+// load an error dialog
+ipcMain.on('showErrorDialog', (event, content) => {
+    var fatal = false
+    
+    if (content.fatal)
+        fatal = true
+    
+    if (modal === undefined || modal == null)
+        createDialog(event, win, 'error', content.text)
+    else
+        createDialog(event, modal, 'error', content.text)
 })
 
 // open a modal for the user to enter the information necessary to fund a project
@@ -1080,5 +968,5 @@ ipcMain.on('updateProject', (event, args) => {
     logger.info('Project "' + global.activeProject.name + '" was edited.');
     refreshLogFile()
     global.activeProject = null
-    win.webContents.send('projectsReady')
+    global.sharedObject.win.webContents.send('projectsReady')
 })

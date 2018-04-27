@@ -67,11 +67,11 @@ Software | License
 [electron-store](https://github.com/sindresorhus/electron-store) | MIT
 [electron-util](https://github.com/sindresorhus/electron-util) | MIT
 [elemon](https://github.com/manidlou/elemon) | MIT
-[node-port-check](https://www.npmjs.com/package/node-port-check) | MIT
+[melanke-watchjs](https://github.com/melanke/Watch.JS) | MIT
 [ps-node](https://github.com/neekey/ps) | MIT
 [rpc-explorer](https://github.com/SmartCash/rpc-explorer) | MIT
 [smartcashjs-lib](https://github.com/SmartCash/SmartCashjs-lib) | MIT
 [SmartCash Paper Wallet Generator](https://github.com/SmartCash/PaperWalletGenerator) | ?
 [winston](https://github.com/winstonjs/winston) | MIT
 
-[The SmartExplorer API](http://explorer3.smartcash.cc) is used to check the current block count.
+[The SmartExplorer API](http://explorer3.smartcash.cc) is used to check the current block count and get info about the project addresses.
