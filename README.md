@@ -56,6 +56,9 @@ The database (smart-sweeper.json) and the log files are saved in the following f
 * **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper
 * **Mac**: ~/Library/Application Support/smart-sweeper
 
+The log files are also in JSON format and can be read with a general log viewer such as [glogg](https://github.com/nickbnf/glogg) or a JSON viewer such as []().
+
+
 Other software used
 -------------------
 Software | License

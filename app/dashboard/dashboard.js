@@ -31,24 +31,25 @@
             });
             
             ipcRenderer.on('onlineCheck', (event, args) => {                
-                if ($mainCtrl.isOnline && ctrl.projectCount > 0) {
-                    availableFunds();
+                $scope.$apply(function() {
+                    if (args.isOnline && ctrl.projectCount > 0) {
+                        availableFunds();
 
-                    ipcRenderer.on('rpcClientCreated', (event, args) => {
-                        console.log('rpcClientCreated');
-                        //pendingFunds();
-                        //confirmedFunds();
-                        //claimedFunds();
-                        //sweptFunds();
-                    })
-                }
-                else {
-                    ctrl.availableBalance = "n/a";
-                    ctrl.pendingFunds = "n/a";
-                    ctrl.confirmedFunds = "n/a";
-                    ctrl.claimedFunds = "n/a";
-                    ctrl.sweptFunds = "n/a";
-                }
+                        ipcRenderer.on('rpcClientCreated', (event, args) => {
+                            //pendingFunds();
+                            //confirmedFunds();
+                            //claimedFunds();
+                            //sweptFunds();
+                        })
+                    }
+                    else {
+                        ctrl.availableBalance = "n/a";
+                        ctrl.pendingFunds = "n/a";
+                        ctrl.confirmedFunds = "n/a";
+                        ctrl.claimedFunds = "n/a";
+                        ctrl.sweptFunds = "n/a";
+                    }
+                });
             });
             
             $mainCtrl.setPageHeight();

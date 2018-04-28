@@ -56,6 +56,11 @@ module.exports = {
             
             let logDB
             
+            console.log('info')
+            console.log(info)
+            console.log('self')
+            console.log(self)
+            
             if (info.level === "error")
                 logDB = self.logDBSystem
             else
@@ -67,7 +72,8 @@ module.exports = {
                 logDB.set('log', log)
             }
             
-            if (callback) { callback() }
+            if (callback && typeof callback === "function")
+                callback()
         }
     }
 }
@@ -94,13 +100,13 @@ function appInit() {
     winston.loggers.add('logger', {
         format: combine(timestamp(), prettyPrint()),
         transports: [
-            new module.exports.JsonDBTransport({ filename: sysLogsPath + path.sep + logFile, level: 'error' }),
-            new module.exports.JsonDBTransport({ filename: userLogsPath + path.sep + logFile, level: 'info' })
+            new module.exports.JsonDBTransport({ filename: userLogsPath + path.sep + logFile, level: 'info' }),
+            new module.exports.JsonDBTransport({ filename: sysLogsPath + path.sep + logFile, level: 'error' })
         ],
         exitOnError: false
     })
     logger = winston.loggers.get('logger')
-    logger.emitErrs = false
+    logger.emitErrs = true
     
     if (isDev)
         logger.add(new transports.Console({format: format.simple()}))
@@ -122,19 +128,32 @@ function appInit() {
         isOnline: false,
         referrer: "",
         client: null,        
-        rpcExplorer: null
+        rpcExplorer: null,
+        coreRunning: false,
+        coreError: false,
+        rpcExplorerRunning: false,
+        rpcExplorerError: false
     }
     
+    // watch for changes on the shared object
     watch(global.sharedObject, function(property, action, newValue, oldValue) {
         console.log(property)
         console.log(oldValue)
         console.log(newValue)
-    }, 0, true);
-    
-    isOnline().then(online => {
-        global.sharedObject.isOnline = online;
         
-    })
+        if (global.sharedObject.win) {
+            if (property === "isOnline")
+                global.sharedObject.win.webContents.send('onlineCheckAPP', {isOnline: global.sharedObject.isOnline})
+            else if (property === "coreRunning")
+                global.sharedObject.win.webContents.send('coreCheckAPP', {coreRunning: global.sharedObject.coreRunning})
+            else if (property === "coreError")
+                global.sharedObject.win.webContents.send('coreCheckAPP', {coreError: global.sharedObject.coreError})
+            else if (property === "rpcExplorerRunning")
+                global.sharedObject.win.webContents.send('rpcExplorerCheckAPP', {rpcExplorerRunning: global.sharedObject.rpcExplorerRunning})
+            else if (property === "rpcExplorerError")
+                global.sharedObject.win.webContents.send('rpcExplorerCheckAPP', {rpcExplorerError: global.sharedObject.rpcExplorerError})
+        }
+    }, 0, true);
 }
 
 // some code from: https://github.com/trodi/electron-splashscreen
@@ -198,9 +217,9 @@ function createBgWindow() {
     bgWin.setMenu(null)
 
     bgWin.on("ready-to-show", () => {
-        closeSplashScreen()
-        
         //bgWin.show()
+        
+        setTimeout(function() {closeSplashScreen()}, 12000)
     })
 
     bgWin.on('closed', () => {
@@ -244,6 +263,11 @@ function createWindow() {
     
     global.sharedObject.win.on('show', () => {
         global.sharedObject.win.webContents.send('projectsReady')
+        
+        isOnline().then(online => {
+            global.sharedObject.isOnline = online;
+
+        })
     })
 
     // Emitted when the window is closed.
@@ -379,16 +403,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
         console.log('from ' + functionName)
         console.log(resp)
         
-        if (functionName === "getblockcount") {
-            smartcashapi.coreSync(apiCallback)
-            
-            /*if (!resp.msg) {
-                isOnline().then(online => {
-                    smartcashapi.coreSync(apiCallback)
-                })
-            }*/
-        }
-        else if (functionName === "checkBalance") {
+        if (functionName === "checkBalance") {
             global.availableProjects.list[projectInfo.projectIndex].totalFunds = parseFloat(resp.msg)
         }
         /*else if (functionName === "")
@@ -824,11 +839,6 @@ ipcMain.on('getConfirmedFundsInfo', (event, args) => {
     })
 })
 
-// get all projects
-ipcMain.on('getProjects', (event, args) => {
-    
-})
-
 // get the total amount of transactions that have yet to be confirmed
 ipcMain.on('getPendingFundsInfo', (event, args) => {
     apiCallbackCounter = 0
@@ -946,6 +956,16 @@ ipcMain.on('showPrintDialog', (event, args) => {
     modal.webContents.print({printBackground: true})
 })
 
+// launching RPC explorer
+ipcMain.on('rpcExplorerLaunch', (event, args) => {
+    global.sharedObject.win.webContents.send('rpcExplorerLaunch', {isOnline: global.sharedObject.isOnline})
+})
+
+// launching SmartCash core
+ipcMain.on('smartcashLaunch', (event, args) => {
+    global.sharedObject.win.webContents.send('smartcashLaunch', {isOnline: global.sharedObject.isOnline})
+})
+
 // manually sweep project funds
 ipcMain.on('sweepFunds', (event, projectID) => {
     let index = getDbIndex(projectID)
@@ -962,10 +982,11 @@ ipcMain.on('sweepFunds', (event, projectID) => {
 // update a project edited in the modal
 ipcMain.on('updateProject', (event, args) => {
     modal.close()
+    global.activeProject = args.activeProject
     let index = getDbIndex(global.activeProject.id)
     global.availableProjects.list[index] = global.activeProject
     db.set('projects', global.availableProjects)
-    logger.info('Project "' + global.activeProject.name + '" was edited.');
+    logger.info('Project "' + global.activeProject.name + '" was edited.')
     refreshLogFile()
     global.activeProject = null
     global.sharedObject.win.webContents.send('projectsReady')

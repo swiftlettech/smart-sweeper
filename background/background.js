@@ -11,7 +11,7 @@
     const winston = window.nodeRequire('winston');
     const smartcashapi = window.nodeRequire('./smartcashapi');
     
-    var logger = winston.loggers.get('logger');
+    let logger = winston.loggers.get('logger');
     var basepath = __dirname.split(path.sep);
     basepath.pop();
     basepath = basepath.join(path.sep);
@@ -54,7 +54,7 @@
             if (err) {
                throw new Error(err)
             }
-            else {            
+            else {                
                 if (results.length == 0) {
                     // not running
                     startSmartcashCore()
@@ -82,7 +82,7 @@
                         var content = {
                             text: {
                                 title: 'Missing configuration',
-                                body: 'Your SmartCash wallet was not started with the -txindex=1, -server, -rpcuser=rpcusername, and -rpcpassword=rpcpassword arguments. SMART Sweeper will now exit.'
+                                body: 'Your Smartcash wallet was not started with the -txindex=1, -server, -rpcuser=rpcusername, and -rpcpassword=rpcpassword arguments. SMART Sweeper will now exit.'
                             },
                             fatal: true
                         }
@@ -90,16 +90,17 @@
                         return;
                     }
                     else {
+                        remote.getGlobal('sharedObject').coreRunning = true;
                         rpcExplorerCheck()
                     }
                 }
 
                 // periodic background checking for online connectivity, SmartCash Core, and the RPC Explorer
-                /*setInterval(() => {
-                    checkOnlineStatus()
-                    smartcashCoreCheck()
-                    rpcExplorerCheck()
-                }, 30000)*/
+                setInterval(() => {
+                    //checkOnlineStatus()
+                    //smartcashCoreCheck()
+                    //rpcExplorerCheck()
+                }, 30000)
             }
         })
     }
@@ -116,6 +117,7 @@
                 console.log(remote.getGlobal('sharedObject'))
                 remote.getGlobal('sharedObject').referrer = "";
                 remote.getGlobal('sharedObject').client = resp.msg.client;
+                remote.getGlobal('sharedObject').rpcExplorerRunning = true;
                 remote.getGlobal('sharedObject').win.webContents.send('rpcClientCreated');
 
                 // check to see if the local copy of the blockchain is current
@@ -132,6 +134,8 @@
                 logger.error(functionName + ': ' + resp.msg)
 
             if (functionName === "connRpcExplorer") {
+                remote.getGlobal('sharedObject').rpcExplorerError = true;
+                
                 //splashScreen.close()
                 //splashScreen = null
 
@@ -182,18 +186,20 @@
     function smartcashCoreCheck() {
         ps.lookup({command: smartcashProg}, function (err, results) {
             if (err) {
-               throw new Error(err)
+               throw new Error(err);
             }
             else {
-                if (results.length != 0)
-                    rpcExplorerCheck()
+                if (results.length != 0) {
+                    remote.getGlobal('sharedObject').coreRunning = true;
+                    rpcExplorerCheck();
+                }
                 else
-                    remote.getGlobal('win').webContents.send('coreCheck', {core: false})
+                    remote.getGlobal('sharedObject').coreRunning = false;
             }
-        })
+        });
     }
 
-    function startSmartcashCore() {    
+    function startSmartcashCore() {
         smartcash = cp.spawn(smartcashPath + smartcashProg, ['-txindex=1', '-server', '-rpcuser=rpcusername', '-rpcpassword=rpcpassword'], {
             detached: true,
             stdio: 'ignore',
@@ -204,7 +210,8 @@
         smartcash.on('error', (err) => {
             console.log('tried to open the wallet and failed')
             console.log(err)
-            logger.error('appInit - start SmartCash wallet: ' + err)
+            logger.error('appInit - start Smartcash core: ' + err)
+            remote.getGlobal('sharedObject').coreError = true;
 
             /*var content = {
                 title: 'Error',
@@ -213,7 +220,10 @@
             createDialog(null, win, 'error', content, true)*/
         })
 
-        setTimeout(() => {rpcExplorerCheck()}, 20000)
+        setTimeout(() => {
+            remote.getGlobal('sharedObject').coreRunning = true;
+            rpcExplorerCheck()
+        }, 20000)
     }
 
     // check to see whether or not the user is online

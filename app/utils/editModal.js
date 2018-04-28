@@ -80,7 +80,7 @@
             ctrl.activeProject.addrAmt = parseInt(ctrl.activeProject.addrAmt);
             ctrl.activeProject.numAddr = parseInt(ctrl.activeProject.numAddr);
             
-            ipcRenderer.send('updateProject');
+            ipcRenderer.send('updateProject', {activeProject: ctrl.activeProject});
             ipcRenderer.on('projectUpdated', (event, arg) => {
                 ctrl.activeProject = null;
                 form.$setPristine();

@@ -21,7 +21,7 @@
         "ps-node": "^0.1.6",
         "request": "^2.85.0",
         "smartcashjs-lib": "^3.3.2",
-        "winston": "^3.0.0-rc4"
+        "winston": "^3.0.0-rc5"
     },
     "devDependencies": {
         "devtron": "^1.4.0",

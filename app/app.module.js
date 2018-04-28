@@ -30,21 +30,27 @@
             ctrl.setActivePage('dashboard');
             ctrl.sortOptions = {property: 'name', reverse: false};
             
-            ipcRenderer.on('onlineCheck', (event, args) => {
+            ipcRenderer.on('onlineCheckAPP', (event, args) => {                
                 $scope.$apply(function() {
-                    ctrl.isOnline = args.online;
+                    ctrl.isOnline = args.isOnline;
                 });
             });
             
-            ipcRenderer.on('coreCheck', (event, args) => {
+            ipcRenderer.on('coreCheckAPP', (event, args) => {
                 $scope.$apply(function() {
-                    ctrl.coreRunning = args.core;
+                    if (args.coreRunning)
+                        ctrl.coreRunning = args.coreRunning;
+                    else if (args.coreError)
+                        ctrl.coreError = args.coreError;
                 });
             });
             
-            ipcRenderer.on('rpcExplorerCheck', (event, args) => {
-                $scope.$apply(function() {
-                    ctrl.rpcExplorerConnected = args.rpcExplorer;
+            ipcRenderer.on('rpcExplorerCheckAPP', (event, args) => {
+                $scope.$apply(function() {                    
+                    if (args.rpcExplorerRunning)
+                        ctrl.rpcExplorerRunning = args.rpcExplorerRunning;
+                    else if (args.rpcExplorerError)
+                        ctrl.rpcExplorerRunning = args.rpcExplorerError;
                 });
             });
         };
@@ -80,8 +86,11 @@
         function eventCleanup() {
             var events = ipcRenderer._events;
 
-            angular.forEach(events, function(event, key) {            
-                if (key.indexOf('CHROME_') == -1 && key.indexOf('ELECTRON_') == -1)
+            angular.forEach(events, function(event, key) {
+                //console.log(event)
+                //console.log(key)
+                
+                if (key.indexOf('CHROME_') == -1 && key.indexOf('ELECTRON_') == -1 && key.indexOf('APP') == -1)
                     ipcRenderer.removeAllListeners(key);
             });
         }

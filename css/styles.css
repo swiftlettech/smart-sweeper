@@ -30,6 +30,14 @@ a:focus {
     color: #FF0000;
 }
 
+#statusMsgs {
+    margin-bottom: 15px;
+}
+
+#statusMsgs div {
+    margin-bottom: 8px;
+}
+
 input[disabled] {
     background-color: transparent;
     width: 25%;
