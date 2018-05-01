@@ -1,6 +1,5 @@
 /* Main app logic. */
 const electron = require('electron')
-//const SplashScreen = require('@trodi/electron-splashscreen')
 const {app, BrowserWindow, dialog, ipcMain, shell} = electron
 const path = require('path')
 const url = require('url')
@@ -148,12 +147,19 @@ function appInit() {
                 global.sharedObject.win.webContents.send('coreCheckAPP', {coreRunning: global.sharedObject.coreRunning})
             else if (property === "coreError")
                 global.sharedObject.win.webContents.send('coreCheckAPP', {coreError: global.sharedObject.coreError})
-            else if (property === "rpcExplorerRunning")
+            else if (property === "rpcExplorerRunning") {
                 global.sharedObject.win.webContents.send('rpcExplorerCheckAPP', {rpcExplorerRunning: global.sharedObject.rpcExplorerRunning})
+                global.sharedObject.win.webContents.send('rpcClientCreated')
+            }
             else if (property === "rpcExplorerError")
                 global.sharedObject.win.webContents.send('rpcExplorerCheckAPP', {rpcExplorerError: global.sharedObject.rpcExplorerError})
+            else if (property === "client")
+                global.client = newValue
         }
     }, 0, true);
+    
+    // global shared callback object
+    global.callbackObj = {}
 }
 
 // some code from: https://github.com/trodi/electron-splashscreen
@@ -406,8 +412,16 @@ let apiCallback = function(resp, functionName, projectInfo) {
         if (functionName === "checkBalance") {
             global.availableProjects.list[projectInfo.projectIndex].totalFunds = parseFloat(resp.msg)
         }
-        /*else if (functionName === "")
-        else if (functionName === "")*/
+        else if (functionName === "checkPending") {
+            if (resp.msg < 6) {
+                global.callbackObj.pendingFunds += addrAmt
+                global.callbackObj.pendingWallets++
+            }
+        }
+        /*else if (functionName === "checkConfirmed")*/
+        /*else if (functionName === "checkClaimed")*/
+        /*else if (functionName === "checkSwept")*/
+        /*else if (functionName === "")*/
         
         /*if (projectInfo)
             return {resp: resp, projectInfo: projectInfo}
@@ -431,6 +445,10 @@ let apiCallback = function(resp, functionName, projectInfo) {
             global.sharedObject.win.webContents.send('balancesChecked')
             global.sharedObject.win.webContents.send('projectsReady')
         }
+    }
+    else if (functionName === "checkPending") {
+        if (callbackCounter == totalAddrs)
+            event.sender.send('pendingFundsInfo', {pendingFunds: pendingFunds, pendingWallets: pendingWallets})
     }
     else if (functionName === "checkTransaction") {
         if (apiCallbackCounter == projectInfo.totalAddresses) {
@@ -671,7 +689,7 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (win === null) {
+    if (global.sharedObject.win === null) {
         createWindow()
         global.sharedObject.win.maximize()
     }
@@ -680,25 +698,7 @@ app.on('activate', () => {
 
 // check the balance of all projects
 ipcMain.on('checkProjectBalances', (event, args) => {
-    //let callbackCounter = 0
     var apiCallbackCounter = 0
-    
-    /*function callback (resp, projectInfo) {
-        if (resp.type === "data") {
-            global.availableProjects.list[projectInfo.projectIndex].totalFunds = parseFloat(resp.msg)
-        }
-        else if (resp.type === "error") {            
-            logger.error('checkProjectBalances: ' + resp.msg + "project " + projectInfo.projectName)
-        }
-
-        callbackCounter++
-
-        if (callbackCounter == global.availableProjects.list.length) {
-            db.set('projects', global.availableProjects)
-            global.sharedObject.win.webContents.send('balancesChecked')
-            global.sharedObject.win.webContents.send('projectsReady')
-        }
-    }*/
     
     if (global.availableProjects === undefined)
         global.availableProjects = db.get('projects')
@@ -841,41 +841,26 @@ ipcMain.on('getConfirmedFundsInfo', (event, args) => {
 
 // get the total amount of transactions that have yet to be confirmed
 ipcMain.on('getPendingFundsInfo', (event, args) => {
+    console.log('in getPendingFundsInfo')
     apiCallbackCounter = 0
-    let totalAddrs = 0
-    //let callbackCounter = 0
-    //let pendingWallets = 0
-    //let pendingFunds = 0
-    
-    /*function callback(resp, addrAmt) {
-        console.log(resp)
-        
-        if (resp.type === "data" && resp.msg < 6) {
-            pendingFunds += addrAmt
-            pendingWallets++
-        }
-        else if (resp.type === "error") {
-            logger.error('getPendingFundsInfo: ' + resp.msg)
-        }
-        
-        callbackCounter++
-        
-        if (callbackCounter == totalAddrs)
-            event.sender.send('pendingFundsInfo', {pendingFunds: pendingFunds, pendingWallets: pendingWallets})
-    }*/
+    let totalAddrs = 0    
+    global.callbackObj.pendingWallets = 0
+    global.callbackObj.pendingFunds = 0
     
     global.availableProjects.list.forEach(function(project, projectKey) {
         if (project.fundsSent)
             totalAddrs += project.numAddr
     })
     
-    global.availableProjects.list.forEach(function(project, projectKey) {
-        project.recvAddrs.forEach(function(address, addrKey) {
-            if (project.fundsSent) {
-                smartcashapi.checkTransaction({totalAddrs: totalAddrs, txid: address.txid, addrAmt: project.addrAmt}, apiCallback)
-            }
+    if (totalAddrs > 0) {
+        global.availableProjects.list.forEach(function(project, projectKey) {
+            project.recvAddrs.forEach(function(address, addrKey) {
+                if (project.fundsSent) {
+                    smartcashapi.checkTransaction({totalAddrs: totalAddrs, txid: address.txid, addrAmt: project.addrAmt}, apiCallback)
+                }
+            })
         })
-    })
+    }
 })
 
 // load the most recent log file
@@ -918,7 +903,7 @@ ipcMain.on('setReferrer', (event, args) => {
 // load a confirmation dialog
 ipcMain.on('showConfirmationDialog', (event, text) => {    
     if (modal === undefined || modal == null)
-        createDialog(event, win, 'question', text)
+        createDialog(event, global.sharedObject.win, 'question', text)
     else
         createDialog(event, modal, 'question', text)
 })
@@ -931,7 +916,7 @@ ipcMain.on('showErrorDialog', (event, content) => {
         fatal = true
     
     if (modal === undefined || modal == null)
-        createDialog(event, win, 'error', content.text)
+        createDialog(event, global.sharedObject.win, 'error', content.text)
     else
         createDialog(event, modal, 'error', content.text)
 })
@@ -946,7 +931,7 @@ ipcMain.on('showFundModal', (event, args) => {
 // load an info dialog
 ipcMain.on('showInfoDialog', (event, text) => {    
     if (modal === undefined || modal == null)
-        createDialog(event, win, 'info', text)
+        createDialog(event, global.sharedObject.win, 'info', text)
     else
         createDialog(event, modal, 'info', text)
 })

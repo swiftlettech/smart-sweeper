@@ -43,13 +43,17 @@
             // load all projects
             if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-            //else
-                //ctrl.availableProjects.push(electron.remote.getGlobal('availableProjects').list);
-
-            console.log(ctrl.availableProjects);
-            // display the project list as 10 per page?
             
             $mainCtrl.setPageHeight();
+            
+            ipcRenderer.on('projectsReady', (event, args) => {
+                $scope.$apply(function() {
+                    ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                    console.log(ctrl.availableProjects);
+                    
+                    // display the project list as 10 per page?
+                });
+            });
         };
         
         /* Is the calendar date in the future? */
@@ -80,10 +84,12 @@
                     // create the addresses and add them to the project
                     ipcRenderer.send('createRecvAddresses', {project: ctrl.newProject, newProjectFlag: true});
                     ipcRenderer.on('addressesCreated', (event, arg) => {
+                        console.log('addressesCreated');
                         ctrl.newProject = {};
                         form.$setPristine();
                         form.$setUntouched();
                         form.$submitted = false;
+                        ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                         
                         ipcRenderer.send('showInfoDialog', {title: 'Receiver addresses', body: 'Addresses were created successfully.'});
                     });
@@ -131,7 +137,8 @@
             ctrl.newProject.recvAddrs = [];
             
             ipcRenderer.send('newProject', {newProject: ctrl.newProject});
-            ipcRenderer.on('newProjectAdded', (event, arg) => {                
+            ipcRenderer.on('newProjectAdded', (event, arg) => {
+                console.log('newProjectAdded');
                 ctrl.newProject = {};
                 form.$setPristine();
                 form.$setUntouched();
@@ -148,7 +155,7 @@
         ctrl.showAddForm = function() {
             ctrl.showAddNewProject = !ctrl.showAddNewProject;
             
-            if (ctrl.showAddNewProject && ctrl.availableProjects.length > 3)
+            if (ctrl.showAddNewProject && ctrl.availableProjects.length > 2)
                 $document.find('#page-wrapper').css('height', '');
             else
                 $mainCtrl.setPageHeight();

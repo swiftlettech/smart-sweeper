@@ -10,6 +10,7 @@
     const ps = window.nodeRequire('ps-node');
     const winston = window.nodeRequire('winston');
     const smartcashapi = window.nodeRequire('./smartcashapi');
+    //const rpc = require('./rpc-client');
     
     let logger = winston.loggers.get('logger');
     var basepath = __dirname.split(path.sep);
@@ -118,7 +119,6 @@
                 remote.getGlobal('sharedObject').referrer = "";
                 remote.getGlobal('sharedObject').client = resp.msg.client;
                 remote.getGlobal('sharedObject').rpcExplorerRunning = true;
-                remote.getGlobal('sharedObject').win.webContents.send('rpcClientCreated');
 
                 // check to see if the local copy of the blockchain is current
                 //smartcashapi.getBlockCount(rpcExplorerConnected, apiCallback);
@@ -143,9 +143,7 @@
                     title: 'Error',
                     body: 'Unable to connect to the RPC explorer. Is there a web server running?'
                 }
-                createDialog(null, win, 'error', content, true)
-                
-                remote.getGlobal('win').webContents.send('rpcExplorerCheck', {rpcExplorer: false})*/
+                createDialog(null, win, 'error', content, true)*/
             }
         }
         
@@ -156,6 +154,8 @@
     
     // check to see if the RPC explorer is running and is connected to Smartcash Core
     function rpcExplorerCheck() {
+        console.log('rpcExplorerCheck');
+        
         ps.lookup({command: 'node'}, function (err, results) {
             var explorerRunning = false
 
@@ -167,6 +167,8 @@
             if (!explorerRunning)
                 startRpcExplorer()
         })
+        //rpc.connect();
+        //console.log(global.sharedObject.client);
     }
     
     function startRpcExplorer() {
@@ -230,7 +232,6 @@
     function checkOnlineStatus() {
         isOnline().then(online => {
             remote.getGlobal('sharedObject').isOnline = online;
-            //remote.getGlobal('win').webContents.send('onlineCheck', {online: false})
         })
     }    
 })();

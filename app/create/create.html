@@ -1,6 +1,6 @@
 <div id="create" ng-init="init()">
     <div id="newProject">
-        <button id="newProjectShowBtn" type="button" class="btn btn-primary" ng-class="{active: $createCtrl.showAddNewProject}" ng-click="$createCtrl.showAddForm()">New Project</button>
+        <button id="newProjectShowBtn" type="button" class="btn btn-primary" ng-class="{active: $createCtrl.showAddNewProject}" ng-click="$createCtrl.showAddForm()">Create Project</button>
         
         <form id="addNewProjectForm" name="addNewProjectForm" class="ng-hide" ng-show="$createCtrl.showAddNewProject" ng-submit="$createCtrl.new(addNewProjectForm)">
             <div class="row">
@@ -72,7 +72,7 @@
     </div>
 
     <div id="projectList">
-        <p style="margin-bottom:25px;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> A project can't be deleted unless its balance is zero.</p>
+        <p style="margin-bottom:25px;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> A project can't be deleted unless its balance is zero and there are no outstanding funds.</p>
         
         <h4>Projects</h4>
         
@@ -91,7 +91,7 @@
                 <td class="numAddrCol text-center"><strong>Total Addresses</strong></td>
                 <td class="addrCol text-center"><strong>Addresses created?</strong></td>
                 <td class="expCol text-center">
-                    <strong>Sweep Date</strong>
+                    <strong>Auto Sweep Date</strong>
                     <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.sweepDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('sweepDate', false)"></i>
                     <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.sweepDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('sweepDate', true)"></i>
                 </td>

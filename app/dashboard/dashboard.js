@@ -34,13 +34,6 @@
                 $scope.$apply(function() {
                     if (args.isOnline && ctrl.projectCount > 0) {
                         availableFunds();
-
-                        ipcRenderer.on('rpcClientCreated', (event, args) => {
-                            //pendingFunds();
-                            //confirmedFunds();
-                            //claimedFunds();
-                            //sweptFunds();
-                        })
                     }
                     else {
                         ctrl.availableBalance = "n/a";
@@ -50,6 +43,13 @@
                         ctrl.sweptFunds = "n/a";
                     }
                 });
+            });
+            
+            ipcRenderer.on('rpcClientCreated', (event, args) => {
+                //pendingFunds();
+                //confirmedFunds();
+                //claimedFunds();
+                //sweptFunds();
             });
             
             $mainCtrl.setPageHeight();

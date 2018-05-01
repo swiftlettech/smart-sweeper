@@ -46,8 +46,10 @@ function checkBalance(projectInfo, callback) {
 /* Check the status of a transaction. */
 function checkTransaction(projectInfo, callback) {
     //console.log(rpcapi.getRawTransaction(projectInfo.txid))
-    rpcapi.getRawTransactions('4254cfa40a527a178bd353f935aed6a573bc00a1a3eef557bfa90d8b9c4ec872,f4eeeac4ec3a3e5e17b64b09afb79e9f3f614afa8303c40217c0835e4e34671a').then(function(resp) {
-        console.log(resp)
+    var txid = '4254cfa40a527a178bd353f935aed6a573bc00a1a3eef557bfa90d8b9c4ec872'
+    
+    rpcapi.getRawTransaction(txid).then(function(rawTxResult) {
+        console.log(rawTxResult)
     })
     //4254cfa40a527a178bd353f935aed6a573bc00a1a3eef557bfa90d8b9c4ec872
     //f4eeeac4ec3a3e5e17b64b09afb79e9f3f614afa8303c40217c0835e4e34671a

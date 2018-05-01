@@ -23,6 +23,8 @@
             $mainCtrl.setPageHeight();
         };
         
+        // ng-class="{disabled: !$mainCtrl.coreRunning || !$mainCtrl.rpcExplorerRunning}"
+        
         /* Load a modal used to edit a project. */
         ctrl.edit = function(id) {
             ctrl.activeProjectID = id;

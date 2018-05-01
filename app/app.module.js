@@ -27,30 +27,42 @@
                 ctrl.setPageHeight();
             });
 
+            ctrl.coreRunning = false;
+            ctrl.rpcExplorerRunning = false;
+            
             ctrl.setActivePage('dashboard');
             ctrl.sortOptions = {property: 'name', reverse: false};
             
             ipcRenderer.on('onlineCheckAPP', (event, args) => {                
                 $scope.$apply(function() {
                     ctrl.isOnline = args.isOnline;
+                    
+                    if (ctrl.isOnline)
+                        ctrl.setPageHeight();
                 });
             });
             
             ipcRenderer.on('coreCheckAPP', (event, args) => {
                 $scope.$apply(function() {
-                    if (args.coreRunning)
+                    if (args.coreRunning) {
                         ctrl.coreRunning = args.coreRunning;
-                    else if (args.coreError)
+                        ctrl.setPageHeight();
+                    }
+                    else if (args.coreError) {
                         ctrl.coreError = args.coreError;
+                    }
                 });
             });
             
             ipcRenderer.on('rpcExplorerCheckAPP', (event, args) => {
-                $scope.$apply(function() {                    
-                    if (args.rpcExplorerRunning)
+                $scope.$apply(function() {
+                    if (args.rpcExplorerRunning) {
                         ctrl.rpcExplorerRunning = args.rpcExplorerRunning;
-                    else if (args.rpcExplorerError)
-                        ctrl.rpcExplorerRunning = args.rpcExplorerError;
+                        ctrl.setPageHeight();
+                    }
+                    else if (args.rpcExplorerError) {
+                        ctrl.rpcExplorerError = args.rpcExplorerError;
+                    }
                 });
             });
         };
@@ -58,17 +70,18 @@
         ctrl.setActivePage = function(page) {
             ctrl.activePage = page;
             console.log('active page: ' + ctrl.activePage);
+            eventCleanup();
 
             if (ctrl.activePage !== 'dashboard')
                 $document.find('#page-wrapper').css('background-image', 'none');
             else
                 $document.find('#page-wrapper').css('background-image', 'url("images/SmartSweeper-logo.png")');
-
-            eventCleanup();
         };
 
-        ctrl.setPageHeight = function() {        
-            if (((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && electron.remote.getGlobal('availableProjects').list.length > 7) || ((ctrl.activePage === "dashboard") && window.innerHeight<= 600)) {
+        ctrl.setPageHeight = function() {            
+            if ((ctrl.activePage === "dashboard" && (!ctrl.isOnline && !ctrl.coreRunning && !ctrl.rpcExplorerRunning)) ||
+               ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && (electron.remote.getGlobal('availableProjects').list.length > 7)))
+            {
                 $document.find('#page-wrapper').css('height', '');
                 return;
             }
@@ -97,8 +110,8 @@
 
         /*
          * Natural Sort algorithm for Javascript - Version 0.8.1 - Released under MIT license
-         * Author: Jim Palmer (based on chunking idea from Dave Koelle)
-         * Slightly modified by Miyako Jones
+         * Original Author: Jim Palmer (based on chunking idea from Dave Koelle)
+         * Slightly modified (to sort objects) by Miyako Jones
          */
         ctrl.naturalSort = function(a, b) {        
             a = a.value;
