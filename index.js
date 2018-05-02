@@ -14,7 +14,7 @@ const {combine, timestamp, prettyPrint} = format
 
 const Store = require('electron-store')
 const smartcashapi = require('./smartcashapi')
-const rpcenv = require("./rpc-explorer/app/env")
+const rpc = require('./rpc-client')
 const {watch} = require('melanke-watchjs')
 const isOnline = require('is-online')
 //const {is} = require('electron-util')
@@ -87,7 +87,7 @@ function appInit() {
     // saved in $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper on Linux
     // saved in ~/Library/Application Support/smart-sweeper on Mac
     db = new Store({name: "smart-sweeper"})
-    global.availableProjects = db.get('projects')    
+    global.availableProjects = db.get('projects')
     if (global.availableProjects === undefined) {
         db.set('projects', {index: 0, list: []})
         global.availableProjects = db.get('projects')
@@ -125,8 +125,7 @@ function appInit() {
     global.sharedObject = {
         win: null,
         isOnline: false,
-        referrer: "",
-        client: null,        
+        referrer: "",    
         rpcExplorer: null,
         coreRunning: false,
         coreError: false,
@@ -139,6 +138,7 @@ function appInit() {
         console.log(property)
         console.log(oldValue)
         console.log(newValue)
+        console.log()
         
         if (global.sharedObject.win) {
             if (property === "isOnline")
@@ -153,8 +153,6 @@ function appInit() {
             }
             else if (property === "rpcExplorerError")
                 global.sharedObject.win.webContents.send('rpcExplorerCheckAPP', {rpcExplorerError: global.sharedObject.rpcExplorerError})
-            else if (property === "client")
-                global.client = newValue
         }
     }, 0, true);
     
@@ -223,13 +221,14 @@ function createBgWindow() {
     bgWin.setMenu(null)
 
     bgWin.on("ready-to-show", () => {
-        //bgWin.show()
-        
-        setTimeout(function() {closeSplashScreen()}, 12000)
+        setTimeout(function() {
+            closeSplashScreen()
+            //bgWin.show()
+        }, 12000)
     })
 
     bgWin.on('closed', () => {
-        smartcashapi.disconnRpcExplorer();
+        //smartcashapi.disconnRpcExplorer();
         
         if (global.sharedObject.rpcExplorer)
             global.sharedObject.rpcExplorer.kill()
@@ -272,7 +271,6 @@ function createWindow() {
         
         isOnline().then(online => {
             global.sharedObject.isOnline = online;
-
         })
     })
 
@@ -281,7 +279,8 @@ function createWindow() {
         // Dereference the window object, usually you would store windows
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
-        bgWin.close()        
+        bgWin.close()
+        bgWin = null
         global.sharedObject.win = null
     })
 }
@@ -412,10 +411,16 @@ let apiCallback = function(resp, functionName, projectInfo) {
         if (functionName === "checkBalance") {
             global.availableProjects.list[projectInfo.projectIndex].totalFunds = parseFloat(resp.msg)
         }
-        else if (functionName === "checkPending") {
-            if (resp.msg < 6) {
-                global.callbackObj.pendingFunds += addrAmt
-                global.callbackObj.pendingWallets++
+        else if (functionName === "checkTransaction") {
+            if (global.sharedObject.referrer === "getAllTxInfo") {
+                if (resp.msg < 6) {
+                    global.callbackObj.pendingFunds += addrAmt
+                    global.callbackObj.pendingWallets++
+                }
+                else
+                    global.callbackObj.confirmedFunds += addrAmt
+                    global.callbackObj.confirmedWallets++
+                }
             }
         }
         /*else if (functionName === "checkConfirmed")*/
@@ -446,15 +451,14 @@ let apiCallback = function(resp, functionName, projectInfo) {
             global.sharedObject.win.webContents.send('projectsReady')
         }
     }
-    else if (functionName === "checkPending") {
-        if (callbackCounter == totalAddrs)
-            event.sender.send('pendingFundsInfo', {pendingFunds: pendingFunds, pendingWallets: pendingWallets})
-    }
     else if (functionName === "checkTransaction") {
-        if (apiCallbackCounter == projectInfo.totalAddresses) {
-            
+        if (apiCallbackCounter == projectInfo.totalAddresses && global.sharedObject.referrer === "getAllTxInfo") {
+            event.sender.send('allTxInfo', {pendingFunds: global.callbackObj.pendingFunds, pendingWallets: global.callbackObj.pendingWallets, confirmedFunds: global.callbackObj.confirmedFunds, confirmedWallets: global.callbackObj.confirmedWallets})
         }
     }
+    /*else if (functionName === "") {
+        
+    }*/
 
     /*if (functionName === "sendFunds") {
         if (callbackCounter == global.availableProjects.list.length) {
@@ -466,26 +470,6 @@ let apiCallback = function(resp, functionName, projectInfo) {
         
     }*/
 }
-
-/*let apiCallback = function(resp, functionName, projectInfo) {       
-    if (resp.type === "data") {
-        global.availableProjects.list[projectInfo.projectIndex].totalFunds = parseFloat(resp.msg)
-    }
-    else if (resp.type === "error") {            
-        logger.error(functionName + ': ' + resp.msg + "project " + projectInfo.projectName)
-    }
-
-    apiCallbackCounter++
-
-    if (functionName === "checkProjectBalances") {
-        /*if (apiCallbackCounter == global.availableProjects.list.length) {
-            apiCallbackCounter = 0
-            db.set('projects', global.availableProjects)
-            global.sharedObject.win.webContents.send('balancesChecked')
-            global.sharedObject.win.webContents.send('projectsReady')
-        }
-    }
-}*/
 
 // automatically sweep project funds if sweep date has expired
 function autoSweepFunds() {
@@ -840,12 +824,15 @@ ipcMain.on('getConfirmedFundsInfo', (event, args) => {
 })
 
 // get the total amount of transactions that have yet to be confirmed
-ipcMain.on('getPendingFundsInfo', (event, args) => {
-    console.log('in getPendingFundsInfo')
+ipcMain.on('getAllTxInfo', (event, args) => {
+    console.log('in getAllTxInfo')
+    global.sharedObject.referrer = "getAllTxInfo"
     apiCallbackCounter = 0
     let totalAddrs = 0    
     global.callbackObj.pendingWallets = 0
     global.callbackObj.pendingFunds = 0
+    global.callbackObj.confirmedWallets = 0
+    global.callbackObj.confirmedFunds = 0
     
     global.availableProjects.list.forEach(function(project, projectKey) {
         if (project.fundsSent)

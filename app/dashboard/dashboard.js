@@ -46,8 +46,7 @@
             });
             
             ipcRenderer.on('rpcClientCreated', (event, args) => {
-                //pendingFunds();
-                //confirmedFunds();
+                txInfo();
                 //claimedFunds();
                 //sweptFunds();
             });
@@ -89,13 +88,15 @@
             });
         }
         
-        /* Transactions that have less than 6 confirmations (all projects). */
-        function pendingFunds() {
-            ipcRenderer.send('getPendingFundsInfo');
-            ipcRenderer.on('pendingFundsInfo', (event, args) => {
+        /* The pending/confirmed state of all wallets (all projects). */
+        function txInfo() {
+            ipcRenderer.send('getAllTxInfo');
+            ipcRenderer.on('allTxInfo', (event, args) => {
                 $scope.$apply(function() {
                     ctrl.pendingFunds = args.pendingFunds;
                     ctrl.pendingWalletsCount = args.pendingWallets;
+                    ctrl.confirmedFunds = args.confirmedFunds;
+                    ctrl.confirmedWalletsCount = args.confirmedWallets;
                 });
             });
         }

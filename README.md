@@ -35,6 +35,8 @@ Your SmartCash wallet must be started with the following arguments:
 ```
 -txindex=1
 -server
+-rpcbind=127.0.0.1
+-rpcport=9678
 -rpcuser=rpcusername
 -rpcpassword=rpcpassword
 ```
@@ -44,6 +46,8 @@ If it isn't running, SMART Sweeper will start it for you with the above argument
 ```
 txindex=1
 server=1
+rpcbind=127.0.0.1
+rpcport=9678
 rpcuser=rpcusername
 rpcpassword=rpcpassword
 ```
@@ -52,11 +56,11 @@ User files
 ---------------
 The database (smart-sweeper.json) and the log files are saved in the following folders:
 
-* **Windows**: %APPDATA%/smart-sweeper
-* **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper
-* **Mac**: ~/Library/Application Support/smart-sweeper
+* **Windows**: %APPDATA%/SMART Sweeper
+* **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/SMART Sweeper
+* **Mac**: ~/Library/Application Support/SMART Sweeper
 
-The log files are also in JSON format and can be read with a general log viewer such as [glogg](https://github.com/nickbnf/glogg) or a JSON viewer such as []().
+The log files are also in JSON format and can be read with a general log viewer such as [glogg](https://github.com/nickbnf/glogg).
 
 
 Other software used
@@ -71,8 +75,8 @@ Software | License
 [electron-util](https://github.com/sindresorhus/electron-util) | MIT
 [elemon](https://github.com/manidlou/elemon) | MIT
 [melanke-watchjs](https://github.com/melanke/Watch.JS) | MIT
+[node-bitcoin](https://github.com/freewil/node-bitcoin) | Unlicense
 [ps-node](https://github.com/neekey/ps) | MIT
-[rpc-explorer](https://github.com/SmartCash/rpc-explorer) | MIT
 [smartcashjs-lib](https://github.com/SmartCash/SmartCashjs-lib) | MIT
 [SmartCash Paper Wallet Generator](https://github.com/SmartCash/PaperWalletGenerator) | ?
 [winston](https://github.com/winstonjs/winston) | MIT

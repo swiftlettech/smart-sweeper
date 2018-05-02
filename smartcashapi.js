@@ -7,6 +7,7 @@ const smartcashExplorer = "http://explorer3.smartcash.cc"
 const rpcapi = require('./rpc-explorer/app/rpcApi')
 const rpcenv = require("./rpc-explorer/app/env")
 const rpcExplorer = 'http://' + rpcenv.smartcashd.host
+const rpc = require('./rpc-client')
 //const testnet = smartcash.networks.testnet
 const http = require('http')
 const util = require('util')
@@ -45,12 +46,32 @@ function checkBalance(projectInfo, callback) {
 
 /* Check the status of a transaction. */
 function checkTransaction(projectInfo, callback) {
-    //console.log(rpcapi.getRawTransaction(projectInfo.txid))
-    var txid = '4254cfa40a527a178bd353f935aed6a573bc00a1a3eef557bfa90d8b9c4ec872'
+    var txid = 'f4eeeac4ec3a3e5e17b64b09afb79e9f3f614afa8303c40217c0835e4e34671a'
+    var cmd = {
+        method: 'getrawtransaction',
+        param1: txid,
+        param2: 1
+    }
     
-    rpcapi.getRawTransaction(txid).then(function(rawTxResult) {
-        console.log(rawTxResult)
+    rpc.sendCmd(cmd, function(err, resp) {
+        console.log('checkTransaction')
+        console.log(err)
+        console.log(resp)
+        
+        if (err) {
+            callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
+        }
+        else {            
+            if (resp.confirmations !== undefined)
+                callback({type: 'data', msg: resp.confirmations}, projectInfo.addrAmt)
+            else
+                callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
+        }
     })
+    
+    /*rpcapi.getRawTransaction(txid).then(function(rawTxResult) {
+        console.log(rawTxResult)
+    })*/
     //4254cfa40a527a178bd353f935aed6a573bc00a1a3eef557bfa90d8b9c4ec872
     //f4eeeac4ec3a3e5e17b64b09afb79e9f3f614afa8303c40217c0835e4e34671a
     
@@ -91,31 +112,6 @@ function checkTransaction(projectInfo, callback) {
     })*/
 }
 
-/* Start the RPC explorer. */
-function connRpcExplorer(callback) {    
-    request({
-        url: rpcExplorer + '/connect',
-        method: 'POST',
-        json: true,
-        body: {
-            host: rpcenv.smartcashd.host,
-            port: rpcenv.smartcashd.port,
-            username: rpcenv.smartcashd.rpc.username,
-            password: rpcenv.smartcashd.rpc.password
-        }
-    }, function (err, resp, body) {
-        console.log('in connRpcExplorer');
-        console.log(resp);
-        
-        if (err) {
-            callback({type: 'error', msg: err.code}, 'connRpcExplorer')
-            return;
-        }
-        
-        callback({type: 'data', msg: resp.body.msg}, 'connRpcExplorer')
-    })
-}
-
 /* Syncs SmartCash core if behind. */
 function coreSync(callback) {
     request({
@@ -133,15 +129,6 @@ function coreSync(callback) {
             callback({type: 'error', msg: err.code}, 'coreSync')
         }
     })
-}
-
-/* Disconnect from the RPC explorer. */
-function disconnRpcExplorer() {
-    request({
-        url: 'http://localhost/disconnect',
-        method: 'POST',
-        body: ''
-    }, function (err, resp, body) {})
 }
 
 /* Generate a random public/private key pair. */
@@ -259,9 +246,7 @@ function sweepFunds(addresses) {
 module.exports = {
     checkBalance: checkBalance,
     checkTransaction: checkTransaction,
-    connRpcExplorer: connRpcExplorer,
     coreSync: coreSync,
-    disconnRpcExplorer: disconnRpcExplorer,
     generateAddress: generateAddress,
     getBlockCount: getBlockCount,
     sendFunds: sendFunds,

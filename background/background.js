@@ -10,7 +10,7 @@
     const ps = window.nodeRequire('ps-node');
     const winston = window.nodeRequire('winston');
     const smartcashapi = window.nodeRequire('./smartcashapi');
-    //const rpc = require('./rpc-client');
+    const rpc = window.nodeRequire('./rpc-client');
     
     let logger = winston.loggers.get('logger');
     var basepath = __dirname.split(path.sep);
@@ -61,6 +61,10 @@
                     startSmartcashCore()
                 }
                 else {
+                    remote.getGlobal('sharedObject').coreRunning = true;
+                    rpcCheck()
+                }
+                /*else {
                     // is running
                     // check the arguments to see if the RPC server arg is present and get the process object
                     smartcash = results[0]
@@ -74,7 +78,7 @@
                                 argCount++;
                         })
 
-                        if (argCount == 4)
+                        if (argCount >= 4)
                             hasArgs = true
                     }
 
@@ -94,7 +98,7 @@
                         remote.getGlobal('sharedObject').coreRunning = true;
                         rpcExplorerCheck()
                     }
-                }
+                }*/
 
                 // periodic background checking for online connectivity, SmartCash Core, and the RPC Explorer
                 setInterval(() => {
@@ -107,17 +111,16 @@
     }
     
     /* Generic API callback function. */
-    let apiCallback = function(resp, functionName, projectInfo) {
+    let apiCallback = function(resp, functionName) {
         if (resp.type === "data") {
             console.log('from ' + functionName);
             console.log(resp);
             
-            if (functionName === "connRpcExplorer") {
+            if (functionName === "rpcCheck") {
                 rpcExplorerConnected = true
                 
                 console.log(remote.getGlobal('sharedObject'))
                 remote.getGlobal('sharedObject').referrer = "";
-                remote.getGlobal('sharedObject').client = resp.msg.client;
                 remote.getGlobal('sharedObject').rpcExplorerRunning = true;
 
                 // check to see if the local copy of the blockchain is current
@@ -128,12 +131,9 @@
             }
         }
         else if (resp.type === "error") {
-            if (projectInfo)
-                logger.error(functionName + ': ' + resp.msg + "project " + projectInfo.projectName)
-            else
-                logger.error(functionName + ': ' + resp.msg)
+            logger.error(functionName + ': ' + resp.msg)
 
-            if (functionName === "connRpcExplorer") {
+            if (functionName === "rpcCheck") {
                 remote.getGlobal('sharedObject').rpcExplorerError = true;
                 
                 //splashScreen.close()
@@ -152,8 +152,18 @@
         
     }
     
+    function rpcCheck() {
+        console.log('rpcCheck');
+        rpc.statusCheck(function(resp) {
+            if (!resp)
+                apiCallback({type: 'error'}, 'rpcCheck')
+            else
+                apiCallback({type: 'data'}, 'rpcCheck')
+        })
+    }
+    
     // check to see if the RPC explorer is running and is connected to Smartcash Core
-    function rpcExplorerCheck() {
+    /*function rpcExplorerCheck() {
         console.log('rpcExplorerCheck');
         
         ps.lookup({command: 'node'}, function (err, results) {
@@ -167,11 +177,9 @@
             if (!explorerRunning)
                 startRpcExplorer()
         })
-        //rpc.connect();
-        //console.log(global.sharedObject.client);
-    }
+    }*/
     
-    function startRpcExplorer() {
+    /*function startRpcExplorer() {
         rpcExplorer = cp.fork(path.join(basepath, 'rpc-explorer/bin/www'), [], {})
         rpcExplorer.on('error', (err) => {
             logger.error('startRpcExplorer: ' + err)
@@ -182,7 +190,7 @@
                 smartcashapi.connRpcExplorer(apiCallback)
             }
         })
-    }
+    }*/
     
     // check to see if Smartcash Core is running
     function smartcashCoreCheck() {
@@ -193,7 +201,7 @@
             else {
                 if (results.length != 0) {
                     remote.getGlobal('sharedObject').coreRunning = true;
-                    rpcExplorerCheck();
+                    rpcCheck();
                 }
                 else
                     remote.getGlobal('sharedObject').coreRunning = false;
@@ -202,7 +210,7 @@
     }
 
     function startSmartcashCore() {
-        smartcash = cp.spawn(smartcashPath + smartcashProg, ['-txindex=1', '-server', '-rpcuser=rpcusername', '-rpcpassword=rpcpassword'], {
+        smartcash = cp.spawn(smartcashPath + smartcashProg, ['-txindex=1', '-server', '-rpcbind=127.0.0.1', '-rpcport=9678', '-rpcuser=rpcusername', '-rpcpassword=rpcpassword'], {
             detached: true,
             stdio: 'ignore',
             windowsHide: true
@@ -224,7 +232,7 @@
 
         setTimeout(() => {
             remote.getGlobal('sharedObject').coreRunning = true;
-            rpcExplorerCheck()
+            rpcCheck()
         }, 20000)
     }
 
