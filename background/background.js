@@ -1,6 +1,7 @@
 (function() {
     'use strict';
     
+    const config = window.nodeRequire("exp-config")
     const electron = window.nodeRequire('electron');
     const remote = electron.remote;
     const {ipcRenderer} = electron;
@@ -13,29 +14,24 @@
     const rpc = window.nodeRequire('./rpc-client');
     
     let logger = winston.loggers.get('logger');
+    //console.log(logger)
     var basepath = __dirname.split(path.sep);
     basepath.pop();
     basepath = basepath.join(path.sep);
     
     var apiCallbackCounter, isOnlineFlag;
-    var smartcashProg, smartcashPath, smartcash, rpcExplorer, rpcExplorerConnected;
+    var smartcashProg, smartcashPath, smartcash, rpcExplorer, rpcConnected;
     
     init();
     
-    function init() {
+    function init() {        
         // load smartcash and the RPC explorer
         //https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file
         // instructions to update smartcash config (txindex=1/server=1/rpcuser=rpcusername/rpcpassword=rpcpassword)
         if (is.windows) {
-            smartcashPath = "C:\\Program Files\\SmartCash Core\\"
             smartcashProg = "smartcash-qt.exe"
         }
-        else if (is.linux) {
-            smartcashPath = ""
-            smartcashProg = "smartcash-qt"
-        }
-        else if (is.macos) {
-            smartcashPath = ""
+        else if (is.linux || is.macos) {
             smartcashProg = "smartcash-qt"
         }
         else {
@@ -51,7 +47,7 @@
         }
 
         // check to see if smartcash is already running
-        ps.lookup({command: smartcashProg}, function (err, results) {
+        ps.lookup({command: smartcashProg}, function (err, results) {            
             if (err) {
                throw new Error(err)
             }
@@ -104,7 +100,7 @@
                 setInterval(() => {
                     //checkOnlineStatus()
                     //smartcashCoreCheck()
-                    //rpcExplorerCheck()
+                    //rpcCheck()
                 }, 30000)
             }
         })
@@ -117,14 +113,11 @@
             console.log(resp);
             
             if (functionName === "rpcCheck") {
-                rpcExplorerConnected = true
-                
-                console.log(remote.getGlobal('sharedObject'))
-                remote.getGlobal('sharedObject').referrer = "";
-                remote.getGlobal('sharedObject').rpcExplorerRunning = true;
+                rpcConnected = true
+                remote.getGlobal('sharedObject').rpcConnected = true;
 
                 // check to see if the local copy of the blockchain is current
-                //smartcashapi.getBlockCount(rpcExplorerConnected, apiCallback);
+                //smartcashapi.getBlockCount(rpcConnected, apiCallback);
 
                 // automatically sweep funds if necessary
                 //autoSweepFunds();
@@ -134,7 +127,7 @@
             logger.error(functionName + ': ' + resp.msg)
 
             if (functionName === "rpcCheck") {
-                remote.getGlobal('sharedObject').rpcExplorerError = true;
+                remote.getGlobal('sharedObject').rpcError = true;
                 
                 //splashScreen.close()
                 //splashScreen = null
@@ -147,13 +140,10 @@
             }
         }
         
-        apiCallbackCounter++
-        
-        
+        apiCallbackCounter++        
     }
     
     function rpcCheck() {
-        console.log('rpcCheck');
         rpc.statusCheck(function(resp) {
             if (!resp)
                 apiCallback({type: 'error'}, 'rpcCheck')
@@ -161,36 +151,6 @@
                 apiCallback({type: 'data'}, 'rpcCheck')
         })
     }
-    
-    // check to see if the RPC explorer is running and is connected to Smartcash Core
-    /*function rpcExplorerCheck() {
-        console.log('rpcExplorerCheck');
-        
-        ps.lookup({command: 'node'}, function (err, results) {
-            var explorerRunning = false
-
-            results.forEach(function(result, index) {
-                if (result.arguments.length == 1 && result.arguments[0].indexOf('rpc-explorer') != -1)
-                    explorerRunning = true
-            })
-
-            if (!explorerRunning)
-                startRpcExplorer()
-        })
-    }*/
-    
-    /*function startRpcExplorer() {
-        rpcExplorer = cp.fork(path.join(basepath, 'rpc-explorer/bin/www'), [], {})
-        rpcExplorer.on('error', (err) => {
-            logger.error('startRpcExplorer: ' + err)
-        })
-        rpcExplorer.on('message', (resp) => {
-            if (resp.msg === "success") {            
-                rpcExplorerConnected = false
-                smartcashapi.connRpcExplorer(apiCallback)
-            }
-        })
-    }*/
     
     // check to see if Smartcash Core is running
     function smartcashCoreCheck() {
@@ -210,7 +170,7 @@
     }
 
     function startSmartcashCore() {
-        smartcash = cp.spawn(smartcashPath + smartcashProg, ['-txindex=1', '-server', '-rpcbind=127.0.0.1', '-rpcport=9678', '-rpcuser=rpcusername', '-rpcpassword=rpcpassword'], {
+        smartcash = cp.spawn(config.smartcashPath + smartcashProg, ['-txindex=1', '-server', '-rpcbind='+config.rpc.host, '-rpcport='+config.rpc.port, '-rpcuser='+config.rpc.username, '-rpcpassword='+config.rpc.password], {
             detached: true,
             stdio: 'ignore',
             windowsHide: true
@@ -222,17 +182,13 @@
             console.log(err)
             logger.error('appInit - start Smartcash core: ' + err)
             remote.getGlobal('sharedObject').coreError = true;
-
-            /*var content = {
-                title: 'Error',
-                body: 'SmartCash could not load. SMART Sweeper will now exit.'
-            }
-            createDialog(null, win, 'error', content, true)*/
         })
-
+        
         setTimeout(() => {
-            remote.getGlobal('sharedObject').coreRunning = true;
-            rpcCheck()
+            if (!remote.getGlobal('sharedObject').coreError) {
+                remote.getGlobal('sharedObject').coreRunning = true;
+                rpcCheck()
+            }
         }, 20000)
     }
 

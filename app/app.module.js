@@ -17,6 +17,7 @@
     .controller('SmartController', function($scope, $document, $filter) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
+        const isOnline = window.nodeRequire('is-online');
 
         var ctrl = this;
 
@@ -26,9 +27,17 @@
             $(window).on("resize", function(event) {
                 ctrl.setPageHeight();
             });
+            
+            isOnline().then(online => {
+                ctrl.isOnline = online;
+                electron.remote.getGlobal('sharedObject').isOnline = online;
+                    
+                if (ctrl.isOnline)
+                    ctrl.setPageHeight();
+            })
 
             ctrl.coreRunning = false;
-            ctrl.rpcExplorerRunning = false;
+            ctrl.rpcConnected = false;
             
             ctrl.setActivePage('dashboard');
             ctrl.sortOptions = {property: 'name', reverse: false};
@@ -54,14 +63,14 @@
                 });
             });
             
-            ipcRenderer.on('rpcExplorerCheckAPP', (event, args) => {
+            ipcRenderer.on('rpcCheckAPP', (event, args) => {                
                 $scope.$apply(function() {
-                    if (args.rpcExplorerRunning) {
-                        ctrl.rpcExplorerRunning = args.rpcExplorerRunning;
+                    if (args.rpcConnected) {
+                        ctrl.rpcConnected = args.rpcConnected;
                         ctrl.setPageHeight();
                     }
-                    else if (args.rpcExplorerError) {
-                        ctrl.rpcExplorerError = args.rpcExplorerError;
+                    else if (args.rpcError) {
+                        ctrl.rpcError = args.rpcError;
                     }
                 });
             });
@@ -79,7 +88,7 @@
         };
 
         ctrl.setPageHeight = function() {            
-            if ((ctrl.activePage === "dashboard" && (!ctrl.isOnline && !ctrl.coreRunning && !ctrl.rpcExplorerRunning)) ||
+            if ((ctrl.activePage === "dashboard" && (!ctrl.isOnline && !ctrl.coreRunning && !ctrl.rpcConnected)) ||
                ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && (electron.remote.getGlobal('availableProjects').list.length > 7)))
             {
                 $document.find('#page-wrapper').css('height', '');

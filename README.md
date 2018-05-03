@@ -5,9 +5,11 @@ Description
 ---------------
 Sweeper application for SmartCash cryptocurrency (http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac OS.
 
+
 Releases
 ---------------
 Releases are forthcoming. SMART Sweeper is still in the development stage.
+
 
 Requirements
 ---------------
@@ -17,11 +19,13 @@ Requirements
 
 Run node -v and npm -v from a command prompt to make sure they're in your PATH. Open your wallet to make sure that it is up to date before launching SMART Sweeper.
 
+
 Installation
 ---------------
 ``` bash
 npm install
 ```
+
 
 To run
 ---------------
@@ -29,8 +33,26 @@ To run
 npm start
 ```
 
+
 Configuration
 ---------------
+SMART Sweeper can be configured by modifying .env in the root directory. The app will create it for you the first time you load it, but you can create the file yourself prior to that, which will help if you didn't use the default SmartCash installation path. The default values are shown below.
+```
+rpc.host=127.0.0.1
+rpc.port=9678
+rpc.username=rpcusername
+rpc.password=rpcpassword
+smartcashPath=C:\Program Files\SmartCash\
+
+```
+
+* rpc.host is the IP address that the Smartcash Wallet RPC server is bound to.
+* rpc.port is the port that the Smartcash Wallet RPC server is listening on.
+* rpc.username is the Smartcash Wallet RPC server username.
+* rpc.password is the Smartcash Wallet RPC server password.
+* smartcashPath is the full path to your Smartcash Wallet installation.
+
+
 Your SmartCash wallet must be started with the following arguments:
 ```
 -txindex=1
@@ -51,6 +73,9 @@ rpcport=9678
 rpcuser=rpcusername
 rpcpassword=rpcpassword
 ```
+
+The values of rpc.host, rpc.port, rpc.username, and rpc.password in .env must match those in the program arguments or the smartcash.conf file.
+
 
 User files
 ---------------
@@ -74,6 +99,7 @@ Software | License
 [electron-store](https://github.com/sindresorhus/electron-store) | MIT
 [electron-util](https://github.com/sindresorhus/electron-util) | MIT
 [elemon](https://github.com/manidlou/elemon) | MIT
+[exp-config](https://github.com/ExpressenAB/exp-config) | MIT
 [melanke-watchjs](https://github.com/melanke/Watch.JS) | MIT
 [node-bitcoin](https://github.com/freewil/node-bitcoin) | Unlicense
 [ps-node](https://github.com/neekey/ps) | MIT

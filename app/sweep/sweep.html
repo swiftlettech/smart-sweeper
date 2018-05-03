@@ -31,7 +31,7 @@
                     <td colspan="8" style="padding:0;">
                         <table class="innerTable">
                             <tr>
-                                <td class="sweepCol"><input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="true" ng-enabled="project.fundsSent" /></td>
+                                <td class="sweepCol"><input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="true" ng-enabled="project.fundsSent || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError" /></td>
                                 <td class="nameCol">{{project.name}}</td>
                                 <td class="addrAmtCol text-center">{{project.addrAmt | toFixedNum: 8}}</td>
                                 <td class="numAddrCol text-center">{{project.numAddr}}</td>

@@ -1,86 +1,103 @@
-//require("config")
+const fs = require('fs')
+const os = require('os')
+let config = require("exp-config")
+const electron = require('electron')
+const {ipcRenderer} = electron
 //const winston = require('winston')
 const bitcoin = require('bitcoin')
 
+let client
+
 //let logger = winston.loggers.get('logger')
 
-let smartcashd = {
-    host: "127.0.0.1",
-    port: 9678,
-    rpc: {
-        username: "rpcusername",
-        password: "rpcpassword"
-    }
+// check for existing config file, create it if it doesn't exist    
+try {
+    fs.openSync('.env', 'r')
+    
+    client = new bitcoin.Client({
+        host: config.rpc.host,
+        port: config.rpc.port,
+        user: config.rpc.username,
+        pass: config.rpc.password,
+        timeout: 30000
+    })
 }
-
-const client = new bitcoin.Client({
-    host: smartcashd.host,
-    port: smartcashd.port,
-    user: smartcashd.rpc.username,
-    pass: smartcashd.rpc.password,
-    timeout: 30000
-})
-
-function disconnect() {
-    //client
+catch(err) {    
+    if (err.code === "ENOENT") {
+        var smartcashPath
+        
+        var content = "rpc.host=127.0.0.1\n"
+        content += "rpc.port=9678\n"
+        content += "rpc.username=rpcusername\n"
+        content += "rpc.password=rpcpassword\n"
+        
+        if (os.platform() === "win32")
+            smartcashPath = "C:\\Program Files\\SmartCash\\"
+        //else if (os.platform() === "linux")
+        //else if (os.platform() === "darwin")
+            
+        content += "smartcashPath=" + smartcashPath + "\n"
+        
+        fs.writeFileSync('.env', content)
+        
+        config = { rpc: {} }
+        
+        config.rpc.host = "127.0.0.1"
+        config.rpc.port = "9678"
+        config.rpc.username = "rpcusername"
+        config.rpc.password = "rpcpassword"
+        config.smartcashPath = smartcashPath
+        
+        client = new bitcoin.Client({
+            host: config.rpc.host,
+            port: config.rpc.port,
+            user: config.rpc.username,
+            pass: config.rpc.password,
+            timeout: 30000
+        })
+    }
+    else {
+        var content = {
+            text: {
+                title: 'Error',
+                body: 'The configuration file cannot be loaded. SMART Sweeper will now exit.'
+            },
+            fatal: true
+        }            
+        ipcRenderer.send('showErrorDialog', content);
+    }
 }
 
 // send a command to the RPC server
 function sendCmd(cmd, callback) {
-    if (cmd.param2 === undefined) {
-        client.cmd(cmd.method, cmd.param1, function(err, result, resHeaders) {
-            console.log(result)
-            console.log(err)
-            console.log(resHeaders)
+    client.cmd(cmd.method, cmd.params, function(err, result, resHeaders) {
+        //console.log(result)
+        //console.log(err)
+        //console.log(resHeaders)
 
-            if (err)
-                callback(true, err)
-            else
-                callback(false, result)
-        });
-    }
-    else if (cmd.param1 === undefined) {
-        client.cmd(cmd.method, cmd.param1, cmd.param2, function(err, result, resHeaders) {
-            console.log(result)
-            console.log(err)
-            console.log(resHeaders)
-
-            if (err)
-                callback(true, err)
-            else
-                callback(false, result)
-        });
-    }
-    else {
-        client.cmd(cmd.method, function(err, result, resHeaders) {
-            console.log(result)
-            console.log(err)
-            console.log(resHeaders)
-
-            if (err)
-                callback(true, err)
-            else
-                callback(false, result)
-        });
-    }
+        if (err)
+            callback(true, err)
+        else
+            callback(false, result)
+    });
 }
 
 // checks to see whether or not the client can communicate with the core
 function statusCheck(callback) {
     var cmd = {
-        method: 'getblockchaininfo'
-    }    
-    
-    console.log('statusCheck');
+        method: 'getblockcount',
+        params: []
+    }
     
     sendCmd(cmd, function(err, resp) {
-        console.log(resp)
-        //callback(err)
+        if (!err)
+            callback(resp)
+        else
+            callback(err)
     })
 }
 
 module.exports = {
-    disconnect: disconnect,
     sendCmd: sendCmd,
     statusCheck: statusCheck
 }

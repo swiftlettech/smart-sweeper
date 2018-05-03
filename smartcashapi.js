@@ -1,6 +1,6 @@
 /* Smart Cash API calls. */
-const electron = require('electron')
-const winston = require('winston')
+//const electron = require('electron')
+//const winston = require('winston')
 const request = require('request')
 const smartcash = require('smartcashjs-lib')
 const smartcashExplorer = "http://explorer3.smartcash.cc"
@@ -14,7 +14,7 @@ const util = require('util')
 
 //console.log(smartcash)
 
-let logger = winston.loggers.get('logger')
+//let logger = winston.loggers.get('logger')
 let callbackCounter = 0
 
 /* Check the balance for a given address. */
@@ -46,12 +46,12 @@ function checkBalance(projectInfo, callback) {
 
 /* Check the status of a transaction. */
 function checkTransaction(projectInfo, callback) {
-    var txid = 'f4eeeac4ec3a3e5e17b64b09afb79e9f3f614afa8303c40217c0835e4e34671a'
     var cmd = {
         method: 'getrawtransaction',
-        param1: txid,
-        param2: 1
+        params: [projectInfo.txid, 1]
     }
+    
+    //projectInfo.addrBatch
     
     rpc.sendCmd(cmd, function(err, resp) {
         console.log('checkTransaction')
@@ -61,55 +61,13 @@ function checkTransaction(projectInfo, callback) {
         if (err) {
             callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
         }
-        else {            
+        else {
             if (resp.confirmations !== undefined)
-                callback({type: 'data', msg: resp.confirmations}, projectInfo.addrAmt)
+                callback({type: 'data', msg: resp.confirmations}, 'checkTransaction', projectInfo)
             else
                 callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
         }
     })
-    
-    /*rpcapi.getRawTransaction(txid).then(function(rawTxResult) {
-        console.log(rawTxResult)
-    })*/
-    //4254cfa40a527a178bd353f935aed6a573bc00a1a3eef557bfa90d8b9c4ec872
-    //f4eeeac4ec3a3e5e17b64b09afb79e9f3f614afa8303c40217c0835e4e34671a
-    
-    /*http.get({
-        host: 'explorer3.smartcash.cc',
-        path: '/api/getrawtransaction?txid=' + txid + '&decrypt=1'
-    }, (resp) => {
-        var returnedData
-        const {statusCode} = resp
-        
-        if (statusCode !== 200) {
-            let error = new Error('Request Failed. Status Code: ' + statusCode);
-            callback({type: 'error', msg: error.message})
-            return
-        }
-        
-        let rawData = ""
-        
-        resp.on('data', (chunk) => { rawData += chunk })
-        resp.on('end', () => {
-            try {
-                const parsedData = JSON.parse(rawData)
-
-                if (parsedData.confirmations !== undefined) {
-                    returnedData = callback({type: 'data', msg: parsedData.confirmations}, projectInfo.addrAmt)
-                    return returnedData
-                }
-                else
-                    callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)})
-            }
-            catch (e) {
-               callback({type: 'error', msg: e.message})
-            }
-        })
-        .on('error', (e) => {
-            callback({type: 'error', msg: e.message})
-        })
-    })*/
 }
 
 /* Syncs SmartCash core if behind. */

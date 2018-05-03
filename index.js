@@ -14,10 +14,8 @@ const {combine, timestamp, prettyPrint} = format
 
 const Store = require('electron-store')
 const smartcashapi = require('./smartcashapi')
-const rpc = require('./rpc-client')
+//const rpc = require('./rpc-client')
 const {watch} = require('melanke-watchjs')
-const isOnline = require('is-online')
-//const {is} = require('electron-util')
 const baseLogPath = "logs"
 const sysLogsPath = baseLogPath + path.sep + 'system'
 const userLogsPath = baseLogPath + path.sep + 'user'
@@ -47,18 +45,18 @@ module.exports = {
         }
 
         log(info, callback) {
-            let self = this
+            var self = this
             
             setImmediate(function () {
                 self.emit('logged', info)
             })
             
-            let logDB
+            var logDB
             
-            console.log('info')
-            console.log(info)
-            console.log('self')
-            console.log(self)
+            //console.log('info')
+            //console.log(info)
+            //console.log('self')
+            //console.log(self)
             
             if (info.level === "error")
                 logDB = self.logDBSystem
@@ -66,7 +64,7 @@ module.exports = {
                 logDB = self.logDBUser
             
             if (logDB !== undefined) {
-                let log = logDB.get('log')
+                var log = logDB.get('log')
                 log.push(info)
                 logDB.set('log', log)
             }
@@ -105,7 +103,7 @@ function appInit() {
         exitOnError: false
     })
     logger = winston.loggers.get('logger')
-    logger.emitErrs = true
+    logger.emitErrs = false
     
     if (isDev)
         logger.add(new transports.Console({format: format.simple()}))
@@ -129,8 +127,8 @@ function appInit() {
         rpcExplorer: null,
         coreRunning: false,
         coreError: false,
-        rpcExplorerRunning: false,
-        rpcExplorerError: false
+        rpcConnected: false,
+        rpcError: false
     }
     
     // watch for changes on the shared object
@@ -141,18 +139,26 @@ function appInit() {
         console.log()
         
         if (global.sharedObject.win) {
-            if (property === "isOnline")
+            if (property === "isOnline") {
                 global.sharedObject.win.webContents.send('onlineCheckAPP', {isOnline: global.sharedObject.isOnline})
-            else if (property === "coreRunning")
-                global.sharedObject.win.webContents.send('coreCheckAPP', {coreRunning: global.sharedObject.coreRunning})
-            else if (property === "coreError")
-                global.sharedObject.win.webContents.send('coreCheckAPP', {coreError: global.sharedObject.coreError})
-            else if (property === "rpcExplorerRunning") {
-                global.sharedObject.win.webContents.send('rpcExplorerCheckAPP', {rpcExplorerRunning: global.sharedObject.rpcExplorerRunning})
-                global.sharedObject.win.webContents.send('rpcClientCreated')
+                global.sharedObject.win.webContents.send('isOnline')
             }
-            else if (property === "rpcExplorerError")
-                global.sharedObject.win.webContents.send('rpcExplorerCheckAPP', {rpcExplorerError: global.sharedObject.rpcExplorerError})
+            else if (property === "coreRunning") {
+                global.sharedObject.win.webContents.send('coreCheckAPP', {coreRunning: global.sharedObject.coreRunning})
+                global.sharedObject.win.webContents.send('coreRunning')
+            }
+            else if (property === "coreError") {
+                global.sharedObject.win.webContents.send('coreCheckAPP', {coreError: global.sharedObject.coreError})
+                global.sharedObject.win.webContents.send('coreError')
+            }
+            else if (property === "rpcConnected") {
+                global.sharedObject.win.webContents.send('rpcCheckAPP', {rpcConnected: global.sharedObject.rpcConnected})
+                global.sharedObject.win.webContents.send('rpcConnected')
+            }
+            else if (property === "rpcError") {
+                global.sharedObject.win.webContents.send('rpcCheckAPP', {rpcError: global.sharedObject.rpcError})
+                global.sharedObject.win.webContents.send('rpcError')
+            }
         }
     }, 0, true);
     
@@ -268,10 +274,6 @@ function createWindow() {
     
     global.sharedObject.win.on('show', () => {
         global.sharedObject.win.webContents.send('projectsReady')
-        
-        isOnline().then(online => {
-            global.sharedObject.isOnline = online;
-        })
     })
 
     // Emitted when the window is closed.
@@ -287,7 +289,7 @@ function createWindow() {
 
 // create a modal
 function createModal(type, text) {
-    let parent, title, width, height, pathname, resizable, minimizable, maximizable, alwaysOnTop, fullscreenable
+    var parent, title, width, height, pathname, resizable, minimizable, maximizable, alwaysOnTop, fullscreenable
     
     winBounds = global.sharedObject.win.getBounds()
     
@@ -368,7 +370,7 @@ function createModal(type, text) {
 }
 
 function createDialog(event, window, type, text, fatal = false) {
-    let buttons
+    var buttons
     
     if (type === 'question')
         buttons = ['OK', 'Cancel']
@@ -405,8 +407,10 @@ function createDialog(event, window, type, text, fatal = false) {
 /* Generic API callback function. */
 let apiCallback = function(resp, functionName, projectInfo) {
     if (resp.type === "data") {
+        console.log('referrer: ', global.sharedObject.referrer)
+        console.log('projectInfo: ', projectInfo)
         console.log('from ' + functionName)
-        console.log(resp)
+        //console.log(resp)
         
         if (functionName === "checkBalance") {
             global.availableProjects.list[projectInfo.projectIndex].totalFunds = parseFloat(resp.msg)
@@ -414,11 +418,11 @@ let apiCallback = function(resp, functionName, projectInfo) {
         else if (functionName === "checkTransaction") {
             if (global.sharedObject.referrer === "getAllTxInfo") {
                 if (resp.msg < 6) {
-                    global.callbackObj.pendingFunds += addrAmt
+                    global.callbackObj.pendingFunds += projectInfo.addrAmt
                     global.callbackObj.pendingWallets++
                 }
-                else
-                    global.callbackObj.confirmedFunds += addrAmt
+                else {
+                    global.callbackObj.confirmedFunds += projectInfo.addrAmt
                     global.callbackObj.confirmedWallets++
                 }
             }
@@ -436,8 +440,8 @@ let apiCallback = function(resp, functionName, projectInfo) {
         //global.availableProjects.list[projectInfo.projectIndex].totalFunds = parseFloat(resp.msg)
     }
     else if (resp.type === "error") {
-        if (projectInfo)
-            logger.error(functionName + ': ' + resp.msg + "project " + projectInfo.projectName)
+        if (projectInfo.projectName)
+            logger.error(functionName + ': ' + resp.msg + " project " + projectInfo.projectName)
         else
             logger.error(functionName + ': ' + resp.msg)
     }
@@ -451,9 +455,9 @@ let apiCallback = function(resp, functionName, projectInfo) {
             global.sharedObject.win.webContents.send('projectsReady')
         }
     }
-    else if (functionName === "checkTransaction") {
-        if (apiCallbackCounter == projectInfo.totalAddresses && global.sharedObject.referrer === "getAllTxInfo") {
-            event.sender.send('allTxInfo', {pendingFunds: global.callbackObj.pendingFunds, pendingWallets: global.callbackObj.pendingWallets, confirmedFunds: global.callbackObj.confirmedFunds, confirmedWallets: global.callbackObj.confirmedWallets})
+    else if (functionName === "checkTransaction") {        
+        if ((apiCallbackCounter == projectInfo.totalAddrs) && (global.sharedObject.referrer === "getAllTxInfo")) {            
+            global.sharedObject.win.webContents.send('allTxInfo', {pendingFunds: global.callbackObj.pendingFunds, pendingWallets: global.callbackObj.pendingWallets, confirmedFunds: global.callbackObj.confirmedFunds, confirmedWallets: global.callbackObj.confirmedWallets})
         }
     }
     /*else if (functionName === "") {
@@ -487,12 +491,12 @@ function autoSweepFunds() {
 function createRecvAddresses(project) {
     let addressPair
     
-    for (let i=0; i<project.numAddr; i++) {
+    for (var i=0; i<project.numAddr; i++) {
         addressPair = smartcashapi.generateAddress()
         project.recvAddrs.push(addressPair)
     }
     
-    let index = getDbIndex(project.id)
+    var index = getDbIndex(project.id)
     global.availableProjects.list[index] = project
     global.activeProject = project
     db.set('projects', global.availableProjects)
@@ -503,10 +507,10 @@ function createRecvAddresses(project) {
 
 // get the current date and format it as YYYYMMDD
 function getCurrentDate() {
-    let today = new Date()
-    let year = today.getFullYear()
-    let month = today.getMonth() + 1
-    let day = today.getDate()
+    var today = new Date()
+    var year = today.getFullYear()
+    var month = today.getMonth() + 1
+    var day = today.getDate()
     
     if (month < 10)
         month = "0" + String(month)
@@ -523,7 +527,7 @@ function getCurrentDate() {
 
 // return the index of a project in the database
 function getDbIndex(projectID) {
-    let arrayIndex
+    var arrayIndex
     
     global.availableProjects.list.forEach(function(project, index) {
         if (project.id == projectID)
@@ -535,22 +539,22 @@ function getDbIndex(projectID) {
 
 // find the newest user log or system log file
 function getNewestLogFile(type) {
-    let logPath
+    var logPath
     
     if (type === "user")
         logPath = app.getPath('userData') + path.sep + userLogsPath + path.sep
     else if (type === "system")
         logPath = app.getPath('userData') + path.sep + sysLogsPath + path.sep
     
-    let files = fs.readdirSync(logPath)
+    var files = fs.readdirSync(logPath)
     if (files.length == 0) {
         global.availableLog = null
         event.sender.send('logReady')
         return
     }
     
-    let stats = fs.statSync(logPath + files[0])
-    let mostRecent = {file: files[0], lastModified: stats.mtime}
+    var stats = fs.statSync(logPath + files[0])
+    var mostRecent = {file: files[0], lastModified: stats.mtime}
     
     files.forEach(function(file, index) {
         stats = fs.statSync(logPath + file)        
@@ -563,21 +567,21 @@ function getNewestLogFile(type) {
 
 // load the most recent log file
 function loadLog() {
-    let mostRecent = getNewestLogFile('user')
+    var mostRecent = getNewestLogFile('user')
     logFile = userLogsPath + path.sep + path.parse(mostRecent.file).name
     
-    let logDB = new Store({name: logFile})
+    var logDB = new Store({name: logFile})
     return {content: logDB.get('log'), date: mostRecent.lastModified}
 }
 
 // create a project
 function newProject(event, project) {
-    let newProject = project
+    var newProject = project
     newProject.id = global.availableProjects.index + 1
     newProject.totalFunds = 0
     newProject.addressPair = {}
     
-    let addressPair = smartcashapi.generateAddress()
+    var addressPair = smartcashapi.generateAddress()
     newProject.addressPair.publicKey = addressPair.publicKey
     newProject.addressPair.privateKey = addressPair.privateKey
     
@@ -593,16 +597,16 @@ function newProject(event, project) {
 
 // refresh the log currently loaded in the app
 function refreshLogFile() {
-    let stats = fs.statSync(app.getPath('userData') + path.sep + userLogsPath + path.sep + logFile + '.json')
-    let logDB = new Store({name: getCurrentDate()})
-    let log = logDB.get('log')
+    var stats = fs.statSync(app.getPath('userData') + path.sep + userLogsPath + path.sep + logFile + '.json')
+    var logDB = new Store({name: getCurrentDate()})
+    var log = logDB.get('log')
     global.availableLog = {date: stats.mtime, content: log}
     global.sharedObject.win.webContents.send('logReady')
 }
 
 // set the active project based on a project ID
 function setActiveProject(projectID) {
-    let index = getDbIndex(projectID)
+    var index = getDbIndex(projectID)
     global.activeProject = global.availableProjects[index]
 }
 
@@ -642,9 +646,9 @@ app.on('ready', () => {
 // quit when all windows are closed.
 app.on('window-all-closed', () => {
     // delete the user and system log files if they're empty
-    let mostRecent = getNewestLogFile('user')
+    var mostRecent = getNewestLogFile('user')
     logFile = userLogsPath + path.sep + path.parse(mostRecent.file).name
-    let logDB = new Store({name: logFile})
+    var logDB = new Store({name: logFile})
 
     if (logDB.get('log').length == 0) {
         fs.unlink(app.getPath('userData') + path.sep + logFile + '.json', (err) => {
@@ -694,7 +698,7 @@ ipcMain.on('checkProjectBalances', (event, args) => {
 
 // create paper wallets
 ipcMain.on('createPaperWallets', (event, args) => {
-    let index = getDbIndex(args.projectID)
+    var index = getDbIndex(args.projectID)
     global.activeProject = global.availableProjects.list[index]
     modalType = "paperWallets"
     createModal('paperWallets')
@@ -705,7 +709,7 @@ ipcMain.on('createRecvAddresses', (event, args) => {
     if (args.newProjectFlag) {
         newProject(event, args.project)
         
-        let index = getDbIndex(args.project.id)
+        var index = getDbIndex(args.project.id)
         global.activeProject = global.availableProjects.list[index]
     }
     
@@ -716,8 +720,8 @@ ipcMain.on('createRecvAddresses', (event, args) => {
 
 // delete a project
 ipcMain.on('deleteProject', (event, args) => {
-    let index = getDbIndex(args.id)
-    let name = global.availableProjects[index].name
+    var index = getDbIndex(args.id)
+    var name = global.availableProjects[index].name
     global.availableProjects.list.splice(index, 1)
     db.set('projects', global.availableProjects)
     logger.info('Project "' + name + '" was deleted.')
@@ -746,10 +750,10 @@ ipcMain.on('fundProject', (event, args) => {
 
 // get the total amount of gift funds that have been claimed
 ipcMain.on('getClaimedFundsInfo', (event, args) => {
-    let totalAddrs = 0
-    let callbackCounter = 0
-    let claimedFunds = 0
-    let claimedWallets = 0
+    var totalAddrs = 0
+    var callbackCounter = 0
+    var claimedFunds = 0
+    var claimedWallets = 0
     
     function callback(resp, projectInfo) {
         if (resp.type === "data" && parseInt(resp.msg) == 0) {
@@ -779,8 +783,8 @@ ipcMain.on('getClaimedFundsInfo', (event, args) => {
     }
     else {
         // get the claimed amount for all wallets for one project
-        let index = getDbIndex(args.projectID)
-        let project  = global.availableProjects.list[index]
+        var index = getDbIndex(args.projectID)
+        var project  = global.availableProjects.list[index]
         
         project.recvAddrs.forEach(function(address, addrKey) {                                      
             smartcashapi.checkBalance({address: address.publicKey, projectID: args.projectID, projectIndex: index, addrAmt: project.addrAmt}, callback)
@@ -789,53 +793,23 @@ ipcMain.on('getClaimedFundsInfo', (event, args) => {
     }
 })
 
-// get the total amount of transactions that have been confirmed
-ipcMain.on('getConfirmedFundsInfo', (event, args) => {
-    let totalAddrs = 0
-    let callbackCounter = 0
-    let confirmedFunds = 0
-    let confirmedWallets = 0
-    
-    function callback(resp, addrAmt) {
-        console.log(resp)
-        
-        if (resp.type === "data" && resp.msg >= 6) {
-            confirmedFunds += addrAmt
-            confirmedWallets++
-        }
-        else if (resp.type === "error") {
-            logger.error('getConfirmedFundsInfo: ' + resp.msg)
-        }
-        
-        callbackCounter++
-        
-        if (callbackCounter == totalAddrs)
-            event.sender.send('confirmedFundsInfo', {confirmedFunds: confirmedFunds, confirmedWallets: confirmedWallets})
-    }
-    
-    global.availableProjects.list.forEach(function(project, projectKey) {
-        project.recvAddrs.forEach(function(address, addrKey) {
-            if (address.txid !== undefined) {
-                smartcashapi.checkTransaction(address.txid, project.addrAmt, callback)
-                totalAddrs++
-            }
-        })
-    })
-})
-
 // get the total amount of transactions that have yet to be confirmed
 ipcMain.on('getAllTxInfo', (event, args) => {
     console.log('in getAllTxInfo')
+    
     global.sharedObject.referrer = "getAllTxInfo"
-    apiCallbackCounter = 0
-    let totalAddrs = 0    
     global.callbackObj.pendingWallets = 0
     global.callbackObj.pendingFunds = 0
     global.callbackObj.confirmedWallets = 0
     global.callbackObj.confirmedFunds = 0
     
+    apiCallbackCounter = 0
+    var totalAddrs = 0
+    var addrBatch = []
+    
     global.availableProjects.list.forEach(function(project, projectKey) {
         if (project.fundsSent)
+            //totalAddrs++
             totalAddrs += project.numAddr
     })
     
@@ -843,16 +817,24 @@ ipcMain.on('getAllTxInfo', (event, args) => {
         global.availableProjects.list.forEach(function(project, projectKey) {
             project.recvAddrs.forEach(function(address, addrKey) {
                 if (project.fundsSent) {
+                    /*addrBatch.push({
+                        method: 'getrawtransaction',
+                        params: [address.txid, 1]
+                    })*/
+                    
                     smartcashapi.checkTransaction({totalAddrs: totalAddrs, txid: address.txid, addrAmt: project.addrAmt}, apiCallback)
                 }
             })
+            
+            //console.log(addrBatch);
+            //smartcashapi.checkTransaction({totalAddrs: totalAddrs, addrBatch: addrBatch, addrAmt: project.addrAmt}, apiCallback)
         })
     }
 })
 
 // load the most recent log file
 ipcMain.on('loadLog', (event, args) => {
-    let log = loadLog()
+    var log = loadLog()
     global.availableLog = {date: log.date, content: log.content}
     event.sender.send('logReady')
 })
@@ -940,8 +922,8 @@ ipcMain.on('smartcashLaunch', (event, args) => {
 
 // manually sweep project funds
 ipcMain.on('sweepFunds', (event, projectID) => {
-    let index = getDbIndex(projectID)
-    let project = global.availableProjects.list[index]
+    var index = getDbIndex(projectID)
+    var project = global.availableProjects.list[index]
     
     /*project.recvAddrs.forEach(function(addr, addrKey) {
         smartcashapi.sweepFunds({sender: addr, receiver: project.publicKey})
@@ -955,7 +937,7 @@ ipcMain.on('sweepFunds', (event, projectID) => {
 ipcMain.on('updateProject', (event, args) => {
     modal.close()
     global.activeProject = args.activeProject
-    let index = getDbIndex(global.activeProject.id)
+    var index = getDbIndex(global.activeProject.id)
     global.availableProjects.list[index] = global.activeProject
     db.set('projects', global.availableProjects)
     logger.info('Project "' + global.activeProject.name + '" was edited.')

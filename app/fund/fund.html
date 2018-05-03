@@ -1,6 +1,6 @@
 <div id="fund" ng-init="init()">
     <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Fund is disabled if the project has already been funded.</p>
-    <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Send is disabled if funds have already been sent to the promotional wallets or the project hasn't been funded.</p>
+    <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Send is disabled if funds have already been sent to the promotional wallets or if the project hasn't been funded.</p>
     <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Print is disabled if funds haven't been sent to the promotional wallets.</p>
     
     <div id="projectList">
@@ -44,8 +44,8 @@
                             <td class="totalFundsCol text-center">{{project.totalFunds | toFixedNum: 8}}</td>
                             <td class="addrAmtCol text-center">{{project.addrAmt | toFixedNum: 8}}</td>
                             <td class="expCol text-center">{{project.sweepDate | date: 'mediumDate'}}</td>
-                            <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-click="$fundCtrl.fundProject(project)" ng-disabled="project.projectFunded"><i class="fa fa-fw sigma">Σ</i></button></td>
-                            <td class="sendCol text-center"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project)"><i class="fa fa-fw fa-share"></i></button></td> <!-- ng-disabled="!project.projectFunded || project.fundsSent"-->
+                            <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-click="$fundCtrl.fundProject(project)" ng-disabled="project.projectFunded || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw sigma">Σ</i></button></td>
+                            <td class="sendCol text-center"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project)" ng-disabled="!project.projectFunded || project.fundsSent || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw fa-share"></i></button></td>
                             <td class="printCol text-center"><button class="btn btn-link" title="Print paper wallets" ng-click="$fundCtrl.createPaperWallets(project.id)" ng-disabled="!project.fundsSent"><i class="fa fa-fw fa-print"></i></button></td>
                             <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$fundCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
                         </tr>
