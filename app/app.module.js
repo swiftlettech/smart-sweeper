@@ -31,6 +31,7 @@
             isOnline().then(online => {
                 ctrl.isOnline = online;
                 electron.remote.getGlobal('sharedObject').isOnline = online;
+                $scope.$broadcast('onlineCheck', {isOnline: ctrl.isOnline});
                     
                 if (ctrl.isOnline)
                     ctrl.setPageHeight();

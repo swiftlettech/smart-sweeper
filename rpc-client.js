@@ -4,7 +4,7 @@ let config = require("exp-config")
 const electron = require('electron')
 const {ipcRenderer} = electron
 //const winston = require('winston')
-const bitcoin = require('bitcoin')
+const smartcash = require('./smartcash-client')
 
 let client
 
@@ -14,7 +14,7 @@ let client
 try {
     fs.openSync('.env', 'r')
     
-    client = new bitcoin.Client({
+    client = new smartcash.Client({
         host: config.rpc.host,
         port: config.rpc.port,
         user: config.rpc.username,
@@ -36,7 +36,7 @@ catch(err) {
         //else if (os.platform() === "linux")
         //else if (os.platform() === "darwin")
             
-        content += "smartcashPath=" + smartcashPath + "\n"
+        content += "smartcashPath=" + smartcashPath
         
         fs.writeFileSync('.env', content)
         
@@ -48,7 +48,7 @@ catch(err) {
         config.rpc.password = "rpcpassword"
         config.smartcashPath = smartcashPath
         
-        client = new bitcoin.Client({
+        client = new smartcash.Client({
             host: config.rpc.host,
             port: config.rpc.port,
             user: config.rpc.username,

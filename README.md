@@ -50,7 +50,7 @@ smartcashPath=C:\Program Files\SmartCash\
 * rpc.port is the port that the Smartcash Wallet RPC server is listening on.
 * rpc.username is the Smartcash Wallet RPC server username.
 * rpc.password is the Smartcash Wallet RPC server password.
-* smartcashPath is the full path to your Smartcash Wallet installation.
+* smartcashPath is the full path to your Smartcash Wallet installation. You must include a trailing slash.
 
 
 Your SmartCash wallet must be started with the following arguments:

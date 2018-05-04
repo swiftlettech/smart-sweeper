@@ -170,6 +170,8 @@
     }
 
     function startSmartcashCore() {
+        console.log(config.smartcashPath);
+        
         smartcash = cp.spawn(config.smartcashPath + smartcashProg, ['-txindex=1', '-server', '-rpcbind='+config.rpc.host, '-rpcport='+config.rpc.port, '-rpcuser='+config.rpc.username, '-rpcpassword='+config.rpc.password], {
             detached: true,
             stdio: 'ignore',

@@ -24,6 +24,10 @@ function checkBalance(projectInfo, callback) {
         method: 'GET',
         json: true
     }, function (err, resp, body) {
+        console.log('checkBalance')
+        console.log(err)
+        console.log(resp.body)
+        
         if (resp) {
             var balance
             
@@ -54,9 +58,9 @@ function checkTransaction(projectInfo, callback) {
     //projectInfo.addrBatch
     
     rpc.sendCmd(cmd, function(err, resp) {
-        console.log('checkTransaction')
-        console.log(err)
-        console.log(resp)
+        //console.log('checkTransaction')
+        //console.log(err)
+        //console.log(resp)
         
         if (err) {
             callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)

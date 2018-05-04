@@ -19,7 +19,22 @@
             ctrl.claimedFunds = 0;
             ctrl.claimedWalletsCount = 0;
             ctrl.sweptFunds = 0;
-            ctrl.sweptWalletsCount = 0;            
+            ctrl.sweptWalletsCount = 0;
+            
+            $scope.$on('onlineCheck', function(event, args) {
+                ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                
+                if (args.isOnline && ctrl.availableProjects.length > 0) {
+                    availableFunds();
+                }
+                else {
+                    ctrl.availableBalance = "n/a";
+                    ctrl.pendingFunds = "n/a";
+                    ctrl.confirmedFunds = "n/a";
+                    ctrl.claimedFunds = "n/a";
+                    ctrl.sweptFunds = "n/a";
+                }
+            });
             
             // load all projects
             ipcRenderer.on('projectsReady', (event, args) => {
@@ -35,18 +50,11 @@
                     if (args.isOnline && ctrl.projectCount > 0) {
                         availableFunds();
                     }
-                    else {
-                        ctrl.availableBalance = "n/a";
-                        ctrl.pendingFunds = "n/a";
-                        ctrl.confirmedFunds = "n/a";
-                        ctrl.claimedFunds = "n/a";
-                        ctrl.sweptFunds = "n/a";
-                    }
                 });
             });
             
             ipcRenderer.on('rpcConnected', (event, args) => {
-                txInfo();
+                //txInfo();
                 //claimedFunds();
                 //sweptFunds();
             });
@@ -58,6 +66,8 @@
         function availableFunds() {            
             ipcRenderer.send('checkProjectBalances');
             ipcRenderer.on('balancesChecked', (event, args) => {
+                console.log('angular balancesChecked');
+                
                 angular.forEach(ctrl.availableProjects, function(project, key) {
                     ctrl.availableBalance += project.totalFunds;
                 });

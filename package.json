@@ -3,6 +3,7 @@
     "productName": "SMART Sweeper",
     "version": "0.1.0",
     "description": "Sweeper application for SmartCash cryptocurrency to allow easy retrieval of gift funds.",
+    "homepage": "https://swiftlettech.github.io/smart-sweeper-website/",
     "keywords": "",
     "license": "GPL-3.0",
     "repository": {
@@ -12,7 +13,22 @@
     "bugs": "https://github.com/swiftlettech/smart-sweeper/issues",
     "scripts": {
         "start": "electron .",
-        "build": "electron-packager . --out=dist --asar --overwrite --all"
+        "build": "npx electron-builder build -w",
+        "pack": "electron-builder --dir",
+        "dist": "electron-builder build -w"
+    },
+    "build": {
+        "files": ["**/*", "config/"],
+        "appId": "smart-sweeper.app",
+        "win": {
+            "target": {
+                "nsis": {
+                    "oneClick": false,
+                    "allowToChangeInstallationDirectory": true
+                },
+                "arch": ["x64", "ia32"]
+            }
+        }
     },
     "dependencies": {
         "bitcoin": "^3.0.1",
@@ -31,6 +47,7 @@
         "winston": "^3.0.0-rc5"
     },
     "devDependencies": {
-        "electron": "^1.8.3"
+        "electron": "^1.8.3",
+        "electron-builder": "^20.11.1"
     }
 }
