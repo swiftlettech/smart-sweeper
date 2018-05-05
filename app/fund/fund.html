@@ -41,7 +41,7 @@
                         <tr>
                             <td class="nameCol">{{project.name}}</td>
                             <td class="numAddrCol text-center">{{project.numAddr}}</td>
-                            <td class="totalFundsCol text-center">{{project.totalFunds | toFixedNum: 8}}</td>
+                            <td class="totalFundsCol text-center">{{project.originalFunds | toFixedNum: 8}}</td>
                             <td class="addrAmtCol text-center">{{project.addrAmt | toFixedNum: 8}}</td>
                             <td class="expCol text-center">{{project.sweepDate | date: 'mediumDate'}}</td>
                             <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-click="$fundCtrl.fundProject(project)" ng-disabled="project.projectFunded || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw sigma">Σ</i></button></td>

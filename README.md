@@ -36,7 +36,7 @@ npm start
 
 Configuration
 ---------------
-SMART Sweeper can be configured by modifying .env in the root directory. The app will create it for you the first time you load it, but you can create the file yourself prior to that, which will help if you didn't use the default SmartCash installation path. The default values are shown below.
+SMART Sweeper can be configured by modifying .env in the root directory. The app will create it for you the first time you load it, but you can create the file yourself prior to that, which will help if you didn't use the default SmartCash installation path. The default values for Windows are shown below.
 ```
 rpc.host=127.0.0.1
 rpc.port=9678

@@ -75,6 +75,15 @@
                     }
                 });
             });
+            
+            ipcRenderer.on('coreSyncCheckAPP', (event, args) => {                
+                $scope.$apply(function() {
+                    if (args.coreSynced) {
+                        ctrl.coreSynced = args.coreSynced;
+                        ctrl.setPageHeight();
+                    }
+                });
+            });
         };
 
         ctrl.setActivePage = function(page) {

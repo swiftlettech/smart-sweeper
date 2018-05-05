@@ -104,12 +104,12 @@
                     <table class="innerTable">
                         <tr>
                             <td class="nameCol">{{project.name}}</td>
-                            <td class="totalFundsCol text-center">{{project.totalFunds | toFixedNum: 8}}</td>
+                            <td class="totalFundsCol text-center">{{project.originalFunds | toFixedNum: 8}}</td>
                             <td class="numAddrCol text-center">{{project.numAddr}}</td>
                             <td class="addrCol text-center"><i class="fa fa-fw fa-check" aria-hidden="false" title="yes" ng-show="project | hasAddresses"></i></td>
                             <td class="expCol text-center">{{project.sweepDate | date: 'mediumDate'}}</td>
                             <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$createCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
-                            <td class="deleteCol text-center"><button class="btn btn-link" title="Delete project" ng-click="$createCtrl.delete(project.id)" ng-disable="project.totalFunds > 0"><i class="fa fa-fw fa-trash"></i></button></td>
+                            <td class="deleteCol text-center"><button class="btn btn-link" title="Delete project" ng-click="$createCtrl.delete(project.id)" ng-disable="project.originalFunds > 0"><i class="fa fa-fw fa-trash"></i></button></td>
                         </tr>
                         <tr>
                             <td colspan="7" class="addrCol">

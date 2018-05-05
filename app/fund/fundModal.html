@@ -21,10 +21,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="totalFunds" class="control-label">Total SMART to be sent<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
-                    <input name="totalFunds" type="text" class="form-control" ng-model="$fundCtrl.totalFunds" ng-pattern="$fundCtrl.greaterThanZeroIntPattern" required />
+                    <label for="originalFunds" class="control-label">Total SMART to be sent<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <input name="originalFunds" type="text" class="form-control" ng-model="$fundCtrl.originalFunds" ng-pattern="$fundCtrl.greaterThanZeroIntPattern" required />
                     
-                    <div ng-show="fundProjectForm.totalFunds.$error.pattern" role="alert">
+                    <div ng-show="fundProjectForm.originalFunds.$error.pattern" role="alert">
                         <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
                     </div>
                 </div>

@@ -7,10 +7,13 @@
     const {ipcRenderer} = electron;
     const path = window.nodeRequire('path')
     const cp = window.nodeRequire('child_process');
+    
+    const request = window.nodeRequire('request')
     const {is} = window.nodeRequire('electron-util');
     const ps = window.nodeRequire('ps-node');
     const winston = window.nodeRequire('winston');
     const smartcashapi = window.nodeRequire('./smartcashapi');
+    const smartcashExplorer = "http://explorer3.smartcash.cc"
     const rpc = window.nodeRequire('./rpc-client');
     
     let logger = winston.loggers.get('logger');
@@ -24,10 +27,10 @@
     
     init();
     
-    function init() {        
+    function init() {
+        //global.bgApiCallbackInfo = new Map() // keeps track of API callback vars per function call
+        
         // load smartcash and the RPC explorer
-        //https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file
-        // instructions to update smartcash config (txindex=1/server=1/rpcuser=rpcusername/rpcpassword=rpcpassword)
         if (is.windows) {
             smartcashProg = "smartcash-qt.exe"
         }
@@ -60,47 +63,13 @@
                     remote.getGlobal('sharedObject').coreRunning = true;
                     rpcCheck()
                 }
-                /*else {
-                    // is running
-                    // check the arguments to see if the RPC server arg is present and get the process object
-                    smartcash = results[0]
-
-                    var hasArgs = false
-                    if (smartcash.arguments !== "") {
-                        var argCount = 0
-
-                        smartcash.arguments.forEach(function(arg, index) {
-                            if (arg === "-txindex=1" || arg === "-server" || arg === "-rpcuser=rpcusername" || arg === "-rpcpassword=rpcpassword")
-                                argCount++;
-                        })
-
-                        if (argCount >= 4)
-                            hasArgs = true
-                    }
-
-                    // show an error popup if all of the arguments aren't present
-                    if (!hasArgs) {
-                        var content = {
-                            text: {
-                                title: 'Missing configuration',
-                                body: 'Your Smartcash wallet was not started with the -txindex=1, -server, -rpcuser=rpcusername, and -rpcpassword=rpcpassword arguments. SMART Sweeper will now exit.'
-                            },
-                            fatal: true
-                        }
-                        ipcRenderer.send('showErrorDialog', content);
-                        return;
-                    }
-                    else {
-                        remote.getGlobal('sharedObject').coreRunning = true;
-                        rpcExplorerCheck()
-                    }
-                }*/
 
                 // periodic background checking for online connectivity, SmartCash Core, and the RPC Explorer
                 setInterval(() => {
                     //checkOnlineStatus()
                     //smartcashCoreCheck()
                     //rpcCheck()
+                    //checkBlockchain(apiCallback)
                 }, 30000)
             }
         })
@@ -113,10 +82,11 @@
             console.log(resp);
             
             if (functionName === "rpcCheck") {
-                rpcConnected = true
+                rpcConnected = true;
                 remote.getGlobal('sharedObject').rpcConnected = true;
 
                 // check to see if the local copy of the blockchain is current
+                checkBlockchain(apiCallback);
                 //smartcashapi.getBlockCount(rpcConnected, apiCallback);
 
                 // automatically sweep funds if necessary
@@ -124,32 +94,103 @@
             }
         }
         else if (resp.type === "error") {
-            logger.error(functionName + ': ' + resp.msg)
+            logger.error(functionName + ': ' + resp.msg);
 
             if (functionName === "rpcCheck") {
                 remote.getGlobal('sharedObject').rpcError = true;
-                
-                //splashScreen.close()
-                //splashScreen = null
-
-                /*var content = {
-                    title: 'Error',
-                    body: 'Unable to connect to the RPC explorer. Is there a web server running?'
-                }
-                createDialog(null, win, 'error', content, true)*/
             }
         }
         
         apiCallbackCounter++        
     }
     
+    /* Syncs SmartCash core if behind. */
+    function coreSync(callback) {        
+        var cmd = {
+            method: 'snsync',
+            params: ['next']
+        };
+        
+        rpc.sendCmd(cmd, function(err, resp) {
+            if (err) {
+                callback({type: 'error', msg: resp}, 'coreSync')
+            }
+            else {
+                console.log(resp);
+            }
+        });
+    }
+    
+    /* Get the current block count. */
+    function checkBlockchain(callback) {
+        var localHeaderCount;
+        var localBlockCount;
+        var onlineBlockCount;
+        var valid = 0;
+        
+        var cmd = {
+            method: 'getblockchaininfo',
+            params: []
+        };
+        
+        // check the local blockchain regardless of internet connection status
+        rpc.sendCmd(cmd, function(err, resp) {
+            if (err) {
+                callback({type: 'error', msg: resp}, 'getBlockCount')
+            }
+            else {
+                localHeaderCount = resp.headers
+                localBlockCount = resp.blocks
+                
+                if (localHeaderCount == localBlockCount)
+                    valid++;
+                
+                // there is an active internet connection, check the online block explorer
+                if (remote.getGlobal('sharedObject').isOnline) {
+                    request({
+                        url: smartcashExplorer + '/api/getblockcount',
+                        method: 'GET'
+                    }, function (err, resp, body) {
+                        if (resp && resp.body) {
+                            onlineBlockCount = parseInt(resp.body);
+
+                            if (localHeaderCount == onlineBlockCount);
+                                valid++
+
+                            if (valid == 2)
+                                remote.getGlobal('sharedObject').coreSynced = true;
+                            //else
+                                //coreSync(apiCallback);
+
+                            //callback({type: 'data', msg: true}, 'getBlockCount');
+                        }
+                        else {
+                            console.log('getBlockCount');
+                            console.log(err);
+
+                            if (err)
+                                callback({type: 'error', msg: err}, 'getBlockCount');
+                        }
+                    });
+                }
+                else {
+                    if (valid == 1)
+                        remote.getGlobal('sharedObject').coreSynced = true;
+                    
+                    /*if (!validFlag)
+                        coreSync(apiCallback);*/
+                }
+            }
+        });
+    }
+    
     function rpcCheck() {
         rpc.statusCheck(function(resp) {
             if (!resp)
-                apiCallback({type: 'error'}, 'rpcCheck')
+                apiCallback({type: 'error'}, 'rpcCheck');
             else
-                apiCallback({type: 'data'}, 'rpcCheck')
-        })
+                apiCallback({type: 'data'}, 'rpcCheck');
+        });
     }
     
     // check to see if Smartcash Core is running
@@ -176,28 +217,28 @@
             detached: true,
             stdio: 'ignore',
             windowsHide: true
-        })
+        });
 
-        smartcash.unref()
+        smartcash.unref();
         smartcash.on('error', (err) => {
-            console.log('tried to open the wallet and failed')
-            console.log(err)
-            logger.error('appInit - start Smartcash core: ' + err)
+            console.log('tried to open the wallet and failed');
+            console.log(err);
+            logger.error('appInit - start Smartcash core: ' + err);
             remote.getGlobal('sharedObject').coreError = true;
-        })
+        });
         
         setTimeout(() => {
             if (!remote.getGlobal('sharedObject').coreError) {
                 remote.getGlobal('sharedObject').coreRunning = true;
-                rpcCheck()
+                rpcCheck();
             }
-        }, 20000)
+        }, 20000);
     }
 
     // check to see whether or not the user is online
     function checkOnlineStatus() {
         isOnline().then(online => {
             remote.getGlobal('sharedObject').isOnline = online;
-        })
+        });
     }    
 })();

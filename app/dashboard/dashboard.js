@@ -54,8 +54,8 @@
             });
             
             ipcRenderer.on('rpcConnected', (event, args) => {
-                //txInfo();
-                //claimedFunds();
+                txInfo();
+                claimedFunds();
                 //sweptFunds();
             });
             
@@ -65,11 +65,9 @@
         /* The total project funds that have yet to be sent to another wallet (all projects). */
         function availableFunds() {            
             ipcRenderer.send('checkProjectBalances');
-            ipcRenderer.on('balancesChecked', (event, args) => {
-                console.log('angular balancesChecked');
-                
+            ipcRenderer.on('balancesChecked', (event, args) => {                
                 angular.forEach(ctrl.availableProjects, function(project, key) {
-                    ctrl.availableBalance += project.totalFunds;
+                    ctrl.availableBalance += project.currentFunds;
                 });
                 
                 ctrl.availableBalance = $filter('toFixedNum')(ctrl.availableBalance, 8);
@@ -102,13 +100,13 @@
         
         /* Funds that have been swept back to a project address (all projects). */
         function sweptFunds() {
-            /*ipcRenderer.send('getSweptFundsInfo');
+            ipcRenderer.send('getSweptFundsInfo');
             ipcRenderer.on('sweptFundsInfo', (event, args) => {
                 $scope.$apply(function() {
                     ctrl.sweptFunds = args.sweptFunds;
                     ctrl.sweptWalletsCount = args.sweptWallets;
                 });
-            });*/
+            });
         }
     }
 })();

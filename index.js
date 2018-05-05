@@ -22,7 +22,7 @@ const userLogsPath = baseLogPath + path.sep + 'user'
 const isDev = require('electron-is-dev')
 require('electron-debug')({showDevTools: true})
 
-let splashScreen, bgWin, modal, modalType, logger, logFile, db, apiCallbackInfo
+let splashScreen, bgWin, modal, modalType, logger, logFile, db
 
 // create a custom transport to save winston logs into a json database using electron store
 module.exports = {
@@ -128,7 +128,8 @@ function appInit() {
         coreRunning: false,
         coreError: false,
         rpcConnected: false,
-        rpcError: false
+        rpcError: false,
+        coreSynced: false
     }
     
     // watch for changes on the shared object
@@ -159,13 +160,15 @@ function appInit() {
                 global.sharedObject.win.webContents.send('rpcCheckAPP', {rpcError: global.sharedObject.rpcError})
                 global.sharedObject.win.webContents.send('rpcError')
             }
+            else if (property === "coreSynced") {
+                global.sharedObject.win.webContents.send('coreSyncCheckAPP', {coreSynced: global.sharedObject.coreSynced})
+                global.sharedObject.win.webContents.send('coreSynced')
+            }
         }
     }, 0, true);
     
-    global.callbackObj = {} // global shared callback object
-    apiCallbackInfo = [] // keeps track of API callback access per function call
-    
-    console.log('apiCallbackInfo: ', apiCallbackInfo)
+    global.referrer = ""
+    global.apiCallbackInfo = new Map() // keeps track of API callback vars per function call
 }
 
 // some code from: https://github.com/trodi/electron-splashscreen
@@ -283,9 +286,11 @@ function createWindow() {
         // Dereference the window object, usually you would store windows
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
-        bgWin.close()
-        bgWin = null
-        global.sharedObject.win = null
+        if (bgWin) {
+            bgWin.close()
+            bgWin = null
+            global.sharedObject.win = null
+        }
     })
 }
 
@@ -408,35 +413,38 @@ function createDialog(event, window, type, text, fatal = false) {
 
 /* Generic API callback function. */
 let apiCallback = function(resp, functionName, projectInfo) {
-    if (resp.type === "data") {
-        console.log('apiCallbackInfo: ', apiCallbackInfo)
-        console.log('projectInfo: ', projectInfo)
-        //console.log('referrer: ', apiCallbackInfo[projectInfo.apiCallbackInfo])
-        console.log('from ' + functionName)
+    var referrer = projectInfo.referrer
+    var apiCallbackInfo = global.apiCallbackInfo.get(referrer)
+    //console.log('apiCallbackInfo: ', apiCallbackInfo)
+    //console.log('referrer: ', referrer)
+    //console.log()
+    
+    if (resp.type === "data") {        
+        //console.log('projectInfo: ', projectInfo)
+        //console.log('from ' + functionName)
         //console.log(resp)
-        
-        var referrer = apiCallbackInfo[projectInfo.apiCallbackInfo].referrer
+        //console.log()
         
         if (functionName === "checkBalance") {
             if (referrer === "checkProjectBalances") {
-                global.availableProjects.list[projectInfo.projectIndex].totalFunds = parseFloat(resp.msg)
+                global.availableProjects.list[projectInfo.projectIndex].currentFunds = parseFloat(resp.msg)
             }
-            else if (global.sharedObject.referrer === "getClaimedFundsInfo") {
+            else if (referrer === "getClaimedFundsInfo") {
                 if (resp.msg === "0") {
-                    global.callbackObj.claimedFunds += projectInfo.addrAmt
-                    global.callbackObj.claimedWallets++
+                    apiCallbackInfo.claimedFunds += projectInfo.addrAmt
+                    apiCallbackInfo.claimedWallets++
                 }
             }
         }
         else if (functionName === "checkTransaction") {
-            if (global.sharedObject.referrer === "getAllTxInfo") {
+            if (referrer === "getAllTxInfo") {
                 if (resp.msg < 6) {
-                    global.callbackObj.pendingFunds += projectInfo.addrAmt
-                    global.callbackObj.pendingWallets++
+                    apiCallbackInfo.pendingFunds += projectInfo.addrAmt
+                    apiCallbackInfo.pendingWallets++
                 }
                 else {
-                    global.callbackObj.confirmedFunds += projectInfo.addrAmt
-                    global.callbackObj.confirmedWallets++
+                    apiCallbackInfo.confirmedFunds += projectInfo.addrAmt
+                    apiCallbackInfo.confirmedWallets++
                 }
             }
         }
@@ -450,7 +458,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
         else
             return resp*/
         
-        //global.availableProjects.list[projectInfo.projectIndex].totalFunds = parseFloat(resp.msg)
+        //global.availableProjects.list[projectInfo.projectIndex].originalFunds = parseFloat(resp.msg)
     }
     else if (resp.type === "error") {
         if (projectInfo.projectName)
@@ -458,27 +466,26 @@ let apiCallback = function(resp, functionName, projectInfo) {
         else
             logger.error(functionName + ': ' + resp.msg)
     }
-
-    apiCallbackInfo[projectInfo.apiCallbackInfo].apiCallbackCounter++
-    var apiCallbackInfo = apiCallbackInfo[projectInfo.apiCallbackInfo].apiCallbackCounter
     
-    if (functionName === "checkBalance") {
-        console.log('checkBalance is finished');
-        
+    apiCallbackInfo.apiCallbackCounter++
+    var apiCallbackCounter = apiCallbackInfo.apiCallbackCounter
+    
+    if (functionName === "checkBalance") {        
         if ((referrer === "checkProjectBalances") && (apiCallbackCounter == global.availableProjects.list.length)) {
             db.set('projects', global.availableProjects)
             global.sharedObject.win.webContents.send('balancesChecked')
             global.sharedObject.win.webContents.send('projectsReady')
+            global.apiCallbackInfo.delete(referrer)
         }
-        else if ((global.sharedObject.referrer === "getClaimedFundsInfo") && (apiCallbackCounter == global.callbackObj.totalAddrs)) {
-            console.log('claimedFunds: ', global.callbackObj.claimedFunds)
-            console.log('claimedWallets: ', global.callbackObj.claimedWallets)
-            global.sharedObject.win.webContents.send('claimedFundsInfo', {claimedFunds: global.callbackObj.claimedFunds, claimedWallets: global.callbackObj.claimedWallets}) 
+        else if ((referrer === "getClaimedFundsInfo") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
+            global.sharedObject.win.webContents.send('claimedFundsInfo', {claimedFunds: apiCallbackInfo.claimedFunds, claimedWallets: apiCallbackInfo.claimedWallets})
+            global.apiCallbackInfo.delete(referrer)
         }
     }
-    else if (functionName === "checkTransaction") {        
-        if ((global.sharedObject.referrer === "getAllTxInfo") && (apiCallbackCounter == global.callbackObj.totalAddrs)) {            
-            global.sharedObject.win.webContents.send('allTxInfo', {pendingFunds: global.callbackObj.pendingFunds, pendingWallets: global.callbackObj.pendingWallets, confirmedFunds: global.callbackObj.confirmedFunds, confirmedWallets: global.callbackObj.confirmedWallets})
+    else if (functionName === "checkTransaction") {
+        if ((referrer === "getAllTxInfo") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {            
+            global.sharedObject.win.webContents.send('allTxInfo', {pendingFunds: apiCallbackInfo.pendingFunds, pendingWallets: apiCallbackInfo.pendingWallets, confirmedFunds: apiCallbackInfo.confirmedFunds, confirmedWallets: apiCallbackInfo.confirmedWallets})
+            global.apiCallbackInfo.delete(referrer)
         }
     }
     /*else if (functionName === "") {
@@ -602,7 +609,7 @@ function loadLog() {
 function newProject(event, project) {
     var newProject = project
     newProject.id = global.availableProjects.index + 1
-    newProject.totalFunds = 0
+    newProject.originalFunds = 0
     newProject.addressPair = {}
     
     var addressPair = smartcashapi.generateAddress()
@@ -626,6 +633,11 @@ function refreshLogFile() {
     var log = logDB.get('log')
     global.availableLog = {date: stats.mtime, content: log}
     global.sharedObject.win.webContents.send('logReady')
+}
+
+function removeCallbackInfo(index) {
+    global.apiCallbackInfo = global.apiCallbackInfo.splice(index, 1)
+    console.log('global.apiCallbackInfo: ', global.apiCallbackInfo);
 }
 
 // set the active project based on a project ID
@@ -709,17 +721,16 @@ app.on('activate', () => {
 
 
 // check the balance of all projects
-ipcMain.on('checkProjectBalances', (event, args) => {
-    apiCallbackInfo.push({
-        referrer: "checkProjectBalances",
+ipcMain.on('checkProjectBalances', (event, args) => {    
+    global.apiCallbackInfo.set('checkProjectBalances', {
         apiCallbackCounter: 0
     })
     
     if (global.availableProjects === undefined)
-        global.availableProjects = db.get('projects')
+        global.availableProjects = db.get('projects') 
     
     global.availableProjects.list.forEach(function(project, projectKey) {
-        smartcashapi.checkBalance({apiCallbackInfo: apiCallbackInfo.length-1, address: project.addressPair.publicKey, projectID: project.id, projectIndex: projectKey, projectName: project.name}, apiCallback)
+        smartcashapi.checkBalance({referrer: "checkProjectBalances", address: project.addressPair.publicKey, projectID: project.id, projectIndex: projectKey, projectName: project.name}, apiCallback)
     })
 })
 
@@ -775,58 +786,28 @@ ipcMain.on('fundProject', (event, args) => {
     //refreshLogFile()
 })
 
-// get the total amount of gift funds that have been claimed
-ipcMain.on('getClaimedFundsInfo', (event, args) => {
-    global.sharedObject.referrer = "getClaimedFundsInfo"
-    global.callbackObj.totalAddrs = 0
-    global.callbackObj.claimedFunds = 0
-    global.callbackObj.claimedWallets = 0
-    //apiCallbackCounters.push(0)
-    
-    //console.log(args)
-    
-    if (args === undefined) {
-        // get the claimed amount for all wallets for all projects
-        global.availableProjects.list.forEach(function(project, projectKey) {
-            project.recvAddrs.forEach(function(address, addrKey) {
-                smartcashapi.checkBalance({address: address.publicKey, addrAmt: project.addrAmt}, apiCallback)
-                global.callbackObj.totalAddrs++
-            })
-        })
-    }
-    else {
-        // get the claimed amount for all wallets for one project
-        var index = getDbIndex(args.projectID)
-        var project  = global.availableProjects.list[index]
-        
-        project.recvAddrs.forEach(function(address, addrKey) {                                      
-            smartcashapi.checkBalance({address: address.publicKey, projectID: args.projectID, projectIndex: index, addrAmt: project.addrAmt}, apiCallback)
-            global.callbackObj.totalAddrs++
-        })
-    }
-})
-
 // get the total amount of transactions that have yet to be confirmed
 ipcMain.on('getAllTxInfo', (event, args) => {
     console.log('in getAllTxInfo')
-    
-    global.sharedObject.referrer = "getAllTxInfo"
-    global.callbackObj.pendingWallets = 0
-    global.callbackObj.pendingFunds = 0
-    global.callbackObj.confirmedWallets = 0
-    global.callbackObj.confirmedFunds = 0
-    apiCallbackCounter = 0
-    
-    global.callbackObj.totalAddrs = 0
+    var totalAddrs = 0
     var addrBatch = []
     
     global.availableProjects.list.forEach(function(project, projectKey) {
         if (project.fundsSent)
-            //global.callbackObj.totalAddrs++
-            global.callbackObj.totalAddrs += project.numAddr
+            //totalAddrs++
+            totalAddrs += project.numAddr
     })
     
-    if (global.callbackObj.totalAddrs > 0) {
+    if (totalAddrs > 0) {
+        global.apiCallbackInfo.set('getAllTxInfo', {
+            apiCallbackCounter: 0,
+            pendingWallets: 0,
+            pendingFunds: 0,
+            confirmedWallets: 0,
+            confirmedFunds: 0,
+            totalAddrs: totalAddrs
+        })
+        
         global.availableProjects.list.forEach(function(project, projectKey) {
             project.recvAddrs.forEach(function(address, addrKey) {
                 if (project.fundsSent) {
@@ -835,7 +816,7 @@ ipcMain.on('getAllTxInfo', (event, args) => {
                         params: [address.txid, 1]
                     })*/
                     
-                    smartcashapi.checkTransaction({txid: address.txid, addrAmt: project.addrAmt}, apiCallback)
+                    smartcashapi.checkTransaction({referrer: "getAllTxInfo", projectName: project.name, txid: address.txid, addrAmt: project.addrAmt}, apiCallback)
                 }
             })
             
@@ -843,6 +824,79 @@ ipcMain.on('getAllTxInfo', (event, args) => {
             //smartcashapi.checkTransaction({totalAddrs: totalAddrs, addrBatch: addrBatch, addrAmt: project.addrAmt}, apiCallback)
         })
     }
+})
+
+// get the total amount of gift funds that have been claimed
+ipcMain.on('getClaimedFundsInfo', (event, args) => {
+    //console.log(args)
+    
+    var index
+    var project
+    var totalAddrs = 0
+    
+    if (args === undefined) {
+        global.availableProjects.list.forEach(function(project, projectKey) {
+            project.recvAddrs.forEach(function(address, addrKey) {
+                totalAddrs++
+            })
+        })
+    }
+    else {
+        index = getDbIndex(args.projectID)
+        project  = global.availableProjects.list[index]
+    
+        project.recvAddrs.forEach(function(address, addrKey) {
+            totalAddrs++
+        })
+    }
+    
+    global.apiCallbackInfo.set('getClaimedFundsInfo', {
+        apiCallbackCounter: 0,
+        totalAddrs: totalAddrs,
+        claimedFunds: 0,
+        claimedWallets: 0
+    })
+    
+    if (args === undefined) {
+        // get the claimed amount for all wallets for all projects
+        global.availableProjects.list.forEach(function(project, projectKey) {
+            project.recvAddrs.forEach(function(address, addrKey) {
+                smartcashapi.checkBalance({referrer: "getClaimedFundsInfo", address: address.publicKey, addrAmt: project.addrAmt}, apiCallback)
+            })
+        })
+    }
+    else {
+        // get the claimed amount for all wallets for one project
+        project.recvAddrs.forEach(function(address, addrKey) {
+            totalAddrs++
+            smartcashapi.checkBalance({referrer: "getClaimedFundsInfo", address: address.publicKey, projectID: args.projectID, projectIndex: index, addrAmt: project.addrAmt}, apiCallback)
+        })
+    }
+})
+
+// get the total amount of funds that were swept back from the promotional wallets
+ipcMain.on('getSweptFundsInfo', (event, args) => {
+    var totalAddrs = 0
+    
+    // get the swept amount for all wallets for all projects
+    global.availableProjects.list.forEach(function(project, projectKey) {
+        project.recvAddrs.forEach(function(address, addrKey) {
+            totalAddrs++
+        })
+    })
+    
+    global.apiCallbackInfo.set('getSweptFundsInfo', {
+        apiCallbackCounter: 0,
+        totalAddrs: totalAddrs,
+        sweptFunds: 0,
+        sweptWallets: 0
+    })
+    
+    global.availableProjects.list.forEach(function(project, projectKey) {
+        project.recvAddrs.forEach(function(address, addrKey) {
+            
+        })
+    })
 })
 
 // load the most recent log file

@@ -197,7 +197,7 @@ button, .btn, .form-control, .input-group-addon {
     width: 15%;
 }
 
-#editProjectForm input[name='addrAmt'], #editProjectForm input[name='totalFunds'] {
+#editProjectForm input[name='addrAmt'], #editProjectForm input[name='originalFunds'] {
     width: 25%;
 }
 
@@ -216,7 +216,7 @@ button, .btn, .form-control, .input-group-addon {
 
 /* Fund */
 
-#fundProjectForm input[name='totalFunds'] {
+#fundProjectForm input[name='originalFunds'] {
     width: 10%;
 }
 

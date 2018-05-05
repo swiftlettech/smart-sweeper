@@ -15,7 +15,7 @@
 
         $scope.init = function() {
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
-            ctrl.totalFunds = 0;            
+            ctrl.originalFunds = 0;            
             ctrl.activeProject = electron.remote.getGlobal('activeProject');
         };        
 
@@ -35,7 +35,7 @@
                 if (electron.remote.getGlobal('referrer') !== "fundProjectModal")
                     return;
                 
-                ipcRenderer.send('fundProject', {projectID: ctrl.activeProject.id, totalFunds: parseFloat(ctrl.totalFunds), projectAddr: ctrl.activeProject.addressPair.publicKey, sourceAddr: ctrl.fundingAddr, sourcePK: ctrl.fundingPK});
+                ipcRenderer.send('fundProject', {projectID: ctrl.activeProject.id, originalFunds: parseFloat(ctrl.originalFunds), projectAddr: ctrl.activeProject.addressPair.publicKey, sourceAddr: ctrl.fundingAddr, sourcePK: ctrl.fundingPK});
                 
                 ctrl.activeProject = null;
                 form.$setPristine();

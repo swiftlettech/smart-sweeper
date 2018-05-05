@@ -35,10 +35,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="totalFunds" class="control-label">Total SMART to be sent</label>
-                    <p>{{$editCtrl.activeProject.totalFunds | toFixedNum: 8}}</p>
+                    <label for="originalFunds" class="control-label">Total SMART to be sent</label>
+                    <p>{{$editCtrl.activeProject.originalFunds | toFixedNum: 8}}</p>
                     
-                    <div ng-show="$editCtrl.activeProject.totalFunds == 0" role="alert">
+                    <div ng-show="$editCtrl.activeProject.originalFunds == 0" role="alert">
                         <span class="error"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Funds have not been sent to the project address.</span>
                     </div>
                 </div>

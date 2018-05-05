@@ -91,10 +91,10 @@
         
         /* Calculate the amount of SMART to send to each receiving address. */
         ctrl.updateAddrAmt = function() {
-            if (ctrl.activeProject.totalFunds > 0)
-                ctrl.activeProject.addrAmt = (ctrl.activeProject.totalFunds / ctrl.activeProject.numAddr).toFixed(8);
+            if (ctrl.activeProject.originalFunds > 0)
+                ctrl.activeProject.addrAmt = (ctrl.activeProject.originalFunds / ctrl.activeProject.numAddr).toFixed(8);
             else
-                ctrl.activeProject.addrAmt = (0).toFixed(8);
+                ctrl.activeProject.addrAmt = 0;
         };
     }
 })();
