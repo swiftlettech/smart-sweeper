@@ -1,13 +1,13 @@
 <div id="notOnline" class="alert alert-danger" role="alert" ng-show="!$mainCtrl.isOnline"><i class="fa fa-fw fa-exclamation-circle"></i> You are currently disconnected from the Internet. Blockchain transactions will not sync until after reconnection.</div>
 
-<div id="preCore" class="alert alert-info" role="alert" ng-hide="$mainCtrl.coreRunning || $mainCtrl.coreError"><i class="fa fa-fw fa-exclamation-circle"></i> Launching Smartcash Core (if not already running)...</div>
+<div id="preCore" class="alert alert-info" role="alert" ng-hide="$mainCtrl.coreRunning || $mainCtrl.coreError"><i class="fa fa-fw fa-exclamation-circle"></i> Launching SmartCash Core (if not already running)...</div>
 
-<div id="noCore" class="alert alert-danger" role="alert" ng-show="$mainCtrl.coreError"><i class="fa fa-fw fa-exclamation-circle"></i> Smartcash Core (wallet) is not running. Some functions will not work.</div>
+<div id="noCore" class="alert alert-danger" role="alert" ng-show="$mainCtrl.coreError"><i class="fa fa-fw fa-exclamation-circle"></i> SmartCash Core (wallet) is not running. Some functions will not work.</div>
 
-<div id="preRPC" class="alert alert-info" role="alert" ng-hide="$mainCtrl.rpcConnected || $mainCtrl.coreError || $mainCtrl.rpcError"><i class="fa fa-fw fa-exclamation-circle"></i> Connecting to Smartcash Core...</div>
+<div id="preRPC" class="alert alert-info" role="alert" ng-hide="$mainCtrl.rpcConnected || $mainCtrl.coreError || $mainCtrl.rpcError"><i class="fa fa-fw fa-exclamation-circle"></i> Connecting to SmartCash Core...</div>
 
-<div id="noRPC" class="alert alert-danger" role="alert" ng-show="$mainCtrl.rpcError"><i class="fa fa-fw fa-exclamation-circle"></i> Can't connect to Smartcash Core (wallet). Some functions will not work.</div>
+<div id="noRPC" class="alert alert-danger" role="alert" ng-show="$mainCtrl.rpcError"><i class="fa fa-fw fa-exclamation-circle"></i> Can't connect to SmartCash Core (wallet). Some functions will not work.</div>
 
-<div id="coreSync" class="alert alert-danger" role="alert" ng-hide="$mainCtrl.coreSynced || $mainCtrl.coreError || $mainCtrl.rpcErrord"><i class="fa fa-fw fa-exclamation-circle"></i> Checking to see if local blockchain is up-to-date...</div>
+<div id="coreSync" class="alert alert-info" role="alert" ng-hide="$mainCtrl.coreSynced || $mainCtrl.coreSyncError || $mainCtrl.coreError || $mainCtrl.rpcError"><i class="fa fa-fw fa-exclamation-circle"></i> Checking to see if the local blockchain is up-to-date...</div>
 
-<div id="noCoreSync" class="alert alert-danger" role="alert" ng-show="!$mainCtrl.coreSynced"><i class="fa fa-fw fa-exclamation-circle"></i> The Smartcash Core blockchain is behind. Information on this page may be out of date.</div>
+<div id="noCoreSync" class="alert alert-danger" role="alert" ng-show="$mainCtrl.coreSyncError"><i class="fa fa-fw fa-exclamation-circle"></i> The SmartCash Core blockchain is behind. Information on this page may be out of date.</div>

@@ -1,4 +1,4 @@
-SMART Sweeper
+SmartSweeper
 =============
 
 Description
@@ -8,7 +8,7 @@ Sweeper application for SmartCash cryptocurrency (http://smartcash.cc) to allow 
 
 Releases
 ---------------
-Releases are forthcoming. SMART Sweeper is still in the development stage.
+Releases are forthcoming. SmartSweeper is still in the development stage.
 
 
 Requirements
@@ -17,7 +17,7 @@ Requirements
 * [npm](http://npmjs.com) - 5.6.0+
 * [SmartCash wallet](https://smartcash.cc/wallets/) for Windows, Linux, or Mac OS - 1.1.1+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
 
-Run node -v and npm -v from a command prompt to make sure they're in your PATH. Open your wallet to make sure that it is up to date before launching SMART Sweeper.
+Run node -v and npm -v from a command prompt to make sure they're in your PATH. Open your wallet to make sure that it is up to date before launching SmartSweeper.
 
 
 Installation
@@ -36,7 +36,7 @@ npm start
 
 Configuration
 ---------------
-SMART Sweeper can be configured by modifying .env in the root directory. The app will create it for you the first time you load it, but you can create the file yourself prior to that, which will help if you didn't use the default SmartCash installation path. The default values for Windows are shown below.
+SmartSweeper can be configured by modifying .env in the root directory. The app will create it for you the first time you load it, but you can create the file yourself prior to that, which will help if you didn't use the default SmartCash installation path. The default values for Windows are shown below.
 ```
 rpc.host=127.0.0.1
 rpc.port=9678
@@ -46,11 +46,11 @@ smartcashPath=C:\Program Files\SmartCash\
 
 ```
 
-* rpc.host is the IP address that the Smartcash Wallet RPC server is bound to.
-* rpc.port is the port that the Smartcash Wallet RPC server is listening on.
-* rpc.username is the Smartcash Wallet RPC server username.
-* rpc.password is the Smartcash Wallet RPC server password.
-* smartcashPath is the full path to your Smartcash Wallet installation. You must include a trailing slash.
+* rpc.host is the IP address that the SmartCash Wallet RPC server is bound to.
+* rpc.port is the port that the SmartCash Wallet RPC server is listening on.
+* rpc.username is the SmartCash Wallet RPC server username.
+* rpc.password is the SmartCash Wallet RPC server password.
+* smartcashPath is the full path to your SmartCash Wallet installation. You must include a trailing slash.
 
 
 Your SmartCash wallet must be started with the following arguments:
@@ -63,7 +63,7 @@ Your SmartCash wallet must be started with the following arguments:
 -rpcpassword=rpcpassword
 ```
 
-If it isn't running, SMART Sweeper will start it for you with the above arguments. You can also [edit your wallet's smartcash.conf file](https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file). Please don't do this with your wallet running.
+If it isn't running, SmartSweeper will start it for you with the above arguments. You can also [edit your wallet's smartcash.conf file](https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file). Please don't do this with your wallet running.
 
 ```
 txindex=1
@@ -81,9 +81,9 @@ User files
 ---------------
 The database (smart-sweeper.json) and the log files are saved in the following folders:
 
-* **Windows**: %APPDATA%/SMART Sweeper
-* **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/SMART Sweeper
-* **Mac**: ~/Library/Application Support/SMART Sweeper
+* **Windows**: %APPDATA%/SmartSweeper
+* **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/SmartSweeper
+* **Mac**: ~/Library/Application Support/SmartSweeper
 
 The log files are also in JSON format and can be read with a general log viewer such as [glogg](https://github.com/nickbnf/glogg).
 

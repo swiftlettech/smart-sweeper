@@ -45,7 +45,8 @@
             
             ipcRenderer.on('onlineCheckAPP', (event, args) => {                
                 $scope.$apply(function() {
-                    ctrl.isOnline = args.isOnline;
+                    if (ctrl.isOnline !== undefined)
+                        ctrl.isOnline = args.isOnline;
                     
                     if (ctrl.isOnline)
                         ctrl.setPageHeight();
@@ -54,11 +55,11 @@
             
             ipcRenderer.on('coreCheckAPP', (event, args) => {
                 $scope.$apply(function() {
-                    if (args.coreRunning) {
+                    if (args.coreRunning !== undefined) {
                         ctrl.coreRunning = args.coreRunning;
                         ctrl.setPageHeight();
                     }
-                    else if (args.coreError) {
+                    else if (args.coreError !== undefined) {
                         ctrl.coreError = args.coreError;
                     }
                 });
@@ -66,11 +67,11 @@
             
             ipcRenderer.on('rpcCheckAPP', (event, args) => {                
                 $scope.$apply(function() {
-                    if (args.rpcConnected) {
+                    if (args.rpcConnected !== undefined) {
                         ctrl.rpcConnected = args.rpcConnected;
                         ctrl.setPageHeight();
                     }
-                    else if (args.rpcError) {
+                    else if (args.rpcError !== undefined) {
                         ctrl.rpcError = args.rpcError;
                     }
                 });
@@ -78,9 +79,12 @@
             
             ipcRenderer.on('coreSyncCheckAPP', (event, args) => {                
                 $scope.$apply(function() {
-                    if (args.coreSynced) {
+                    if (args.coreSynced !== undefined) {
                         ctrl.coreSynced = args.coreSynced;
                         ctrl.setPageHeight();
+                    }
+                    else if (args.coreSyncError !== undefined) {
+                        ctrl.coreSyncError = args.coreSyncError;
                     }
                 });
             });

@@ -129,7 +129,8 @@ function appInit() {
         coreError: false,
         rpcConnected: false,
         rpcError: false,
-        coreSynced: false
+        coreSynced: false,
+        coreSyncError: false
     }
     
     // watch for changes on the shared object
@@ -234,7 +235,7 @@ function createBgWindow() {
     bgWin.on("ready-to-show", () => {
         setTimeout(function() {
             closeSplashScreen()
-            bgWin.show()
+            //bgWin.show()
         }, 12000)
     })
 

@@ -159,8 +159,8 @@
 
                             if (valid == 2)
                                 remote.getGlobal('sharedObject').coreSynced = true;
-                            //else
-                                //coreSync(apiCallback);
+                            else
+                                remote.getGlobal('sharedObject').coreSyncError = true;
 
                             //callback({type: 'data', msg: true}, 'getBlockCount');
                         }
@@ -176,6 +176,8 @@
                 else {
                     if (valid == 1)
                         remote.getGlobal('sharedObject').coreSynced = true;
+                    else
+                        remote.getGlobal('sharedObject').coreSyncError = true;
                     
                     /*if (!validFlag)
                         coreSync(apiCallback);*/
@@ -193,7 +195,7 @@
         });
     }
     
-    // check to see if Smartcash Core is running
+    // check to see if SmartCash Core is running
     function smartcashCoreCheck() {
         ps.lookup({command: smartcashProg}, function (err, results) {
             if (err) {
