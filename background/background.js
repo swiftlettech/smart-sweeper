@@ -1,29 +1,27 @@
 (function() {
     'use strict';
     
-    const config = window.nodeRequire("exp-config")
+    const config = window.nodeRequire("exp-config");
     const electron = window.nodeRequire('electron');
     const remote = electron.remote;
     const {ipcRenderer} = electron;
-    const path = window.nodeRequire('path')
+    const path = window.nodeRequire('path');
     const cp = window.nodeRequire('child_process');
     
-    const request = window.nodeRequire('request')
+    const request = window.nodeRequire('request');
     const {is} = window.nodeRequire('electron-util');
+    const isOnline = window.nodeRequire('is-online');
     const ps = window.nodeRequire('ps-node');
-    const winston = window.nodeRequire('winston');
     const smartcashapi = window.nodeRequire('./smartcashapi');
-    const smartcashExplorer = "http://explorer3.smartcash.cc"
+    const smartcashExplorer = "http://explorer3.smartcash.cc";
     const rpc = window.nodeRequire('./rpc-client');
     
-    let logger = winston.loggers.get('logger');
-    //console.log(logger)
     var basepath = __dirname.split(path.sep);
     basepath.pop();
     basepath = basepath.join(path.sep);
     
     var apiCallbackCounter, isOnlineFlag;
-    var smartcashProg, smartcashPath, smartcash, rpcExplorer, rpcConnected;
+    var smartcashProg, smartcashPath, smartcash;
     
     init();
     
@@ -32,10 +30,10 @@
         
         // load smartcash and the RPC explorer
         if (is.windows) {
-            smartcashProg = "smartcash-qt.exe"
+            smartcashProg = "smartcash-qt.exe";
         }
         else if (is.linux || is.macos) {
-            smartcashProg = "smartcash-qt"
+            smartcashProg = "smartcash-qt";
         }
         else {
             var content = {
@@ -44,7 +42,7 @@
                     body: 'I\'m sorry, SMART Sweeper is not supported on your operating system.'
                 },
                 fatal: true
-            }            
+            };
             ipcRenderer.send('showErrorDialog', content);
             return;
         }
@@ -52,25 +50,29 @@
         // check to see if smartcash is already running
         ps.lookup({command: smartcashProg}, function (err, results) {            
             if (err) {
-               throw new Error(err)
+               throw new Error(err);
             }
             else {                
                 if (results.length == 0) {
                     // not running
-                    startSmartcashCore()
+                    startSmartcashCore();
                 }
                 else {
                     remote.getGlobal('sharedObject').coreRunning = true;
-                    rpcCheck()
+                    rpcCheck();
                 }
 
                 // periodic background checking for online connectivity, SmartCash Core, and the RPC Explorer
                 setInterval(() => {
-                    //checkOnlineStatus()
-                    //smartcashCoreCheck()
-                    //rpcCheck()
-                    //checkBlockchain(apiCallback)
-                }, 30000)
+                    checkOnlineStatus();
+                    smartcashCoreCheck();
+                    rpcCheck();
+                    
+                    if (remote.getGlobal('sharedObject').rpcConnected) {
+                        checkBlockchain();
+                        updateDashboard();
+                    }
+                }, 30000);
             }
         })
     }
@@ -82,19 +84,19 @@
             console.log(resp);
             
             if (functionName === "rpcCheck") {
-                rpcConnected = true;
                 remote.getGlobal('sharedObject').rpcConnected = true;
 
                 // check to see if the local copy of the blockchain is current
-                checkBlockchain(apiCallback);
-                //smartcashapi.getBlockCount(rpcConnected, apiCallback);
-
-                // automatically sweep funds if necessary
-                //autoSweepFunds();
+                checkBlockchain();
+            }
+            else if (functionName === "checkBlockchain") {
+                // automatically sweep funds if necessary if the blockchain is up-to-date
+                //if (resp.msg)
+                    //autoSweepFunds();
             }
         }
         else if (resp.type === "error") {
-            logger.error(functionName + ': ' + resp.msg);
+            remote.getGlobal('sharedObject').logger.error(functionName + ': ' + resp.msg);
 
             if (functionName === "rpcCheck") {
                 remote.getGlobal('sharedObject').rpcError = true;
@@ -104,25 +106,8 @@
         apiCallbackCounter++        
     }
     
-    /* Syncs SmartCash core if behind. */
-    function coreSync(callback) {        
-        var cmd = {
-            method: 'snsync',
-            params: ['next']
-        };
-        
-        rpc.sendCmd(cmd, function(err, resp) {
-            if (err) {
-                callback({type: 'error', msg: resp}, 'coreSync')
-            }
-            else {
-                console.log(resp);
-            }
-        });
-    }
-    
     /* Get the current block count. */
-    function checkBlockchain(callback) {
+    function checkBlockchain() {
         var localHeaderCount;
         var localBlockCount;
         var onlineBlockCount;
@@ -136,14 +121,20 @@
         // check the local blockchain regardless of internet connection status
         rpc.sendCmd(cmd, function(err, resp) {
             if (err) {
-                callback({type: 'error', msg: resp}, 'getBlockCount')
+                apiCallback({type: 'error', msg: resp}, 'checkBlockchain')
             }
             else {
                 localHeaderCount = resp.headers
                 localBlockCount = resp.blocks
                 
+                //console.log('resp.headers: ', resp.headers);
+                //console.log('resp.blocks: ', resp.blocks);
+                //console.log('localHeaderCount == localBlockCount: ', localHeaderCount == localBlockCount);
+                
                 if (localHeaderCount == localBlockCount)
                     valid++;
+                
+                //console.log('valid: ', valid);
                 
                 // there is an active internet connection, check the online block explorer
                 if (remote.getGlobal('sharedObject').isOnline) {
@@ -156,36 +147,45 @@
 
                             if (localHeaderCount == onlineBlockCount);
                                 valid++
+                            
+                            //console.log('valid: ', valid);
 
-                            if (valid == 2)
+                            if (valid == 2) {
                                 remote.getGlobal('sharedObject').coreSynced = true;
+                                apiCallback({type: 'data', msg: true}, 'checkBlockchain');
+                            }
                             else
                                 remote.getGlobal('sharedObject').coreSyncError = true;
-
-                            //callback({type: 'data', msg: true}, 'getBlockCount');
                         }
                         else {
-                            console.log('getBlockCount');
+                            console.log('checkBlockchain');
                             console.log(err);
 
                             if (err)
-                                callback({type: 'error', msg: err}, 'getBlockCount');
+                                apiCallback({type: 'error', msg: err}, 'checkBlockchain');
                         }
                     });
                 }
                 else {
-                    if (valid == 1)
+                    if (valid == 1) {
                         remote.getGlobal('sharedObject').coreSynced = true;
+                        apiCallback({type: 'data', msg: true}, 'checkBlockchain');
+                    }
                     else
                         remote.getGlobal('sharedObject').coreSyncError = true;
-                    
-                    /*if (!validFlag)
-                        coreSync(apiCallback);*/
                 }
             }
         });
     }
     
+    /* Check to see whether or not the user is online. */
+    function checkOnlineStatus() {
+        isOnline().then(online => {
+            remote.getGlobal('sharedObject').isOnline = online;
+        });
+    }
+    
+    /* Check to see if the RPC client can communicate with SmartCash. */
     function rpcCheck() {
         rpc.statusCheck(function(resp) {
             if (!resp)
@@ -206,12 +206,15 @@
                     remote.getGlobal('sharedObject').coreRunning = true;
                     rpcCheck();
                 }
-                else
+                else {
                     remote.getGlobal('sharedObject').coreRunning = false;
+                    remote.getGlobal('sharedObject').coreError = true;
+                }
             }
         });
     }
 
+    // start SmartCash and detach it from SmartSweeper so that it doesn't close when SmartSweeper does
     function startSmartcashCore() {
         console.log(config.smartcashPath);
         
@@ -225,7 +228,7 @@
         smartcash.on('error', (err) => {
             console.log('tried to open the wallet and failed');
             console.log(err);
-            logger.error('appInit - start Smartcash core: ' + err);
+            remote.getGlobal('sharedObject').logger.error('appInit - start Smartcash core: ' + err);
             remote.getGlobal('sharedObject').coreError = true;
         });
         
@@ -234,13 +237,14 @@
                 remote.getGlobal('sharedObject').coreRunning = true;
                 rpcCheck();
             }
-        }, 20000);
+        }, 30000);
     }
-
-    // check to see whether or not the user is online
-    function checkOnlineStatus() {
-        isOnline().then(online => {
-            remote.getGlobal('sharedObject').isOnline = online;
-        });
-    }    
+    
+    /* Update dashboard info. */
+    function updateDashboard() {
+        ipcRenderer.send('checkProjectBalances');
+        ipcRenderer.send('getClaimedFundsInfo');
+        ipcRenderer.send('getAllTxInfo');
+        //ipcRenderer.send('getSweptFundsInfo');
+    }
 })();

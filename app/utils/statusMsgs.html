@@ -8,6 +8,6 @@
 
 <div id="noRPC" class="alert alert-danger" role="alert" ng-show="$mainCtrl.rpcError"><i class="fa fa-fw fa-exclamation-circle"></i> Can't connect to SmartCash Core (wallet). Some functions will not work.</div>
 
-<div id="coreSync" class="alert alert-info" role="alert" ng-hide="$mainCtrl.coreSynced || $mainCtrl.coreSyncError || $mainCtrl.coreError || $mainCtrl.rpcError"><i class="fa fa-fw fa-exclamation-circle"></i> Checking to see if the local blockchain is up-to-date...</div>
+<div id="coreSync" class="alert alert-info" role="alert" ng-hide="$mainCtrl.coreSynced || $mainCtrl.coreError || $mainCtrl.rpcError || $mainCtrl.coreSyncError"><i class="fa fa-fw fa-exclamation-circle"></i> Checking to see if the local blockchain is up-to-date...</div>
 
 <div id="noCoreSync" class="alert alert-danger" role="alert" ng-show="$mainCtrl.coreSyncError"><i class="fa fa-fw fa-exclamation-circle"></i> The SmartCash Core blockchain is behind. Information on this page may be out of date.</div>

@@ -76,52 +76,11 @@ module.exports = {
 }
 
 // init various things before the main window loads
-function appInit() {    
-    // app config
-    ipcMain.setMaxListeners(0)
-    
-    // load the project db or create it if it doesn't exist
-    // saved in %APPDATA%/smart-sweeper on Win
-    // saved in $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper on Linux
-    // saved in ~/Library/Application Support/smart-sweeper on Mac
-    db = new Store({name: "smart-sweeper"})
-    global.availableProjects = db.get('projects')
-    if (global.availableProjects === undefined) {
-        db.set('projects', {index: 0, list: []})
-        global.availableProjects = db.get('projects')
-    }
-    
-    // setup logging
-    logFile = getCurrentDate()
-    
-    winston.loggers.add('logger', {
-        format: combine(timestamp(), prettyPrint()),
-        transports: [
-            new module.exports.JsonDBTransport({ filename: userLogsPath + path.sep + logFile, level: 'info' }),
-            new module.exports.JsonDBTransport({ filename: sysLogsPath + path.sep + logFile, level: 'error' })
-        ],
-        exitOnError: false
-    })
-    logger = winston.loggers.get('logger')
-    logger.emitErrs = false
-    
-    if (isDev)
-        logger.add(new transports.Console({format: format.simple()}))
-    
-    /*logger = createLogger({
-        //level: 'error',
-        format: combine(timestamp(), prettyPrint()),
-        transports: [
-            new module.exports.JsonDBTransport({ filename: sysLogsPath + path.sep + logFile, level: 'error' }),
-            new module.exports.JsonDBTransport({ filename: userLogsPath + path.sep + logFile, level: 'info' })
-        ],
-        exitOnError: false
-    })
-    logger.emitErrs = false*/
-    
+function appInit() {
     // create global object to be shared amongst renderer processes
     global.sharedObject = {
         win: null,
+        logger: null,
         isOnline: false,
         referrer: "",    
         rpcExplorer: null,
@@ -165,11 +124,49 @@ function appInit() {
                 global.sharedObject.win.webContents.send('coreSyncCheckAPP', {coreSynced: global.sharedObject.coreSynced})
                 global.sharedObject.win.webContents.send('coreSynced')
             }
+            else if (property === "coreSyncError") {
+                global.sharedObject.win.webContents.send('coreSyncCheckAPP', {coreSyncError: global.sharedObject.coreSyncError})
+                global.sharedObject.win.webContents.send('coreSyncError')
+            }
         }
-    }, 0, true);
+    }, 0, true)
     
     global.referrer = ""
     global.apiCallbackInfo = new Map() // keeps track of API callback vars per function call
+    
+    // app config
+    ipcMain.setMaxListeners(0)
+    
+    // load the project db or create it if it doesn't exist
+    // saved in %APPDATA%/smart-sweeper on Win
+    // saved in $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper on Linux
+    // saved in ~/Library/Application Support/smart-sweeper on Mac
+    db = new Store({name: "smart-sweeper"})
+    global.availableProjects = db.get('projects')
+    if (global.availableProjects === undefined) {
+        db.set('projects', {index: 0, list: []})
+        global.availableProjects = db.get('projects')
+    }
+    
+    // setup logging
+    logFile = getCurrentDate()
+    
+    winston.loggers.add('logger', {
+        format: combine(timestamp(), prettyPrint()),
+        transports: [
+            new module.exports.JsonDBTransport({ filename: userLogsPath + path.sep + logFile, level: 'info' }),
+            new module.exports.JsonDBTransport({ filename: sysLogsPath + path.sep + logFile, level: 'error' })
+        ],
+        exitOnError: false
+    })
+    
+    //logger = winston.loggers.get('logger')
+    //logger.emitErrs = false
+    global.sharedObject.logger = winston.loggers.get('logger')
+    global.sharedObject.logger.emitErrs = false
+    
+    if (isDev)
+        global.sharedObject.logger.add(new transports.Console({format: format.simple()}))
 }
 
 // some code from: https://github.com/trodi/electron-splashscreen
@@ -253,7 +250,7 @@ function createBgWindow() {
 function createWindow() {
     const {width, height} = electron.screen.getPrimaryDisplay().workAreaSize    
     const windowConfig = {
-        title: "SMART Sweeper",
+        title: "SmartSweeper",
         width: width, //1000,
         height: height, //600,
         center: true,
@@ -328,10 +325,10 @@ function createModal(type, text) {
     else if (type === "fund") {
         title = "Fund Project"
         parent = global.sharedObject.win
-        //width = Math.ceil(winBounds.width - (winBounds.width*0.6))
-        //height = Math.ceil(winBounds.height - (winBounds.height*0.15))
-        width = winBounds.width
-        height = winBounds.height
+        width = Math.ceil(winBounds.width - (winBounds.width*0.6))
+        height = Math.ceil(winBounds.height - (winBounds.height*0.15))
+        //width = winBounds.width
+        //height = winBounds.height
         pathname = path.join(__dirname, 'app', 'fund', 'fundModal.html')
         resizable = true
         minimizable = true
@@ -702,13 +699,11 @@ app.on('window-all-closed', () => {
             if (err) throw err;
         })
     }
-        
     
     // On macOS it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
+    if (process.platform !== 'darwin')
         app.quit()
-    }
 })
 
 app.on('activate', () => {
@@ -779,6 +774,7 @@ ipcMain.on('editProject', (event, args) => {
 // send funds to a project
 ipcMain.on('fundProject', (event, args) => {    
     // create and broadcast the transaction
+    console.log('fundProject args: ', args);
     smartcashapi.sendFunds(args)
     
     // calculate and save the amount per address

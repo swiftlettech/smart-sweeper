@@ -75,42 +75,60 @@ function checkTransaction(projectInfo, callback) {
 
 /* Generate a random public/private key pair. */
 function generateAddress() {
-    let ecPair = smartcash.ECPair.makeRandom()
-    let privateKey = ecPair.toWIF()
-    let publicKey = ecPair.getAddress()
+    var ecPair = smartcash.ECPair.makeRandom()
+    var privateKey = ecPair.toWIF()
+    var publicKey = ecPair.getAddress()
 
     return {privateKey: privateKey, publicKey: publicKey}
 }
 
 /* Send funds from the from one address to another. */
 function sendFunds(projectInfo) {
-    let receiver = projectInfo.projectAddr
-    let sender = {publicKey: projectInfo.sourceAddr, privateKey: projectInfo.sourcePK}
+    var callback = function(resp) {
+
+        //var tx = new smartcash.TransactionBuilder()
+        //tx.addInput(txHash, vout)
+
+        // get address info and get all unspent outputs for each txhash associated with sender address
+        /*tx.addInput(txHash, vout)
+        tx.addOutput(publicKey, amttosend)
+        tx.addOutput(sender, remainder) // the "change"
+        tx.sign(vinIndex, keyPair)*/
+
+        // check all previous transactions for the sender address and get the UTXOs
+
+        //tx.addInput(txHash, vout)    
+        //tx.addOutput(publicKey, amttosend)
+        //tx.addOutput(sender, remainder) // the "change"
+        //tx.sign(vinIndex, keyPair)
+
+        // broadcast to network
+        //console.log(tx)
+    }
     
-    var tx = new smartcash.TransactionBuilder()
-   
-    // get address info and get all unspent outputs for each txhash associated with sender address
-    /*tx.addInput(txHash, vout)    
-    tx.addOutput(publicKey, amttosend)
-    tx.addOutput(sender, remainder) // the "change"
-    tx.sign(vinIndex, keyPair)*/
-    
-    // check all previous transactions for the sender address and get the UTXOs
-    
-    //tx.addInput(txHash, vout)    
-    //tx.addOutput(publicKey, amttosend)
-    //tx.addOutput(sender, remainder) // the "change"
-    //tx.sign(vinIndex, keyPair)
-    
-    // broadcast to network
-    console.log('sendFunds')
-    console.log(tx)
+    request({
+        url: smartcashExplorer + '/ext/getaddress/' + sender.publicKey,
+        method: 'GET',
+        json: true
+    }, function (err, resp, body) {
+        console.log('sendFunds')
+        console.log(err)
+        console.log(resp.body)
+        
+        if (resp) {
+            var receiver = projectInfo.toAddr
+            var sender = {publicKey: projectInfo.fromAddr, privateKey: projectInfo.fromPK}
+        }
+        else {
+            remote.getGlobal('sharedObject').logger.error('sendFunds: ' + err)
+        }
+    })
 }
 
 /* Sweep (send) funds back from a promotional wallet address. */
 function sweepFunds(addresses) {
-    let receiver = addresses.receiver
-    let sender = addresses.sender
+    var receiver = addresses.receiver
+    var sender = addresses.sender
     
     
 }

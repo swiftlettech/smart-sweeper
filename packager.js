@@ -3,16 +3,16 @@ const packager = require('electron-packager')
 var options = {
     dir: "C:\\Abyss Web Server\\htdocs\\smart-sweeper\\",
     ignore: [
-        "^(.)+\.zip",
-        "^(.)+\.txt",
-        "^(.)+\.pdf",
-        "^(.)+\.log",
-        "dist",
-        "rpc-explorer",
-        "startbootstrap-sb-admin-3.3.7",
-        "packager.js"
+        "[\/\\]smart-sweeper[\/\\](.)+\.zip",
+        "[\/\\]smart-sweeper[\/\\](.)+\.txt",
+        "[\/\\]smart-sweeper[\/\\](.)+\.pdf",
+        "[\/\\]smart-sweeper[\/\\](.)+\.log",
+        "[\/\\]smart-sweeper[\/\\]dist",
+        "[\/\\]smart-sweeper[\/\\]rpc-explorer",
+        "[\/\\]smart-sweeper[\/\\]startbootstrap-sb-admin-3.3.7",
+        "[\/\\]smart-sweeper[\/\\]packager.js"
     ],
-    asar: true,
+    //asar: true,
     overwrite: true
 };
 

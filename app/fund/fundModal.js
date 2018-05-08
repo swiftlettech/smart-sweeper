@@ -35,7 +35,7 @@
                 if (electron.remote.getGlobal('referrer') !== "fundProjectModal")
                     return;
                 
-                ipcRenderer.send('fundProject', {projectID: ctrl.activeProject.id, originalFunds: parseFloat(ctrl.originalFunds), projectAddr: ctrl.activeProject.addressPair.publicKey, sourceAddr: ctrl.fundingAddr, sourcePK: ctrl.fundingPK});
+                ipcRenderer.send('fundProject', {projectID: ctrl.activeProject.id, amount: parseFloat(ctrl.originalFunds), toAddr: ctrl.activeProject.addressPair.publicKey, fromAddr: ctrl.fundingAddr, fromPK: ctrl.fundingPK});
                 
                 ctrl.activeProject = null;
                 form.$setPristine();
