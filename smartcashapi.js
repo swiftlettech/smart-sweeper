@@ -1,11 +1,8 @@
 /* Smart Cash API calls. */
 //const electron = require('electron')
-//const winston = require('winston')
 const request = require('request')
 const smartcash = require('smartcashjs-lib')
 const smartcashExplorer = "http://explorer3.smartcash.cc"
-const rpcapi = require('./rpc-explorer/app/rpcApi')
-const rpcenv = require("./rpc-explorer/app/env")
 const rpc = require('./rpc-client')
 //const testnet = smartcash.networks.testnet
 const http = require('http')
@@ -13,7 +10,6 @@ const util = require('util')
 
 //console.log(smartcash)
 
-//let logger = winston.loggers.get('logger')
 let callbackCounter = 0
 
 /* Check the balance for a given address. */

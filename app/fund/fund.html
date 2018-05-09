@@ -52,7 +52,8 @@
                         <tr>
                             <td colspan="9" class="addrCol">
                                 <strong>Project Address:</strong> {{project.addressPair.publicKey}}<br />
-                                <strong>Private Key:</strong> {{project.addressPair.privateKey}}
+                                <strong>Private Key:</strong> <button class="btn btn-link" title="Show/hide private key" ng-click="$mainCtrl.showPK(project.id)"><i class="fa fa-fw fa-eye" aria-hidden="false" title="Show private key" ng-show="!project.showPrivateKey"></i> <i class="fa fa-fw fa-eye-slash" aria-hidden="false" title="Hide private key" ng-show="project.showPrivateKey"></i></button> 
+                                {{project.addressPair.privateKey | hidePrivateKey: project.showPrivateKey}}
                             </td>
                         </tr>
                     </table>

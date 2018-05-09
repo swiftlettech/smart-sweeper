@@ -29,9 +29,9 @@
             console.log(ctrl.availableProjects);
             // display the project list as 10 per page?
 
-            angular.forEach(ctrl.availableProjectsCopy, function(project, index) {
+            /*angular.forEach(ctrl.availableProjectsCopy, function(project, index) {
                 claimedFunds(project.id, index);
-            });
+            });*/
 
             $mainCtrl.setPageHeight();
         };

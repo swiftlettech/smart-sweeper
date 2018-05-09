@@ -16,6 +16,15 @@
             }
         };
     })
+    .filter('hidePrivateKey', function() {
+        // shows/hides a project's private key
+        return function(privateKey, flag) {
+            if (!flag || flag === undefined)
+                return "******";
+            else
+                return privateKey;
+        };
+    })
     .filter('hasAddresses', function() {
         // returns whether or not a project has receiver addresses created for it
         return function(project) {
@@ -27,7 +36,7 @@
     })
     .filter('toFixedNum', function() {
         /* Formats a number to a fixed number of decimals. */
-        return function(value, decimals) {
+        return function(value, decimals) {            
             if (value !== undefined && typeof value !== "string") {
                 if (decimals === undefined)
                     decimals = 0;

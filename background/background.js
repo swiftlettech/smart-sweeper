@@ -66,7 +66,9 @@
                 setInterval(() => {
                     checkOnlineStatus();
                     smartcashCoreCheck();
-                    rpcCheck();
+                    
+                    if (remote.getGlobal('sharedObject').coreRunning)
+                        rpcCheck();
                     
                     if (remote.getGlobal('sharedObject').rpcConnected) {
                         checkBlockchain();

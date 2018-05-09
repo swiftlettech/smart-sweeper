@@ -3,14 +3,11 @@ const os = require('os')
 let config = require("exp-config")
 const electron = require('electron')
 const {ipcRenderer} = electron
-//const winston = require('winston')
 const smartcash = require('./smartcash-client')
 
 let client
 
-//let logger = winston.loggers.get('logger')
-
-// check for existing config file, create it if it doesn't exist    
+// check for existing config file, create it if it doesn't exist
 try {
     fs.openSync('.env', 'r')
     

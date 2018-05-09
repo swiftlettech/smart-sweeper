@@ -1,17 +1,29 @@
-const packager = require('electron-packager')
+const packager = require('electron-packager');
+const fs = require('fs');
+const path = require('path');
 
 var options = {
     dir: "C:\\Abyss Web Server\\htdocs\\smart-sweeper\\",
     ignore: [
-        "[\/\\]smart-sweeper[\/\\](.)+\.zip",
-        "[\/\\]smart-sweeper[\/\\](.)+\.txt",
-        "[\/\\]smart-sweeper[\/\\](.)+\.pdf",
-        "[\/\\]smart-sweeper[\/\\](.)+\.log",
-        "[\/\\]smart-sweeper[\/\\]dist",
-        "[\/\\]smart-sweeper[\/\\]rpc-explorer",
-        "[\/\\]smart-sweeper[\/\\]startbootstrap-sb-admin-3.3.7",
-        "[\/\\]smart-sweeper[\/\\]packager.js"
+        "^/.+[^/]+\.zip$",
+        "^/.+[^/]+\.txt$",
+        "^/.+[^/]+\.pdf$",
+        "^/.+[^/]+\.log$",
+        "^/.+[^/]+\.jpg",
+        //"^/config($|/)",
+        "^/dist($|/)",
+        "^/rpc-explorer($|/)",
+        "^/startbootstrap-sb-admin-3.3.7($|/)",
+        "^/packager\.js$"
     ],
+    /*afterCopy: [(buildPath, electronVersion, platform, arch, callback) => {
+        // copy the config folder into the new root folder
+        fs.copyFileSync('config' + path.sep + 'development.json', buildPath + path.sep + 'config' + path.sep + 'development.json');
+        
+        //console.log(buildPath);
+        
+        callback()
+    }],*/
     //asar: true,
     overwrite: true
 };

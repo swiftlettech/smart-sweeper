@@ -117,6 +117,18 @@
                 });
             }
         };
+        
+        /* Return the index of a project in the database. */
+        ctrl.getDbIndex = function(projectID) {
+            var arrayIndex;
+
+            electron.remote.getGlobal('availableProjects').list.forEach(function(project, index) {
+                if (project.id == projectID)
+                    arrayIndex = index;
+            });
+
+            return arrayIndex;
+        }
 
         /* Cleanup all page-related ipcRenderer events if they're not system events. */
         function eventCleanup() {
@@ -130,6 +142,14 @@
                     ipcRenderer.removeAllListeners(key);
             });
         }
+        
+        /* Show/hide a project's private key. */
+        ctrl.showPK = function(projectID) {
+            var index = ctrl.getDbIndex(projectID);
+            electron.remote.getGlobal('availableProjects').list[index].showPrivateKey = !electron.remote.getGlobal('availableProjects').list[index].showPrivateKey;
+            
+            ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+        };
 
         /*
          * Natural Sort algorithm for Javascript - Version 0.8.1 - Released under MIT license
