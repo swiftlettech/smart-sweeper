@@ -101,8 +101,19 @@
                 $document.find('#page-wrapper').css('background-image', 'url("images/SmartSweeper-logo.png")');
         };
 
-        ctrl.setPageHeight = function() {            
-            if ((ctrl.activePage === "dashboard" && (!ctrl.isOnline && !ctrl.coreRunning && !ctrl.rpcConnected)) ||
+        ctrl.setPageHeight = function() {
+            var statusMsgs = 0;
+            
+            if (!ctrl.isOnline)
+                statusMsgs++;
+            if (!ctrl.coreRunning)
+                statusMsgs++;
+            if (!ctrl.rpcConnected)
+                statusMsgs++;
+            if (!ctrl.coreSynced)
+                statusMsgs++;
+            
+            if ((ctrl.activePage === "dashboard" && (statusMsgs > 2)) ||
                ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && (electron.remote.getGlobal('availableProjects').list.length > 7)))
             {
                 $document.find('#page-wrapper').css('height', '');

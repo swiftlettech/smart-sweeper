@@ -151,7 +151,7 @@
             ctrl.calendar.opened = true;
         };
         
-        /* Called when the "new project" button is clicked. */
+        /* Called when the "create project" button is clicked. */
         ctrl.showAddForm = function() {
             ctrl.showAddNewProject = !ctrl.showAddNewProject;
             
@@ -165,8 +165,6 @@
         ctrl.sort = function(type, reverse) {
             ctrl.sortOptions.property = type;
             ctrl.sortOptions.reverse = reverse;
-            
-            //console.log(jsMultisort);
         };
     }
 })();

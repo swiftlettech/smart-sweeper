@@ -101,7 +101,6 @@ Software | License
 [elemon](https://github.com/manidlou/elemon) | MIT
 [exp-config](https://github.com/ExpressenAB/exp-config) | MIT
 [melanke-watchjs](https://github.com/melanke/Watch.JS) | MIT
-[node-bitcoin](https://github.com/freewil/node-bitcoin) | Unlicense
 [ps-node](https://github.com/neekey/ps) | MIT
 [smartcashjs-lib](https://github.com/SmartCash/SmartCashjs-lib) | MIT
 [SmartCash Paper Wallet Generator](https://github.com/SmartCash/PaperWalletGenerator) | ?

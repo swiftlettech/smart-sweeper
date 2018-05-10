@@ -216,17 +216,21 @@ button, .btn, .form-control, .input-group-addon {
 
 /* Fund */
 
-#fundProjectForm input[name='originalFunds'] {
-    width: 10%;
+#fundProjectForm input[name='name'] {
+    width: 60%;
 }
 
-#fundProjectForm input[name='name'], #fundProjectForm input[name='fundingAddr'] {
-    width: 40%;
+#fundProjectForm input[name='originalFunds'] {
+    width: 25%;
+}
+
+/*#fundProjectForm input[name='fundingAddr'] {
+    width: 65%;
 }
 
 #fundProjectForm input[name='fundingPK'] {
-    width: 50%;
-}
+    width: 75%;
+}*/
 
 
 /* Sweep */

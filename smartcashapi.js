@@ -62,7 +62,7 @@ function checkTransaction(projectInfo, callback) {
         }
         else {
             if (resp.confirmations !== undefined)
-                callback({type: 'data', msg: resp.confirmations}, 'checkTransaction', projectInfo)
+                callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
             else
                 callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
         }
@@ -78,7 +78,7 @@ function generateAddress() {
     return {privateKey: privateKey, publicKey: publicKey}
 }
 
-/* Send funds from the from one address to another. */
+/* Send funds from one address to another. */
 function sendFunds(projectInfo) {
     var callback = function(resp) {
 

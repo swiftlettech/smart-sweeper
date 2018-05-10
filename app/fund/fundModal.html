@@ -14,7 +14,29 @@
     
     <body ng-controller="FundProjectController as $fundCtrl" style="margin:20px 0;" ng-init="init()">
         <div id="page-wrapper" style="padding:15px;">
-            <form id="fundProjectForm" name="fundProjectForm" ng-submit="$fundCtrl.fundInfo(fundProjectForm)">
+            <p>You can fund a project using this form or an external program.</p>
+            
+            <div style="padding:10px 0; padding-right:0;">
+                <button type="button" class="btn btn-primary" ng-click="$fundCtrl.showForm('txidEntry')">Enter Existing TXID</button>
+                <button type="button" class="btn btn-primary" ng-click="$fundCtrl.showForm('fundProject')">Use Funding Form</button>
+            </div>
+            
+            <form id="projectTxForm" name="projectTxForm" class="hide" ng-show="$fundCtrl.showTxEntry" ng-hide="!$fundCtrl.showTxEntry" ng-submit="$fundCtrl.projectTx(projectTxForm)">
+                <div class="form-group">
+                    <label for="txid" class="control-label">TXID<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <input name="txid" type="text" class="form-control" ng-model="$fundCtrl.txid" required />
+                </div>
+                
+                <div ng-show="$fundCtrl.invalidTxid" role="alert">
+                    <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> The project address wasn't found in this transaction.</span>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$invalid">Submit</button>
+                </div>
+            </form>
+            
+            <form id="fundProjectForm" name="fundProjectForm" class="hide" ng-show="$fundCtrl.showFundForm" ng-hide="!$fundCtrl.showFundForm" ng-submit="$fundCtrl.fundInfo(fundProjectForm)">
                 <div class="form-group">
                     <label for="name" class="control-label">Project name</label>
                     <input name="name" type="text" class="form-control" ng-model="$fundCtrl.activeProject.name" disabled />

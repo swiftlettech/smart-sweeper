@@ -11,13 +11,33 @@
         var ctrl = this;
 
         $scope.init = function() {
+            ctrl.availableBalance = 0;
+            ctrl.claimedFunds = 0;
+            ctrl.claimedWalletsCount = 0;
+            ctrl.pendingFunds = 0;
+            ctrl.pendingWalletsCount = 0;
+            ctrl.confirmedFunds = 0;
+            ctrl.confirmedWalletsCount = 0;
+            ctrl.sweptFunds = 0;
+            ctrl.sweptWalletsCount = 0;
+            
+            if (electron.remote.getGlobal('sharedObject').rpcConnected) {
+                availableFunds();
+                txInfo();
+                claimedFunds();
+                //sweptFunds();
+            }
+            
             $scope.$on('onlineCheck', function(event, args) {
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                 
-                if (args.isOnline && ctrl.availableProjects.length > 0) {
-                    availableFunds();
-                }
-                else {
+                ctrl.availableBalance = 0;
+                ctrl.pendingFunds = 0;
+                ctrl.confirmedFunds = 0;
+                ctrl.claimedFunds = 0;
+                ctrl.sweptFunds = 0;
+                
+                if (ctrl.availableProjects.length === undefined || ctrl.availableProjects.length == 0) {
                     ctrl.availableBalance = "n/a";
                     ctrl.pendingFunds = "n/a";
                     ctrl.confirmedFunds = "n/a";
@@ -39,15 +59,18 @@
                 });
             });
             
-            ipcRenderer.on('onlineCheck', (event, args) => {                
+            /*ipcRenderer.on('onlineCheck', (event, args) => {                
                 $scope.$apply(function() {
                     if (args.isOnline && ctrl.projectCount > 0) {
                         availableFunds();
                     }
                 });
-            });
+            });*/
             
             ipcRenderer.on('rpcConnected', (event, args) => {
+                ctrl.projectCount = ctrl.availableProjects.length;
+                
+                availableFunds();
                 txInfo();
                 claimedFunds();
                 //sweptFunds();
@@ -57,26 +80,26 @@
         };
         
         /* The total project funds that have yet to be sent to another wallet (all projects). */
-        function availableFunds() {
-            ctrl.availableBalance = 0;
-            
+        function availableFunds() {            
             ipcRenderer.send('checkProjectBalances');
-            ipcRenderer.on('balancesChecked', (event, args) => {                
+            ipcRenderer.on('balancesChecked', (event, args) => {
+                ctrl.availableBalance = 0;
+                
                 angular.forEach(ctrl.availableProjects, function(project, key) {
-                    ctrl.availableBalance += project.currentFunds;
+                    ctrl.availableBalance += project.originalFunds;
                 });
                 
-                ctrl.availableBalance = $filter('toFixedNum')(parseFloat(ctrl.availableBalance), 8);
+                ctrl.availableBalance = $filter('toFixedNum')(ctrl.availableBalance, 8);
             });
         }
         
         /* Funds that have been transferred from a promotional wallet to a different wallet (all projects). */
         function claimedFunds() {
-            ctrl.claimedFunds = 0;
-            ctrl.claimedWalletsCount = 0;            
-            
             ipcRenderer.send('getClaimedFundsInfo');
             ipcRenderer.on('claimedFundsInfo', (event, args) => {
+                ctrl.claimedFunds = 0;
+                ctrl.claimedWalletsCount = 0;
+                
                 $scope.$apply(function() {
                     ctrl.claimedFunds = args.claimedFunds;
                     ctrl.claimedWalletsCount = args.claimedWallets;
@@ -86,13 +109,13 @@
         
         /* The pending/confirmed state of all promotional wallets (all projects). */
         function txInfo() {
-            ctrl.pendingFunds = 0;
-            ctrl.pendingWalletsCount = 0;
-            ctrl.confirmedFunds = 0;
-            ctrl.confirmedWalletsCount = 0;
-            
             ipcRenderer.send('getAllTxInfo');
             ipcRenderer.on('allTxInfo', (event, args) => {
+                ctrl.pendingFunds = 0;
+                ctrl.pendingWalletsCount = 0;
+                ctrl.confirmedFunds = 0;
+                ctrl.confirmedWalletsCount = 0;
+                
                 $scope.$apply(function() {
                     ctrl.pendingFunds = args.pendingFunds;
                     ctrl.pendingWalletsCount = args.pendingWallets;
@@ -104,11 +127,11 @@
         
         /* Funds that have been swept back to a project address (all projects). */
         function sweptFunds() {
-            ctrl.sweptFunds = 0;
-            ctrl.sweptWalletsCount = 0;
-            
             ipcRenderer.send('getSweptFundsInfo');
             ipcRenderer.on('sweptFundsInfo', (event, args) => {
+                ctrl.sweptFunds = 0;
+                ctrl.sweptWalletsCount = 0;
+                
                 $scope.$apply(function() {
                     ctrl.sweptFunds = args.sweptFunds;
                     ctrl.sweptWalletsCount = args.sweptWallets;
