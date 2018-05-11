@@ -39,7 +39,7 @@
             var content = {
                 text: {
                     title: 'Error',
-                    body: 'I\'m sorry, SMART Sweeper is not supported on your operating system.'
+                    body: 'I\'m sorry, SmartSweeper is not supported on your operating system.'
                 },
                 fatal: true
             };

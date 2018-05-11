@@ -17,8 +17,8 @@
             <p>You can fund a project using this form or an external program.</p>
             
             <div style="padding:10px 0; padding-right:0;">
-                <button type="button" class="btn btn-primary" ng-click="$fundCtrl.showForm('txidEntry')">Enter Existing TXID</button>
-                <button type="button" class="btn btn-primary" ng-click="$fundCtrl.showForm('fundProject')">Use Funding Form</button>
+                <button type="button" class="btn btn-primary" ng-click="$fundCtrl.showForm('txidEntry')" ng-disabled="$fundCtrl.txSuccessful">Enter Existing TXID</button>
+                <button type="button" class="btn btn-primary" ng-click="$fundCtrl.showForm('fundProject')" ng-disabled="$fundCtrl.validTxid">Use Funding Form</button>
             </div>
             
             <form id="projectTxForm" name="projectTxForm" class="hide" ng-show="$fundCtrl.showTxEntry" ng-hide="!$fundCtrl.showTxEntry" ng-submit="$fundCtrl.projectTx(projectTxForm)">
@@ -27,12 +27,8 @@
                     <input name="txid" type="text" class="form-control" ng-model="$fundCtrl.txid" required />
                 </div>
                 
-                <div ng-show="$fundCtrl.invalidTxid" role="alert">
-                    <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> The project address wasn't found in this transaction.</span>
-                </div>
-                
                 <div class="form-group">
-                    <button type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$invalid">Submit</button>
+                    <button type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$invalid || $fundCtrl.validTxid">Submit</button>
                 </div>
             </form>
             
@@ -64,10 +60,15 @@
                 </div>
 
                 <div class="form-group" style="padding-top:10px; padding-right:0; clear:both;">
-                    <button id="submitBtn" type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$invalid">Fund Project</button>
+                    <button id="submitBtn" type="submit" class="btn btn-primary" ng-disabled="fundProjectForm.$invalid || fundProjectForm.$submitted">Fund Project</button>
                     <button id="cancelBtn" type="button" class="btn btn-default" ng-click="$fundCtrl.cancel()">Cancel</button>
                 </div>
             </form>
+            
+            <div style="padding-top:10px;" role="alert">
+                <span class="error" ng-show="$fundCtrl.validTx == false"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> {{$fundCtrl.msg}}</span>
+                <span class="success" ng-show="$fundCtrl.validTx"><i class="fa fa-fw fa-check" aria-hidden="true"></i> {{$fundCtrl.msg}}</span>
+            </div>
         </div>
         
         <!-- libraries -->

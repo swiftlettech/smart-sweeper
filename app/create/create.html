@@ -15,7 +15,7 @@
                         <input name="numAddr" type="text" class="form-control" ng-model="$createCtrl.newProject.numAddr" ng-pattern="$createCtrl.greaterThanZeroIntPattern" required />
                         
                         <div ng-show="addNewProjectForm.numAddr.$error.pattern" role="alert">
-                            <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
+                            <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
                         </div>
                     </div>
                     
@@ -48,12 +48,12 @@
                                 <input type="text" name="sweepDate" class="form-control" ng-model="$createCtrl.newProject.sweepDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$createCtrl.datepickerFormat}}" is-open="$createCtrl.calendar.opened" datepicker-options="$createCtrl.datepickerOptions" ng-required="$createCtrl.newProject.sweep" close-text="Close" ng-change="$createCtrl.checkCalendarDate()" ng-disabled="!$createCtrl.newProject.sweep" />
 
                                 <span class="input-group-btn">
-                                    <button id="calendarBtn" type="button" class="btn btn-default" ng-disabled="!$createCtrl.newProject.sweep" ng-click="$createCtrl.openCalendar()"><i class="fa fa-calendar" title="Calendar"></i></button>
+                                    <button id="calendarBtn" type="button" class="btn btn-default" ng-disabled="!$createCtrl.newProject.sweep" ng-click="$createCtrl.openCalendar()"><i class="fa fa-fw fa-calendar" title="Calendar"></i></button>
                                 </span>
                             </div>
                                 
                             <div style="margin-top:15px;" ng-show="addNewProjectForm.sweepDate.$error.invalidDate" role="alert">
-                                <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Sweep date must be in the future.</span>
+                                <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Sweep date must be in the future.</span>
                             </div>
                         </div>
                     </div>

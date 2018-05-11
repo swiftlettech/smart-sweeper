@@ -34,6 +34,10 @@ a.disabled {
     color: #FF0000;
 }
 
+.success .fa-check {
+    color: #00FF00;
+}
+
 #statusMsgs {
     margin-bottom: 15px;
 }

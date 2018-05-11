@@ -4,7 +4,7 @@
 	var core = angular.module('SmartSweeper');
 	
 	var config = {
-			'appTitle': 'SMART Sweeper'
+			'appTitle': 'SmartSweeper'
 	};
 	
 	core.value('config', config);	

@@ -45,10 +45,16 @@
                 
                 ipcRenderer.send('fundProject', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, amount: parseFloat(ctrl.originalFunds), toAddr: ctrl.activeProject.addressPair.publicKey, fromAddr: ctrl.fundingAddr, fromPK: ctrl.fundingPK});
                 
-                ctrl.activeProject = null;
-                form.$setPristine();
-                form.$setUntouched();
-                form.$submitted = false;
+                ipcRenderer.on('projectFunded', (event, args) => {
+                    $scope.$apply(function() {
+                        ctrl.txSuccessful = args.txSuccessful;
+                        
+                        ctrl.activeProject = null;
+                        form.$setPristine();
+                        form.$setUntouched();
+                        form.$submitted = false;
+                    });
+                });
             });
             
             if (form.$valid) {
@@ -58,12 +64,15 @@
         };
         
         /* Updates project with information from an external transaction id. */
-        ctrl.projectTx = function(form) {            
+        ctrl.projectTx = function(form) {
             ipcRenderer.send('setReferrer', {referrer: 'fundProjectModal'});
             ipcRenderer.send('checkFundingTxid', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, address: ctrl.activeProject.addressPair.publicKey, txid: form.txid.$viewValue});
             
             ipcRenderer.on('fundingTxidChecked', (event, args) => {
-                console.log('args: ', args);
+                $scope.$apply(function() {
+                    ctrl.validTx = args.validTx;
+                    ctrl.msg = args.msg;
+                });
             });
         };
         

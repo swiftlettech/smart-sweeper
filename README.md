@@ -3,7 +3,7 @@ SmartSweeper
 
 Description
 ---------------
-Sweeper application for SmartCash cryptocurrency (http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac OS. It isn't necessary to decrypt your wallet to use SmartSweeper.
+Sweeper application for SmartCash cryptocurrency (http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac OS. It isn't necessary to input your wallet passphrase to use SmartSweeper.
 
 
 Releases
@@ -43,7 +43,6 @@ rpc.port=9678
 rpc.username=rpcusername
 rpc.password=rpcpassword
 smartcashPath=C:\Program Files\SmartCash\
-
 ```
 
 * rpc.host is the IP address that the SmartCash Wallet RPC server is bound to.

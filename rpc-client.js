@@ -57,7 +57,7 @@ catch(err) {
         var content = {
             text: {
                 title: 'Error',
-                body: 'The configuration file cannot be loaded. SMART Sweeper will now exit.'
+                body: 'The configuration file cannot be loaded. SmartSweeper will now exit.'
             },
             fatal: true
         }            

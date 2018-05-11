@@ -50,8 +50,6 @@ function checkTransaction(projectInfo, callback) {
         params: [projectInfo.txid, 1]
     }
     
-    //projectInfo.addrBatch
-    
     rpc.sendCmd(cmd, function(err, resp) {
         //console.log('checkTransaction')
         //console.log(err)
@@ -79,7 +77,7 @@ function generateAddress() {
 }
 
 /* Send funds from one address to another. */
-function sendFunds(projectInfo) {
+function sendFunds(projectInfo, callback) {
     var callback = function(resp) {
 
         //var tx = new smartcash.TransactionBuilder()
@@ -102,8 +100,11 @@ function sendFunds(projectInfo) {
         //console.log(tx)
     }
     
+    var sender = smartcash.ECPair.fromWIF(projectInfo.fromPK)
+    var receiver = projectInfo.toAddr
+    
     request({
-        url: smartcashExplorer + '/ext/getaddress/' + sender.publicKey,
+        url: smartcashExplorer + '/ext/getaddress/' + projectInfo.fromAddr,
         method: 'GET',
         json: true
     }, function (err, resp, body) {
@@ -112,17 +113,55 @@ function sendFunds(projectInfo) {
         console.log(resp.body)
         
         if (resp) {
-            var receiver = projectInfo.toAddr
-            var sender = {publicKey: projectInfo.fromAddr, privateKey: projectInfo.fromPK}
+            // check to see if there is enough in the balance to cover the amount to send
+            if (parseFloat(resp.body.balance) >= projectInfo.amount) {
+                var newTx = new smartcash.TransactionBuilder()
+                
+                resp.body.last_txs.forEach(function(tx, n) {
+                    if (tx.type === "vout")
+                        newTx.addInput(tx.addresses, n)
+                })
+                
+                newTx.addOutput(receiver, projectInfo.amount)
+                newTx.sign(0, sender)
+                
+                console.log('tx: ', newTx)
+                
+                // add to local blockchain
+                //console.log('toHex: ', newTx.build().toHex())
+                
+                /*var cmd = {
+                    method: 'sendrawtransaction',
+                    params: [newTx.build().toHex(), false, false]
+                }
+                
+                rpc.sendCmd(cmd, function(err, resp) {
+                    console.log('sendFunds')
+                    console.log(err)
+                    console.log(resp)
+
+                    if (err) {
+                        callback({type: 'error', msg: err}, 'sendFunds', projectInfo)
+                    }
+                    else {
+                        callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
+                    }
+                })
+                */
+            }
+            else {
+                
+                callback({type: 'error', msg: "Insufficient funds."}, 'sendFunds', projectInfo)
+            }
         }
         else {
-            remote.getGlobal('sharedObject').logger.error('sendFunds: ' + err)
+            callback({type: 'error', msg: err}, 'sendFunds', projectInfo)
         }
     })
 }
 
 /* Sweep (send) funds back from a promotional wallet address. */
-function sweepFunds(addresses) {
+function sweepFunds(addresses, callback) {
     var receiver = addresses.receiver
     var sender = addresses.sender
     
