@@ -14,7 +14,7 @@
     
     <body ng-controller="FundProjectController as $fundCtrl" style="margin:20px 0;" ng-init="init()">
         <div id="page-wrapper" style="padding:15px;">
-            <p>You can fund a project using this form or an external program.</p>
+            <p>You can fund a project by using this form or by using your wallet and inputting the txid (recommended).</p>
             
             <div style="padding:10px 0; padding-right:0;">
                 <button type="button" class="btn btn-primary" ng-click="$fundCtrl.showForm('txidEntry')" ng-disabled="$fundCtrl.txSuccessful">Enter Existing TXID</button>

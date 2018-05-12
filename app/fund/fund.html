@@ -39,13 +39,13 @@
                 <td colspan="9" style="padding:0;">
                     <table class="innerTable">
                         <tr>
-                            <td class="nameCol">{{project.name}}</td>
+                            <td class="nameCol">{{project.name}} <span ng-hide="project.txConfirmed === undefined">(<span ng-show="project.txConfirmed == false">pending</span><span ng-show="project.txConfirmed">confirmed</span>)</td>
                             <td class="numAddrCol text-center">{{project.numAddr}}</td>
                             <td class="totalFundsCol text-center">{{project.originalFunds | toFixedNum: 8}}</td>
                             <td class="addrAmtCol text-center">{{project.addrAmt | toFixedNum: 8}}</td>
                             <td class="expCol text-center">{{project.sweepDate | date: 'mediumDate'}}</td>
-                            <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-click="$fundCtrl.fundProject(project)" ng-disabled="project.projectFunded || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw sigma">Σ</i></button></td>
-                            <td class="sendCol text-center"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project)" ng-disabled="!project.projectFunded || project.fundsSent || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw fa-share"></i></button></td>
+                            <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-click="$fundCtrl.fundProject(project)" ng-disabled="project.projectFunded || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw sigma">Σ</i></button></td>
+                            <td class="sendCol text-center"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project)" ng-disabled="!project.projectFunded || project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw fa-share"></i></button></td>
                             <td class="printCol text-center"><button class="btn btn-link" title="Print paper wallets" ng-click="$fundCtrl.createPaperWallets(project.id)" ng-disabled="!project.fundsSent"><i class="fa fa-fw fa-print"></i></button></td>
                             <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$fundCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
                         </tr>

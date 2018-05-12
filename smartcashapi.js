@@ -115,22 +115,51 @@ function sendFunds(projectInfo, callback) {
         if (resp) {
             // check to see if there is enough in the balance to cover the amount to send
             if (parseFloat(resp.body.balance) >= projectInfo.amount) {
-                var newTx = new smartcash.TransactionBuilder()
+                var txArray = []
+                var newTx
+                var cmd
                 
                 resp.body.last_txs.forEach(function(tx, n) {
                     if (tx.type === "vout")
-                        newTx.addInput(tx.addresses, n)
+                        txArray.push(tx.addresses)
                 })
                 
-                newTx.addOutput(receiver, projectInfo.amount)
-                newTx.sign(0, sender)
+                txArray.forEach(function(txid, txIndex) {
+                    cmd = {
+                        method: 'getrawtransaction',
+                        params: [txid, 1]
+                    }
+                    
+                    rpc.sendCmd(cmd, function(err, resp) {
+                        //console.log('sendFunds')
+                        //console.log(err)
+                        //console.log(resp)
+
+                        if (err) {
+                            callback({type: 'error', msg: err}, 'sendFunds', projectInfo)
+                        }
+                        else {
+                            newTx = new smartcash.TransactionBuilder()
+                            
+                            resp.vout.forEach(function(vout, voutIndex) {
+                                if (vout.scriptPubKey.addresses.includes(projectInfo.fromAddr)) {
+                                    console.log('vout: ', vout)
+                                    //newTx.addInput(txid, vout.n)
+                                }
+                            })
+                        }
+                    })
+                })
+                
+                //newTx.addOutput(receiver, projectInfo.amount)
+                //newTx.sign(0, sender)
                 
                 console.log('tx: ', newTx)
                 
                 // add to local blockchain
                 //console.log('toHex: ', newTx.build().toHex())
                 
-                /*var cmd = {
+                /*cmd = {
                     method: 'sendrawtransaction',
                     params: [newTx.build().toHex(), false, false]
                 }

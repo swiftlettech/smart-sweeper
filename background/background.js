@@ -47,7 +47,7 @@
             return;
         }
 
-        // check to see if smartcash is already running
+        // check to see if SmartCash is already running
         ps.lookup({command: smartcashProg}, function (err, results) {            
             if (err) {
                throw new Error(err);
@@ -62,8 +62,8 @@
                     rpcCheck();
                 }
 
-                // periodic background checking for online connectivity, SmartCash Core, and the RPC Explorer
-                setInterval(() => {
+                // periodic background checking for online connectivity, SmartCash Core, and RPC connectivity
+                /*setInterval(() => {
                     checkOnlineStatus();
                     smartcashCoreCheck();
                     
@@ -72,9 +72,9 @@
                     
                     if (remote.getGlobal('sharedObject').rpcConnected) {
                         checkBlockchain();
-                        updateDashboard();
+                        updateData();
                     }
-                }, 30000);
+                }, 30000);*/
             }
         })
     }
@@ -90,6 +90,7 @@
 
                 // check to see if the local copy of the blockchain is current
                 checkBlockchain();
+                ipcRenderer.send('getProjectTxStatus');
             }
             else if (functionName === "checkBlockchain") {
                 // automatically sweep funds if necessary if the blockchain is up-to-date
@@ -100,19 +101,15 @@
         else if (resp.type === "error") {
             remote.getGlobal('sharedObject').logger.error(functionName + ': ' + resp.msg);
 
-            if (functionName === "rpcCheck") {
+            if (functionName === "rpcCheck")
                 remote.getGlobal('sharedObject').rpcError = true;
-            }
         }
         
         apiCallbackCounter++        
     }
     
-    /* Get the current block count. */
+    /* Get the current block count as a way to see if the local blockchain is valid. */
     function checkBlockchain() {
-        var localHeaderCount;
-        var localBlockCount;
-        var onlineBlockCount;
         var valid = 0;
         
         var cmd = {
@@ -123,34 +120,35 @@
         // check the local blockchain regardless of internet connection status
         rpc.sendCmd(cmd, function(err, resp) {
             if (err) {
-                apiCallback({type: 'error', msg: resp}, 'checkBlockchain')
+                apiCallback({type: 'error', msg: resp}, 'checkBlockchain');
             }
             else {
-                localHeaderCount = resp.headers
-                localBlockCount = resp.blocks
+                var localHeaderCount = parseInt(resp.headers);
+                var localBlockCount = parseInt(resp.blocks);
                 
-                //console.log('resp.headers: ', resp.headers);
-                //console.log('resp.blocks: ', resp.blocks);
+                //console.log('localHeaderCount: ', localHeaderCount);
+                //console.log('localBlockCount: ', localBlockCount);
                 //console.log('localHeaderCount == localBlockCount: ', localHeaderCount == localBlockCount);
                 
                 if (localHeaderCount == localBlockCount)
                     valid++;
                 
-                //console.log('valid: ', valid);
+                //console.log('valid #1: ', valid);
                 
-                // there is an active internet connection, check the online block explorer
+                // there is an active internet connection, get the total block count from the online block explorer
                 if (remote.getGlobal('sharedObject').isOnline) {
                     request({
                         url: smartcashExplorer + '/api/getblockcount',
                         method: 'GET'
-                    }, function (err, resp, body) {
+                    }, function (err, resp, body) {                        
                         if (resp && resp.body) {
-                            onlineBlockCount = parseInt(resp.body);
+                            var onlineBlockCount = parseInt(resp.body);
 
-                            if (localHeaderCount == onlineBlockCount);
+                            if (localBlockCount == onlineBlockCount);
                                 valid++
                             
-                            //console.log('valid: ', valid);
+                            //console.log('localBlockCount == onlineBlockCount: ', localBlockCount == onlineBlockCount);
+                            //console.log('valid #2: ', valid);
 
                             if (valid == 2) {
                                 remote.getGlobal('sharedObject').coreSynced = true;
@@ -199,6 +197,8 @@
     
     // check to see if SmartCash Core is running
     function smartcashCoreCheck() {
+        //ipcRenderer.send('showMainWindow');
+        
         ps.lookup({command: smartcashProg}, function (err, results) {
             if (err) {
                throw new Error(err);
@@ -217,9 +217,7 @@
     }
 
     // start SmartCash and detach it from SmartSweeper so that it doesn't close when SmartSweeper does
-    function startSmartcashCore() {
-        console.log(config.smartcashPath);
-        
+    function startSmartcashCore() {        
         smartcash = cp.spawn(config.smartcashPath + smartcashProg, ['-txindex=1', '-server', '-rpcbind='+config.rpc.host, '-rpcport='+config.rpc.port, '-rpcuser='+config.rpc.username, '-rpcpassword='+config.rpc.password], {
             detached: true,
             stdio: 'ignore',
@@ -242,11 +240,15 @@
         }, 30000);
     }
     
-    /* Update dashboard info. */
-    function updateDashboard() {
+    /* Update various info. */
+    function updateData() {
+        // dashboard info
         ipcRenderer.send('checkProjectBalances');
         ipcRenderer.send('getClaimedFundsInfo');
-        ipcRenderer.send('getAllTxInfo');
+        ipcRenderer.send('getWalletTxStatus');
         //ipcRenderer.send('getSweptFundsInfo');
+        
+        // update a project's txConfirmed flag
+        ipcRenderer.send('getAllTxStatus');
     }
 })();
