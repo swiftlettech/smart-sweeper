@@ -41,7 +41,6 @@ rpc.port=9678
 rpc.username=rpcusername
 rpc.password=rpcpassword
 smartcashPath=C:\Program Files\SmartCash\
-
 ```
 
 * rpc.host is the IP address that the SmartCash Wallet RPC server is bound to.
