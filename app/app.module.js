@@ -33,8 +33,10 @@
                 electron.remote.getGlobal('sharedObject').isOnline = online;
                 $scope.$broadcast('onlineCheck', {isOnline: ctrl.isOnline});
                     
-                if (ctrl.isOnline)
+                if (ctrl.isOnline) {
+                    $scope.hasBeenOnline = true;
                     ctrl.setPageHeight();
+                }
             })
 
             ctrl.coreRunning = false;
@@ -141,7 +143,7 @@
             return arrayIndex;
         }
 
-        /* Cleanup all page-related ipcRenderer events if they're not system events. */
+        /* Cleanup all page-related ipcRenderer events if they're not system events or global app events. */
         function eventCleanup() {
             var events = ipcRenderer._events;
 
@@ -163,7 +165,7 @@
         };
 
         /*
-         * Natural Sort algorithm for Javascript - Version 0.8.1 - Released under MIT license
+         * Natural Sort Angular sort comparator - Version 0.8.1 - Released under MIT license
          * Original Author: Jim Palmer (based on chunking idea from Dave Koelle)
          * Slightly modified (to sort objects) by Miyako Jones
          */

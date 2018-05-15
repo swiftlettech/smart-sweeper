@@ -3,7 +3,7 @@ SmartSweeper
 
 Description
 ---------------
-Sweeper application for SmartCash cryptocurrency (http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac OS. It isn't necessary to input your wallet passphrase to use SmartSweeper.
+Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac OS. It isn't necessary to input your wallet passphrase to use SmartSweeper.
 
 
 Releases
@@ -78,7 +78,7 @@ The values of rpc.host, rpc.port, rpc.username, and rpc.password in .env must ma
 
 User files
 ---------------
-The database (smart-sweeper.json) and the log files are saved in the following folders:
+The database (smart-sweeper.json), the app config file (smart-sweeper-config.json) and the log files are saved in the following folders:
 
 * **Windows**: %APPDATA%/SmartSweeper
 * **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/SmartSweeper

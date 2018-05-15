@@ -63,7 +63,7 @@
                 }
 
                 // periodic background checking for online connectivity, SmartCash Core, and RPC connectivity
-                /*setInterval(() => {
+                setInterval(() => {
                     checkOnlineStatus();
                     smartcashCoreCheck();
                     
@@ -74,7 +74,7 @@
                         checkBlockchain();
                         updateData();
                     }
-                }, 30000);*/
+                }, 30000);
             }
         })
     }

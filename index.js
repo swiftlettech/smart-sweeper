@@ -22,7 +22,7 @@ const userLogsPath = baseLogPath + path.sep + 'user'
 const isDev = require('electron-is-dev')
 require('electron-debug')({showDevTools: true})
 
-let splashScreen, bgWin, modal, modalType, logger, logFile, db
+let splashScreen, bgWin, modal, modalType, logger, logFile, db, config
 
 // create a custom transport to save winston logs into a json database using electron store
 module.exports = {
@@ -145,6 +145,27 @@ function appInit() {
     if (global.availableProjects === undefined) {
         db.set('projects', {index: 0, list: []})
         global.availableProjects = db.get('projects')
+    }
+    
+    // load the internal config or create it if it doesn't exist
+    // saved in %APPDATA%/smart-sweeper on Win
+    // saved in $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper on Linux
+    // saved in ~/Library/Application Support/smart-sweeper on Mac
+    config = new Store({name: "smart-sweeper-config"})
+    global.appConfig = config.get('config')
+    if (global.appConfig === undefined) {
+        config.set('config', {
+            availableBalanceTotal: 0,
+            pendingFundsTotal: 0,
+            pendingWalletsTotal: 0,
+            confirmedFundsTotal: 0,
+            confirmedWalletsTotal: 0,
+            claimedFundsTotal: 0,
+            claimedWalletsTotal: 0,
+            sweptFundsTotal: 0,
+            sweptWalletsTotal: 0
+        })
+        global.appConfig = config.get('config')
     }
     
     // setup logging
@@ -524,6 +545,10 @@ let apiCallback = function(resp, functionName, projectInfo) {
     
     if (functionName === "checkBalance") {        
         if ((referrer === "getClaimedFundsInfo") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
+            global.appConfig.claimedFundsTotal = apiCallbackInfo.claimedFunds
+            global.appConfig.claimedWalletsTotal = apiCallbackInfo.claimedWallets
+            config.set('config', global.appConfig)
+            
             global.sharedObject.win.webContents.send('claimedFundsInfo', {claimedFunds: apiCallbackInfo.claimedFunds, claimedWallets: apiCallbackInfo.claimedWallets})
             global.apiCallbackInfo.delete(referrer)
         }
@@ -534,12 +559,26 @@ let apiCallback = function(resp, functionName, projectInfo) {
             global.apiCallbackInfo.delete(referrer)
         }
         else if ((referrer === "checkProjectBalances") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
+            var availableBalance = 0
+
+            global.availableProjects.list.forEach(function(project, key) {
+                availableBalance += project.originalFunds
+            })
+            
+            global.appConfig.availableBalanceTotal = availableBalance
+            config.set('config', global.appConfig)
             db.set('projects', global.availableProjects)
             global.sharedObject.win.webContents.send('projectsReady')
-            global.sharedObject.win.webContents.send('balancesChecked')
+            global.sharedObject.win.webContents.send('balancesChecked', {availableBalance: availableBalance})
             global.apiCallbackInfo.delete(referrer)
         }
-        else if ((referrer === "getWalletTxStatus") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {            
+        else if ((referrer === "getWalletTxStatus") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
+            global.appConfig.pendingFundsTotal = apiCallbackInfo.pendingFunds
+            global.appConfig.pendingWalletsTotal = apiCallbackInfo.pendingWallets
+            global.appConfig.confirmedFundsTotal = apiCallbackInfo.confirmedFunds
+            global.appConfig.confirmedWalletsTotal = apiCallbackInfo.confirmedWallets
+            config.set('config', global.appConfig)
+            
             global.sharedObject.win.webContents.send('allTxInfo', {pendingFunds: apiCallbackInfo.pendingFunds, pendingWallets: apiCallbackInfo.pendingWallets, confirmedFunds: apiCallbackInfo.confirmedFunds, confirmedWallets: apiCallbackInfo.confirmedWallets})
             global.apiCallbackInfo.delete(referrer)
         }
@@ -560,17 +599,16 @@ let apiCallback = function(resp, functionName, projectInfo) {
             //refreshLogFile()
         }
         else if ((referrer === "sendPromotionalFunds")) {
+            //sentTxid (per promotional wallet)
+        }
+        else if (functionName === "sweepFunds") {
+            //sweptTxid (per promotional wallet)
         }
     }
     /*else if (functionName === "") {
         
     }
     else if (functionName === "") {
-        
-    }*/
-
-    /*
-    else if (functionName === "sweepFunds") {
         
     }*/
 }
@@ -896,8 +934,8 @@ ipcMain.on('getWalletTxStatus', (event, args) => {
         
         global.availableProjects.list.forEach(function(project, projectKey) {            
             project.recvAddrs.forEach(function(address, addrKey) {
-                if (project.fundsSent) {                    
-                    smartcashapi.checkTransaction({referrer: "getWalletTxStatus", projectName: project.name, txid: address.txid, addrAmt: project.addrAmt}, apiCallback)
+                if (project.fundsSent) {
+                    smartcashapi.checkTransaction({referrer: "getWalletTxStatus", projectName: project.name, txid: address.sentTxid, addrAmt: project.addrAmt}, apiCallback)
                 }
             })
         })

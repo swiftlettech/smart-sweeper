@@ -4,7 +4,6 @@ const request = require('request')
 const smartcash = require('smartcashjs-lib')
 const smartcashExplorer = "http://explorer3.smartcash.cc"
 const rpc = require('./rpc-client')
-//const testnet = smartcash.networks.testnet
 const http = require('http')
 const util = require('util')
 
@@ -144,42 +143,41 @@ function sendFunds(projectInfo, callback) {
                             resp.vout.forEach(function(vout, voutIndex) {
                                 if (vout.scriptPubKey.addresses.includes(projectInfo.fromAddr)) {
                                     console.log('vout: ', vout)
-                                    //newTx.addInput(txid, vout.n)
+                                    newTx.addInput(txid, vout.n)
                                 }
                             })
+
+                            newTx.addOutput(receiver, projectInfo.amount)
+                            newTx.sign(0, sender)
+
+                            //console.log('tx: ', newTx)
+
+                            // add to local blockchain
+                            console.log('toHex: ', newTx.build().toHex())
+
+                            /*cmd = {
+                                method: 'sendrawtransaction',
+                                params: [newTx.build().toHex(), false, false]
+                            }
+
+                            rpc.sendCmd(cmd, function(err, resp) {
+                                console.log('sendFunds')
+                                console.log(err)
+                                console.log(resp)
+
+                                if (err) {
+                                    callback({type: 'error', msg: err}, 'sendFunds', projectInfo)
+                                }
+                                else {
+                                    callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
+                                }
+                            })
+                            */
                         }
                     })
                 })
-                
-                //newTx.addOutput(receiver, projectInfo.amount)
-                //newTx.sign(0, sender)
-                
-                console.log('tx: ', newTx)
-                
-                // add to local blockchain
-                //console.log('toHex: ', newTx.build().toHex())
-                
-                /*cmd = {
-                    method: 'sendrawtransaction',
-                    params: [newTx.build().toHex(), false, false]
-                }
-                
-                rpc.sendCmd(cmd, function(err, resp) {
-                    console.log('sendFunds')
-                    console.log(err)
-                    console.log(resp)
-
-                    if (err) {
-                        callback({type: 'error', msg: err}, 'sendFunds', projectInfo)
-                    }
-                    else {
-                        callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
-                    }
-                })
-                */
             }
             else {
-                
                 callback({type: 'error', msg: "Insufficient funds."}, 'sendFunds', projectInfo)
             }
         }
@@ -190,11 +188,9 @@ function sendFunds(projectInfo, callback) {
 }
 
 /* Sweep (send) funds back from a promotional wallet address. */
-function sweepFunds(addresses, callback) {
-    var receiver = addresses.receiver
-    var sender = addresses.sender
-    
-    
+function sweepFunds(projectInfo, callback) {
+    //var receiver = addresses.receiver
+    //var sender = addresses.sender
 }
 
 module.exports = {

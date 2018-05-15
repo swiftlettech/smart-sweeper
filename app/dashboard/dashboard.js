@@ -11,15 +11,7 @@
         var ctrl = this;
 
         $scope.init = function() {
-            ctrl.availableBalance = 0;
-            ctrl.claimedFunds = 0;
-            ctrl.claimedWalletsCount = 0;
-            ctrl.pendingFunds = 0;
-            ctrl.pendingWalletsCount = 0;
-            ctrl.confirmedFunds = 0;
-            ctrl.confirmedWalletsCount = 0;
-            ctrl.sweptFunds = 0;
-            ctrl.sweptWalletsCount = 0;
+            resetDashboardVals();
             
             if (electron.remote.getGlobal('sharedObject').rpcConnected) {
                 availableFunds();
@@ -30,12 +22,7 @@
             
             $scope.$on('onlineCheck', function(event, args) {
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-                
-                ctrl.availableBalance = 0;
-                ctrl.pendingFunds = 0;
-                ctrl.confirmedFunds = 0;
-                ctrl.claimedFunds = 0;
-                ctrl.sweptFunds = 0;
+                resetDashboardVals();
                 
                 if (ctrl.availableProjects.length === undefined || ctrl.availableProjects.length == 0) {
                     ctrl.availableBalance = "n/a";
@@ -43,6 +30,22 @@
                     ctrl.confirmedFunds = "n/a";
                     ctrl.claimedFunds = "n/a";
                     ctrl.sweptFunds = "n/a";
+                }
+                
+                // load the last saved dashboard values from the app config file
+                // if the user has not gone online during the current session
+                if (!args.isOnline && $mainCtrl.hasBeenOnline) {
+                    var appConfig = electron.remote.getGlobal('appConfig');
+                    
+                    ctrl.availableBalance = appConfig.availableBalanceTotal;
+                    ctrl.claimedFunds = appConfig.claimedFundsTotal;
+                    ctrl.claimedWalletsCount = appConfig.claimedWalletsTotal;
+                    ctrl.pendingFunds = appConfig.pendingFundsTotal;
+                    ctrl.pendingWalletsCount = appConfig.pendingWalletsTotal;
+                    ctrl.confirmedFunds = appConfig.confirmedFundsTotal;
+                    ctrl.confirmedWalletsCount = appConfig.confirmedWalletsTotal;
+                    ctrl.sweptFunds = appConfig.sweptFundsTotal;
+                    ctrl.sweptWalletsCount = appConfig.sweptWalletsTotal;
                 }
             });
             
@@ -80,13 +83,7 @@
         };
         
         ipcRenderer.on('balancesChecked', (event, args) => {
-            ctrl.availableBalance = 0;
-
-            angular.forEach(ctrl.availableProjects, function(project, key) {
-                ctrl.availableBalance += project.originalFunds;
-            });
-
-            ctrl.availableBalance = $filter('toFixedNum')(ctrl.availableBalance, 8);
+            ctrl.availableBalance = $filter('toFixedNum')(args.availableBalance, 8);
         });
         
         ipcRenderer.on('claimedFundsInfo', (event, args) => {
@@ -141,6 +138,19 @@
         /* Funds that have been swept back to a project address (all projects). */
         function sweptFunds() {
             ipcRenderer.send('getSweptFundsInfo');
+        }
+        
+        /* Resets all amounts/counts for dashboard variables. */
+        function resetDashboardVals() {
+            ctrl.availableBalance = 0;
+            ctrl.claimedFunds = 0;
+            ctrl.claimedWalletsCount = 0;
+            ctrl.pendingFunds = 0;
+            ctrl.pendingWalletsCount = 0;
+            ctrl.confirmedFunds = 0;
+            ctrl.confirmedWalletsCount = 0;
+            ctrl.sweptFunds = 0;
+            ctrl.sweptWalletsCount = 0;
         }
     }
 })();

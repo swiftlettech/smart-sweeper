@@ -1,17 +1,25 @@
 module.exports = {
+  abandonTransaction: 'abandontransaction',
   addMultiSigAddress: 'addmultisigaddress',
   addNode: 'addnode', // bitcoind v0.8.0+
+  addWitnessAddress: 'addwitnessaddress',
   backupWallet: 'backupwallet',
+  clearBanned: 'clearbanned',
   createMultiSig: 'createmultisig',
   createRawTransaction: 'createrawtransaction', // bitcoind v0.7.0+
   decodeRawTransaction: 'decoderawtransaction', // bitcoind v0.7.0+
   decodeScript: 'decodescript',
+  disconnectNode: 'disconnectnode',
   dumpPrivKey: 'dumpprivkey',
   dumpWallet: 'dumpwallet', // bitcoind v0.9.0+
   encryptWallet: 'encryptwallet',
   estimateFee: 'estimatefee', // bitcoind v0.10.0x
   estimatePriority: 'estimatepriority', // bitcoind v0.10.0+
+  estimateSmartFee: 'estimatesmartfee',
+  estimateSmartPriority: 'estimatesmartpriority',
+  fundRawTransaction: 'fundrawtransaction',
   generate: 'generate', // bitcoind v0.11.0+
+  generateToAddress: 'generatetoaddress',
   getAccount: 'getaccount',
   getAccountAddress: 'getaccountaddress',
   getAddedNodeInfo: 'getaddednodeinfo', // bitcoind v0.8.0+
@@ -22,17 +30,20 @@ module.exports = {
   getBlockchainInfo: 'getblockchaininfo', // bitcoind v0.9.2+
   getBlockCount: 'getblockcount',
   getBlockHash: 'getblockhash',
+  getBlockHeader: 'getblockheader',
   getBlockTemplate: 'getblocktemplate', // bitcoind v0.7.0+
   getChainTips: 'getchaintips', // bitcoind v0.10.0+
   getConnectionCount: 'getconnectioncount',
   getDifficulty: 'getdifficulty',
-  getGenerate: 'getgenerate',
   getInfo: 'getinfo',
+  getMempoolAncestors: 'getmempoolancestors',
+  getMempoolDescendants: 'getmempooldescendants',
+  getMempoolEntry: 'getmempoolentry',
   getMempoolInfo: 'getmempoolinfo', // bitcoind v0.10+
   getMiningInfo: 'getmininginfo',
   getNetTotals: 'getnettotals',
-  getNetworkInfo: 'getnetworkinfo', // bitcoind v0.9.2+
   getNetworkHashPs: 'getnetworkhashps', // bitcoind v0.9.0+
+  getNetworkInfo: 'getnetworkinfo', // bitcoind v0.9.2+
   getNewAddress: 'getnewaddress',
   getPeerInfo: 'getpeerinfo', // bitcoind v0.7.0+
   getRawChangeAddress: 'getrawchangeaddress', // bitcoin v0.9+
@@ -49,11 +60,14 @@ module.exports = {
   help: 'help',
   importAddress: 'importaddress', // bitcoind v0.10.0+
   importPrivKey: 'importprivkey',
+  importPrunedFunds: 'importprunedfunds',
+  importPubKey: 'importpubkey',
   importWallet: 'importwallet', // bitcoind v0.9.0+
   keypoolRefill: 'keypoolrefill',
   keyPoolRefill: 'keypoolrefill',
   listAccounts: 'listaccounts',
   listAddressGroupings: 'listaddressgroupings', // bitcoind v0.7.0+
+  listBanned: 'listbanned',
   listLockUnspent: 'listlockunspent', // bitcoind v0.8.0+
   listReceivedByAccount: 'listreceivedbyaccount',
   listReceivedByAddress: 'listreceivedbyaddress',
@@ -64,22 +78,21 @@ module.exports = {
   move: 'move',
   ping: 'ping', // bitcoind v0.9.0+
   prioritiseTransaction: 'prioritisetransaction', // bitcoind v0.10.0+
+  removePrunedFunds: 'removeprunedfunds',
   sendFrom: 'sendfrom',
   sendMany: 'sendmany',
   sendRawTransaction: 'sendrawtransaction', // bitcoind v0.7.0+
   sendToAddress: 'sendtoaddress',
   setAccount: 'setaccount',
-  setGenerate: 'setgenerate',
+  setBan: 'setban',
   setTxFee: 'settxfee',
   signMessage: 'signmessage',
+  signMessageWithPrivKey: 'signmessagewithprivkey',
   signRawTransaction: 'signrawtransaction', // bitcoind v0.7.0+
   stop: 'stop',
   submitBlock: 'submitblock', // bitcoind v0.7.0+
   validateAddress: 'validateaddress',
   verifyChain: 'verifychain', // bitcoind v0.9.0+
   verifyMessage: 'verifymessage',
-  verifyTxOutProof: 'verifytxoutproof', // bitcoind v0.11.0+
-  walletLock: 'walletlock',
-  walletPassphrase: 'walletpassphrase',
-  walletPassphraseChange: 'walletpassphrasechange'
+  verifyTxOutProof: 'verifytxoutproof' // bitcoind v0.11.0+
 }
