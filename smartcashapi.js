@@ -2,14 +2,14 @@
 //const electron = require('electron')
 const request = require('request')
 const smartcash = require('smartcashjs-lib')
-const smartcashExplorer = "http://explorer3.smartcash.cc"
 const rpc = require('./rpc-client')
 const http = require('http')
 const util = require('util')
 
-//console.log(smartcash)
+const smartcashExplorer = "http://explorer3.smartcash.cc"
+const minTxFee = 0.001;
 
-let callbackCounter = 0
+//console.log(smartcash)
 
 /* Check the balance for a given address. */
 function checkBalance(projectInfo, callback) {
@@ -77,8 +77,7 @@ function generateAddress() {
 
 /* Send funds from one address to another. */
 function sendFunds(projectInfo, callback) {
-    var callback = function(resp) {
-
+    //var callback = function(resp) {
         //var tx = new smartcash.TransactionBuilder()
         //tx.addInput(txHash, vout)
 
@@ -97,7 +96,7 @@ function sendFunds(projectInfo, callback) {
 
         // broadcast to network
         //console.log(tx)
-    }
+    //}
     
     var sender = smartcash.ECPair.fromWIF(projectInfo.fromPK)
     var receiver = projectInfo.toAddr
@@ -107,9 +106,9 @@ function sendFunds(projectInfo, callback) {
         method: 'GET',
         json: true
     }, function (err, resp, body) {
-        console.log('sendFunds')
-        console.log(err)
-        console.log(resp.body)
+        //console.log('sendFunds')
+        //console.log(err)
+        //console.log(resp.body)
         
         if (resp) {
             // check to see if there is enough in the balance to cover the amount to send
@@ -135,14 +134,14 @@ function sendFunds(projectInfo, callback) {
                         //console.log(resp)
 
                         if (err) {
-                            callback({type: 'error', msg: err}, 'sendFunds', projectInfo)
+                            callback({type: 'error', msg: "getrawtransaction failed."}, 'sendFunds', projectInfo)
                         }
                         else {
                             newTx = new smartcash.TransactionBuilder()
                             
                             resp.vout.forEach(function(vout, voutIndex) {
                                 if (vout.scriptPubKey.addresses.includes(projectInfo.fromAddr)) {
-                                    console.log('vout: ', vout)
+                                    //console.log('vout: ', vout)
                                     newTx.addInput(txid, vout.n)
                                 }
                             })
@@ -153,11 +152,12 @@ function sendFunds(projectInfo, callback) {
                             //console.log('tx: ', newTx)
 
                             // add to local blockchain
-                            console.log('toHex: ', newTx.build().toHex())
+                            console.log('newTx.toHex(): ', newTx.toHex())
+                            console.log('newTx.build().toHex(): ', newTx.build().toHex())
 
                             /*cmd = {
                                 method: 'sendrawtransaction',
-                                params: [newTx.build().toHex(), false, false]
+                                params: [txHex, false, false]
                             }
 
                             rpc.sendCmd(cmd, function(err, resp) {
@@ -166,13 +166,12 @@ function sendFunds(projectInfo, callback) {
                                 console.log(resp)
 
                                 if (err) {
-                                    callback({type: 'error', msg: err}, 'sendFunds', projectInfo)
+                                    callback({type: 'error', msg: "sendrawtransaction failed."}, 'sendFunds', projectInfo)
                                 }
                                 else {
                                     callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
                                 }
-                            })
-                            */
+                            })*/
                         }
                     })
                 })

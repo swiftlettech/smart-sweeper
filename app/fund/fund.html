@@ -49,7 +49,7 @@
                             
                             <td class="expCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>
                             
-                            <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-click="$fundCtrl.fundProject(project)" ng-disabled="project.projectFunded || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError" class="disabled"><i class="fa fa-fw sigma">Σ</i></button></td>
+                            <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-click="$fundCtrl.fundProject(project)" ng-disabled="project.projectFunded || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw sigma">Σ</i></button></td>
                             
                             <td class="sendCol text-center"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project)" ng-disabled="!project.projectFunded || project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError" class="disabled"><i class="fa fa-fw fa-share"></i></button></td>
                             

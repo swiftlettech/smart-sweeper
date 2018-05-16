@@ -43,7 +43,7 @@
                     <input name="originalFunds" type="text" class="form-control" ng-model="$fundCtrl.originalFunds" ng-pattern="$fundCtrl.greaterThanZeroIntPattern" required />
                     
                     <div ng-show="fundProjectForm.originalFunds.$error.pattern" role="alert">
-                        <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
+                        <span class="error"><i class="fa fa-exclamation-circle" aria-hidden="true"></i> Must be at least 1.</span>
                     </div>
                 </div>
                 

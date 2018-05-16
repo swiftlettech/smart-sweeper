@@ -19,9 +19,9 @@ try {
         timeout: 30000
     })
 }
-catch(err) {    
+catch(err) {
     if (err.code === "ENOENT") {
-        var smartcashPath
+        var defaultSmartcashPath
         
         var content = "rpc.host=127.0.0.1\n"
         content += "rpc.port=9678\n"
@@ -29,11 +29,11 @@ catch(err) {
         content += "rpc.password=rpcpassword\n"
         
         if (os.platform() === "win32")
-            smartcashPath = "C:\\Program Files\\SmartCash\\"
+            defaultSmartcashPath = "C:\\Program Files\\SmartCash\\"
         //else if (os.platform() === "linux")
         //else if (os.platform() === "darwin")
             
-        content += "smartcashPath=" + smartcashPath
+        content += "smartcashPath=" + defaultSmartcashPath
         
         fs.writeFileSync('.env', content)
         
@@ -43,7 +43,7 @@ catch(err) {
         config.rpc.port = "9678"
         config.rpc.username = "rpcusername"
         config.rpc.password = "rpcpassword"
-        config.smartcashPath = smartcashPath
+        config.smartcashPath = defaultSmartcashPath
         
         client = new smartcash.Client({
             host: config.rpc.host,
@@ -61,13 +61,14 @@ catch(err) {
             },
             fatal: true
         }            
-        ipcRenderer.send('showErrorDialog', content);
+        ipcRenderer.send('showErrorDialog', content)
     }
 }
 
 // send a command to the RPC server
 function sendCmd(cmd, callback) {
     client.cmd(cmd.method, cmd.params, function(err, result, resHeaders) {
+        //console.log('sendCmd')
         //console.log(result)
         //console.log(err)
         //console.log(resHeaders)
@@ -76,7 +77,7 @@ function sendCmd(cmd, callback) {
             callback(true, err)
         else
             callback(false, result)
-    });
+    })
 }
 
 // checks to see whether or not the client can communicate with the core

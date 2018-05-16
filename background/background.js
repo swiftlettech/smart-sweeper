@@ -65,7 +65,7 @@
                 // periodic background checking for online connectivity, SmartCash Core, and RPC connectivity
                 setInterval(() => {
                     checkOnlineStatus();
-                    smartcashCoreCheck();
+                    /*smartcashCoreCheck();
                     
                     if (remote.getGlobal('sharedObject').coreRunning)
                         rpcCheck();
@@ -73,7 +73,7 @@
                     if (remote.getGlobal('sharedObject').rpcConnected) {
                         checkBlockchain();
                         updateData();
-                    }
+                    }*/
                 }, 30000);
             }
         })
