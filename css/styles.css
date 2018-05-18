@@ -3,12 +3,16 @@ body {
     margin: 20px 0;
 }
 
-a {
-  color: #FFF;
-}
+a,
 a:hover,
 a:focus {
   color: #FFF;
+}
+
+.panel-heading a,
+.panel-heading a:hover,
+.panel-heading a:focus {
+  color: #000;
 }
 
 a.disabled {
@@ -219,6 +223,10 @@ button, .btn, .form-control, .input-group-addon {
 
 
 /* Fund */
+
+#calculator input[name='txFee'], #calculator input[name='walletAmt'] {
+    width: 25%;
+}
 
 #fundProjectForm input[name='name'] {
     width: 60%;

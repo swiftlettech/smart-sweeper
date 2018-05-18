@@ -14,23 +14,59 @@
     
     <body ng-controller="FundProjectController as $fundCtrl" style="margin:20px 0;" ng-init="init()">
         <div id="page-wrapper" style="padding:15px;">
-            <p>You can fund a project by using this form or by using your wallet and inputting the txid (recommended).</p>
+            <p style="display:none;">You can fund a project by using this form or by using your wallet and inputting the txid (recommended).</p>
+            <p>Send funds to this address: <strong>{{$fundCtrl.activeProject.addressPair.publicKey}}</strong><br />
+               then enter the resulting transaction id (TXID) into the form below.</p>
             
-            <div style="padding:10px 0; padding-right:0;">
+            <div style="padding:10px 0; padding-right:0;" class="hide">
                 <button type="button" class="btn btn-primary" ng-click="$fundCtrl.showForm('txidEntry')" ng-disabled="$fundCtrl.txSuccessful">Enter Existing TXID</button>
                 <button type="button" class="btn btn-primary" ng-click="$fundCtrl.showForm('fundProject')" ng-disabled="$fundCtrl.validTxid">Use Funding Form</button>
             </div>
             
-            <form id="projectTxForm" name="projectTxForm" class="hide" ng-show="$fundCtrl.showTxEntry" ng-hide="!$fundCtrl.showTxEntry" ng-submit="$fundCtrl.projectTx(projectTxForm)">
-                <div class="form-group">
-                    <label for="txid" class="control-label">TXID<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
-                    <input name="txid" type="text" class="form-control" ng-model="$fundCtrl.txid" required />
+            <uib-accordion close-others="true">
+                <div uib-accordion-group id="calculator" class="panel-default" heading="Project Funding Calculator" is-open="false" style="margin-top:20px;">
+                    <div class="form-group">
+                        <label for="txFee" class="control-label">Transaction Fee</label>
+                        <input name="txFee" type="text" class="form-control" ng-model="$fundCtrl.txFee" convertToNumber />
+                        <p>The minimum SmartCash transaction fee is Σ0.001 but the fee for the wallet/exchange you use to fund the project may vary.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="walletAmt" class="control-label">SMART per Wallet</label>
+                        <input name="walletAmt" type="text" class="form-control" ng-model="$fundCtrl.walletAmt" convertToNumber />
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:0;">
+                        <div>
+                            <label for="projectAddrs" class="control-label">Number of Promotional Wallets: </label>
+                            <span>{{$fundCtrl.activeProject.numAddr}}</span>
+                        </div>
+
+                        <div>
+                            <label for="projectTotal" class="control-label">Total Project Funds: </label>
+                            <span>{{ ($fundCtrl.walletAmt * $fundCtrl.activeProject.numAddr) + $fundCtrl.txFee}}</span>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$invalid || $fundCtrl.validTxid">Submit</button>
+
+                <div uib-accordion-group class="panel-default" heading="Enter External Transaction ID (TXID)" is-open="false">
+                    <form id="projectTxForm" name="projectTxForm" ng-show="$fundCtrl.showTxEntry" ng-hide="!$fundCtrl.showTxEntry" ng-submit="$fundCtrl.projectTx(projectTxForm)">
+                        <div class="form-group">
+                            <label for="txid" class="control-label">TXID<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                            <input name="txid" type="text" class="form-control" ng-model="$fundCtrl.txid" required />
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:0;">
+                            <button type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$invalid || $fundCtrl.validTxid">Submit</button>
+                        </div>
+                    </form>
+                    
+                    <div style="padding-top:10px;" role="alert">
+                        <span class="error" ng-show="$fundCtrl.validTx == false"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> {{$fundCtrl.msg}}</span>
+                        <span class="success" ng-show="$fundCtrl.validTx"><i class="fa fa-fw fa-check" aria-hidden="true"></i> {{$fundCtrl.msg}}</span>
+                    </div>
                 </div>
-            </form>
+            </uib-accordion>
             
             <form id="fundProjectForm" name="fundProjectForm" class="hide" ng-show="$fundCtrl.showFundForm" ng-hide="!$fundCtrl.showFundForm" ng-submit="$fundCtrl.fundInfo(fundProjectForm)">
                 <div class="form-group">
@@ -64,11 +100,6 @@
                     <button id="cancelBtn" type="button" class="btn btn-default" ng-click="$fundCtrl.cancel()">Cancel</button>
                 </div>
             </form>
-            
-            <div style="padding-top:10px;" role="alert">
-                <span class="error" ng-show="$fundCtrl.validTx == false"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> {{$fundCtrl.msg}}</span>
-                <span class="success" ng-show="$fundCtrl.validTx"><i class="fa fa-fw fa-check" aria-hidden="true"></i> {{$fundCtrl.msg}}</span>
-            </div>
         </div>
         
         <!-- libraries -->

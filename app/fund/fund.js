@@ -43,8 +43,16 @@
         };
         
         // transfer money from the project address to the receiver wallets
-        ctrl.sendFunds = function(project) {            
-            ipcRenderer.send('sendFunds', {addressPair: project.addressPair, wallets: project.recvAddrs});
+        ctrl.sendFunds = function(project) {
+            ipcRenderer.send('setReferrer', {referrer: 'sendPromotionalFunds'});
+            ipcRenderer.send('showConfirmationDialog', {title: 'Send funds to promotional wallets?', body: 'Are you sure you want to send funds to the promotional wallets?'});
+            
+            ipcRenderer.on('dialogYes', (event, arg) => {
+                if (electron.remote.getGlobal('referrer') !== "sendPromotionalFunds")
+                    return;
+                
+                ipcRenderer.send('sendPromotionalFunds', {originalFunds: project.originalFunds, addressPair: project.addressPair, wallets: project.recvAddrs});
+            });
         };
     }
 })();

@@ -31,8 +31,7 @@ Client.prototype.call = function (method, params, callback, errback, path) {
 
   // First we encode the request into JSON
   requestJSON = JSON.stringify(requestJSON)
-    
-    console.log('requestJSON: ', requestJSON)
+  //console.log('requestJSON: ', requestJSON)
 
   // prepare request options
   var requestOptions = {

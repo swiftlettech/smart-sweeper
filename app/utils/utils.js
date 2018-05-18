@@ -8,7 +8,12 @@
             require: 'ngModel',
             link: function(scope, element, attrs, ngModel) {
                 ngModel.$parsers.push(function(val) {
-                    return parseInt(val, 10);
+                    console.log('val: ', val);
+                    
+                    if (val.indexOf('.') != -1)
+                        return parseFloat(val);
+                    else
+                        return parseInt(val, 10);
                 });
                 ngModel.$formatters.push(function(val) {
                     return '' + val;
@@ -34,6 +39,12 @@
                 return false;
         };
     })
+    /*.filter('smartCalc', function() {
+        // 
+        return function(amt) {
+            return parseFloat(amt);
+        };
+    })*/
     .filter('toFixedNum', function() {
         /* Formats a number to a fixed number of decimals. */
         return function(value, decimals) {            

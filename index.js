@@ -1061,10 +1061,12 @@ ipcMain.on('openLogFolder', (event, args) => {
 })
 
 // send funds to receiver addresses
-ipcMain.on('sendPromotionalFunds', (event, args) => {
-    smartcash.sendFunds(args);
-    
+ipcMain.on('sendPromotionalFunds', (event, args) => {    
     // calculate and save the amount per address
+    var amtToSend = (args.originalFunds-0.001) / args.wallets.length
+    console.log('amtToSend: ', amtToSend)
+    
+    //smartcash.sendFunds(args);
     
     //global.sharedObject.logger.info('Funds were send to wallets for project "' + global.activeProject.name + '".')
     //refreshLogFile()
@@ -1138,6 +1140,10 @@ ipcMain.on('smartcashLaunch', (event, args) => {
 ipcMain.on('sweepFunds', (event, projectID) => {
     var index = getDbIndex(projectID)
     var project = global.availableProjects.list[index]
+    
+    global.apiCallbackInfo.set('sweepFunds', {
+        apiCallbackCounter: 0
+    })
     
     /*project.recvAddrs.forEach(function(addr, addrKey) {
         smartcashapi.sweepFunds({sender: addr, receiver: project.publicKey})

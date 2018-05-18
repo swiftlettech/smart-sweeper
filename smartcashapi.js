@@ -190,6 +190,11 @@ function sendFunds(projectInfo, callback) {
 function sweepFunds(projectInfo, callback) {
     //var receiver = addresses.receiver
     //var sender = addresses.sender
+    
+    // claimed = true
+    // swept = true
+    
+    // add all non-claimed addresses to an array to use as inputs into transaction
 }
 
 module.exports = {

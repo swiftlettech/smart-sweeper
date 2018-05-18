@@ -15,11 +15,16 @@
 
         $scope.init = function() {
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
-            ctrl.originalFunds = 0;            
+            ctrl.originalFunds = 0;
+            ctrl.txFee = 0.001;
+            ctrl.walletAmt = 1;
             ctrl.activeProject = electron.remote.getGlobal('activeProject');
             
-            ctrl.showTxEntry = false;
-            ctrl.showFundForm = false;
+            ctrl.calcCollapsed = true;
+            ctrl.projectTxCollapsed = true;
+            
+            ctrl.showTxEntry = true;
+            //ctrl.showFundForm = false;
             
             $document.find('#page-wrapper').css('height', function() {
                 var height = window.innerHeight - parseInt($document.find('body').css('margin-top'))*2;
