@@ -27,13 +27,13 @@
                 <div uib-accordion-group id="calculator" class="panel-default" heading="Project Funding Calculator" is-open="false" style="margin-top:20px;">
                     <div class="form-group">
                         <label for="txFee" class="control-label">Transaction Fee</label>
-                        <input name="txFee" type="text" class="form-control" ng-model="$fundCtrl.txFee" convertToNumber />
+                        <input name="txFee" type="text" class="form-control" ng-model="$fundCtrl.txFee" calc-number />
                         <p>The minimum SmartCash transaction fee is Σ0.001 but the fee for the wallet/exchange you use to fund the project may vary.</p>
                     </div>
 
                     <div class="form-group">
                         <label for="walletAmt" class="control-label">SMART per Wallet</label>
-                        <input name="walletAmt" type="text" class="form-control" ng-model="$fundCtrl.walletAmt" convertToNumber />
+                        <input name="walletAmt" type="text" class="form-control" ng-model="$fundCtrl.walletAmt" calc-number />
                     </div>
 
                     <div class="form-group" style="margin-bottom:0;">
@@ -48,8 +48,27 @@
                         </div>
                     </div>
                 </div>
+                
+                <div uib-accordion-group id="fundingStatus" class="panel-default" heading="Project Funding Status" is-open="true">
+                    <p>Status of transactions used to fund the project:</p>
+                    
+                    <p ng-show="$fundCtrl.activeTxs === undefined">No transactions found.</p>
+                    
+                    <table class="table" ng-hide="$fundCtrl.activeTxs === undefined">
+                        <tr>
+                            <th>Txid</th>
+                            <th>Status</th>
+                        </tr>
+                        
+                        <tr ng-repeat="tx in $fundCtrl.activeTxs | orderBy: $fundCtrl.activeTxs.tx.txid">
+                            <td>{{tx.txid}}</td>
+                            <td>(<span ng-show="$fundCtrl.activeTxs.tx.confirmed == false">pending</span><span ng-show="$fundCtrl.activeTxs.tx.confirmed">confirmed</span>)</td>
+                        </tr>
+                    </table>
+                </div>
+            </uib-accordion>
 
-                <div uib-accordion-group class="panel-default" heading="Enter External Transaction ID (TXID)" is-open="false">
+                <!--<div uib-accordion-group class="panel-default" heading="Enter External Transaction ID (TXID)" is-open="false">
                     <form id="projectTxForm" name="projectTxForm" ng-show="$fundCtrl.showTxEntry" ng-hide="!$fundCtrl.showTxEntry" ng-submit="$fundCtrl.projectTx(projectTxForm)">
                         <div class="form-group">
                             <label for="txid" class="control-label">TXID<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
@@ -66,7 +85,6 @@
                         <span class="success" ng-show="$fundCtrl.validTx"><i class="fa fa-fw fa-check" aria-hidden="true"></i> {{$fundCtrl.msg}}</span>
                     </div>
                 </div>
-            </uib-accordion>
             
             <form id="fundProjectForm" name="fundProjectForm" class="hide" ng-show="$fundCtrl.showFundForm" ng-hide="!$fundCtrl.showFundForm" ng-submit="$fundCtrl.fundInfo(fundProjectForm)">
                 <div class="form-group">
@@ -99,7 +117,7 @@
                     <button id="submitBtn" type="submit" class="btn btn-primary" ng-disabled="fundProjectForm.$invalid || fundProjectForm.$submitted">Fund Project</button>
                     <button id="cancelBtn" type="button" class="btn btn-default" ng-click="$fundCtrl.cancel()">Cancel</button>
                 </div>
-            </form>
+            </form>-->
         </div>
         
         <!-- libraries -->

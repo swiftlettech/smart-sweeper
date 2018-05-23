@@ -2,13 +2,33 @@
     'use strict';
 
     angular.module('SmartSweeperUtils')
+    .directive('calcNumber', function() {
+        /* Convert to a number to be used in a calculation.
+           based on https://docs.angularjs.org/api/ng/directive/select#binding-select-to-a-non-string-value-via-ngmodel-parsing-formatting */
+        return {
+            require: 'ngModel',
+            link: function(scope, element, attrs, ngModel) {                
+                ngModel.$parsers.push(function(val) {                    
+                    if (val.indexOf('.') != -1)
+                        return parseFloat(val);
+                    else {
+                        if (val === "")
+                            val = 0;
+                        
+                        return parseInt(val);
+                    }
+                });
+            }
+        };
+    })
     .directive('convertToNumber', function() {
-        /* from: https://docs.angularjs.org/api/ng/directive/select#binding-select-to-a-non-string-value-via-ngmodel-parsing-formatting */
+        /* Convert to a number for display only.
+           from: https://docs.angularjs.org/api/ng/directive/select#binding-select-to-a-non-string-value-via-ngmodel-parsing-formatting */
         return {
             require: 'ngModel',
             link: function(scope, element, attrs, ngModel) {
                 ngModel.$parsers.push(function(val) {
-                    console.log('val: ', val);
+                    //console.log('val: ', val);
                     
                     if (val.indexOf('.') != -1)
                         return parseFloat(val);

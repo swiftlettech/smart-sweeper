@@ -75,6 +75,30 @@ function generateAddress() {
     return {privateKey: privateKey, publicKey: publicKey}
 }
 
+/* Get information for a given address. */
+function getAddressInfo(projectInfo, callback) {
+    request({
+        url: smartcashExplorer + '/ext/getaddress/' + projectInfo.address,
+        method: 'GET',
+        json: true
+    }, function (err, resp, body) {
+        //console.log('checkBalance')
+        //console.log(err)
+        //console.log(resp.body)
+        
+        if (resp) {
+            callback({type: 'data', msg: resp.body}, 'getAddressInfo', projectInfo)
+        }
+        else {
+            console.log('getAddressInfo')
+            console.log(err)
+            
+            if (err)
+                callback({type: 'error', msg: err.code}, 'getAddressInfo', projectInfo)
+        }
+    })
+}
+
 /* Send funds from one address to another. */
 function sendFunds(projectInfo, callback) {
     //var callback = function(resp) {
@@ -201,6 +225,7 @@ module.exports = {
     checkBalance: checkBalance,
     checkTransaction: checkTransaction,
     generateAddress: generateAddress,
+    getAddressInfo: getAddressInfo,
     sendFunds: sendFunds,
     sweepFunds: sweepFunds
 };

@@ -30,6 +30,8 @@
                 var height = window.innerHeight - parseInt($document.find('body').css('margin-top'))*2;
                 return height + 'px';
             });
+            
+            ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
         };        
 
         /* Close the modal without funding the project. */
@@ -68,15 +70,38 @@
             }
         };
         
-        /* Updates project with information from an external transaction id. */
-        ctrl.projectTx = function(form) {
-            ipcRenderer.send('setReferrer', {referrer: 'fundProjectModal'});
-            ipcRenderer.send('checkFundingTxid', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, address: ctrl.activeProject.addressPair.publicKey, txid: form.txid.$viewValue});
+        /* Updates project with information from one or more external transaction ids. */
+        ctrl.projectTxStatus = function() {
+            ipcRenderer.send('getAddressInfo', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, address: ctrl.activeProject.addressPair.publicKey});
             
-            ipcRenderer.on('fundingTxidChecked', (event, args) => {
+            ipcRenderer.on('gotAddressInfo', (event, args) => {
                 $scope.$apply(function() {
-                    ctrl.validTx = args.validTx;
-                    ctrl.msg = args.msg;
+                    ctrl.msgType = args.msgType;
+                    if (ctrl.msg !== undefined) {
+                        ctrl.msg = args.msg;
+                    }
+                    else {
+                        ctrl.balance = args.balance;
+                        ctrl.activeTxs = [];
+                        
+                        angular.forEach(args.txs, function(tx, key) {
+                            if (tx.type === "vout")
+                                ctrl.activeTxs.push({txid: tx.addresses});
+                        });
+                        
+                        console.log('ctrl.activeTxs: ', ctrl.activeTxs);
+                        
+                        // check the status of each txid
+                        if (ctrl.activeTxs.length > 0) {
+                            ipcRenderer.send('checkFundingTxids', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, address: ctrl.activeProject.addressPair.publicKey, balance: ctrl.balance, activeTxs: ctrl.activeTxs});
+                        }
+                    }
+                });
+            });
+            
+            ipcRenderer.on('fundingTxidsChecked', (event, args) => {
+                $scope.$apply(function() {
+                    
                 });
             });
         };
