@@ -43,9 +43,9 @@
                             
                             <td class="numAddrCol text-center">{{project.numAddr}}</td>
                             
-                            <td class="totalFundsCol text-center">{{project.originalFunds | toFixedNum: 8}}</td>
+                            <td class="totalFundsCol text-center">{{project.originalFunds || 0 | toFixedNum: 8}}</td>
                             
-                            <td class="addrAmtCol text-center">{{project.addrAmt | toFixedNum: 8}}</td>
+                            <td class="addrAmtCol text-center">{{project.addrAmt || 0 | toFixedNum: 8}}</td>
                             
                             <td class="expCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>
                             

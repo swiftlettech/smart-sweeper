@@ -340,7 +340,7 @@ function createModal(type, text) {
     else if (type === "fund") {
         title = "Fund Project"
         parent = global.sharedObject.win
-        width = Math.ceil(winBounds.width - (winBounds.width*0.35))
+        width = Math.ceil(winBounds.width - (winBounds.width*0.45))
         height = Math.ceil(winBounds.height - (winBounds.height*0.15))
         pathname = path.join(__dirname, 'app', 'fund', 'fundModal.html')
         resizable = true
@@ -433,7 +433,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
     console.log()
     
     if (resp.type === "data") {
-        //console.log('projectInfo: ', projectInfo)
+        console.log('projectInfo: ', projectInfo)
         console.log('from ' + functionName)
         //console.log(resp)
         //console.log()
@@ -457,12 +457,14 @@ let apiCallback = function(resp, functionName, projectInfo) {
             
                 resp.msg.vout.forEach(function(tx, key) {
                     if (tx.scriptPubKey.addresses.includes(projectInfo.address)) {
-                        if (resp.msg.confirmations >= 6)
+                        if (resp.msg.confirmations >= 6) {
                             obj[projectInfo.txid] = true
+                            apiCallbackInfo.balance += tx.value
+                        }
                         else
                             obj[projectInfo.txid] = false
                         
-                        apiCallbackInfo.txs.push(obj)
+                        apiCallbackInfo.txInfo.push(obj)
                     }
                 })
             }
@@ -534,32 +536,31 @@ let apiCallback = function(resp, functionName, projectInfo) {
             }
         }
         else if (functionName === "checkTransaction") {
-            if (referrer === "checkFundingTxids" && (apiCallbackCounter == projectInfo.activeTxs.length)) {
+            if (referrer === "checkFundingTxids" && (apiCallbackCounter == apiCallbackInfo.txCount)) {
                 var confirmedCounter = 0
                 var txids = []
                 
-                console.log('apiCallbackInfo.txs: ', apiCallbackInfo.txs)
+                console.log('apiCallbackInfo.txInfo: ', apiCallbackInfo.txInfo)
                 
-                apiCallbackInfo.txs.forEach(function(confirmed, key) {
-                    txids.push(key)
+                apiCallbackInfo.txInfo.forEach(function(tx, key) {
+                    txids.push(tx)
                     
-                    if (confirmed)
+                    if (Object.values(tx)[0])
                        confirmedCounter++
                 })
                 
-                if (confirmedCounter == apiCallbackInfo.txs.length) {
-                    global.availableProjects.list[projectInfo.projectIndex].originalFunds = projectInfo.balance
+                if (confirmedCounter == apiCallbackInfo.txInfo.length) {
+                    global.availableProjects.list[projectInfo.projectIndex].originalFunds = apiCallbackInfo.balance
                     global.availableProjects.list[projectInfo.projectIndex].txid = txids
-                    global.availableProjects.list[projectInfo.projectIndex].projectFunded = true
                     global.availableProjects.list[projectInfo.projectIndex].txConfirmed = true
-                }                
+                }
                 else {
                     global.availableProjects.list[projectInfo.projectIndex].txConfirmed = false
                 }
                 
                 db.set('projects', global.availableProjects)
                 global.sharedObject.win.webContents.send('projectsReady')                
-                modal.webContents.send('fundingTxidsChecked', {msgType: 'data', confirmed: global.availableProjects.list[projectInfo.projectIndex].txConfirmed, txids: txids})
+                modal.webContents.send('fundingTxidsChecked', {msgType: 'data', confirmed: global.availableProjects.list[projectInfo.projectIndex].txConfirmed, txInfo: apiCallbackInfo.txInfo, balance: apiCallbackInfo.balance})
                 global.apiCallbackInfo.delete(referrer)
             }
             else if ((referrer === "checkProjectBalances") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
@@ -852,12 +853,14 @@ app.on('activate', () => {
 ipcMain.on('checkFundingTxids', (event, args) => {
     global.apiCallbackInfo.set('checkFundingTxids', {
         apiCallbackCounter: 0,
-        txs: []
+        txCount: args.activeTxs.length,
+        txInfo: [],
+        balance: 0
     })
     
     var index = getDbIndex(args.projectID)  
     args.activeTxs.forEach(function(tx, key) {
-        smartcashapi.checkTransaction({referrer: "checkFundingTxids", projectID: args.projectID, projectName: args.projectName, projectIndex: index, address: args.address, txid: tx.txid}, apiCallback)
+        smartcashapi.checkTransaction({referrer: "checkFundingTxids", projectID: args.projectID, projectName: args.projectName, projectIndex: index, balance: args.balance, address: args.address, txid: tx.txid}, apiCallback)
     })
 })
 
@@ -1096,6 +1099,14 @@ ipcMain.on('newProject', (event, args) => {
 // open the log folder
 ipcMain.on('openLogFolder', (event, args) => {
     shell.showItemInFolder(app.getPath('userData') + path.sep + logFile + '.json')
+})
+
+// user confirmation that the project has been fully funded
+ipcMain.on('projectFullyFunded', (event, args) => {
+    var index = getDbIndex(global.activeProject.id)
+    global.availableProjects.list[index].projectFunded = true
+    db.set('projects', global.availableProjects)
+    global.sharedObject.win.webContents.send('projectsReady') 
 })
 
 // send funds to receiver addresses

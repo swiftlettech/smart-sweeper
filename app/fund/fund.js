@@ -17,10 +17,18 @@
             $mainCtrl.sweepDateSortFlag = 1;
             
             // load all projects
-            ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-            console.log(ctrl.availableProjects);
-            // display the project list as 10 per page?
+            if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
+                ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+            
             $mainCtrl.setPageHeight();
+            
+            // reload projects when there have been changes
+            $scope.$on('projectsReady', function(event, args) {
+                ctrl.availableProjects = args.availableProjects;
+                console.log(ctrl.availableProjects);
+                // display the project list as 10 per page?
+                $mainCtrl.setPageHeight();
+            });            
         };
         
         /* Load a modal used to edit a project. */

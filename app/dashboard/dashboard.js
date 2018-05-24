@@ -21,7 +21,6 @@
             }
             
             $scope.$on('onlineCheck', function(event, args) {
-                ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                 resetDashboardVals();
                 
                 if (ctrl.availableProjects.length === undefined || ctrl.availableProjects.length == 0) {
@@ -49,8 +48,7 @@
                 }
             });
             
-            // load all projects
-            ipcRenderer.on('projectsReady', (event, args) => {
+            /*ipcRenderer.on('projectsReady', (event, args) => {
                 $scope.$apply(function() {
                     angular.forEach(electron.remote.getGlobal('availableProjects').list, function(project, key) {
                         project.showPrivateKey = false;
@@ -60,15 +58,22 @@
                     ctrl.projectCount = ctrl.availableProjects.length;
                     console.log(ctrl.availableProjects);
                 });
-            });
-            
-            /*ipcRenderer.on('onlineCheck', (event, args) => {                
-                $scope.$apply(function() {
-                    if (args.isOnline && ctrl.projectCount > 0) {
-                        availableFunds();
-                    }
-                });
             });*/
+            
+            // load all projects
+            if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
+                ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+            
+            // reload projects when there have been changes
+            $scope.$on('projectsReady', function(event, args) {
+                angular.forEach(args.availableProjects, function(project, key) {
+                    project.showPrivateKey = false;
+                });
+
+                ctrl.availableProjects = args.availableProjects;
+                ctrl.projectCount = ctrl.availableProjects.length;
+                console.log(ctrl.availableProjects);
+            });
             
             ipcRenderer.on('rpcConnected', (event, args) => {
                 ctrl.projectCount = ctrl.availableProjects.length;

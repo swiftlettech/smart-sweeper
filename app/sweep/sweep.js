@@ -24,16 +24,26 @@
             };
             
             // load all projects
-            ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-            ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
-            console.log(ctrl.availableProjects);
-            // display the project list as 10 per page?
-
-            /*angular.forEach(ctrl.availableProjectsCopy, function(project, index) {
-                claimedFunds(project.id, index);
-            });*/
-
+            if (angular.isArray(electron.remote.getGlobal('availableProjects').list)) {
+                ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
+            }
+            
             $mainCtrl.setPageHeight();
+            
+            // reload projects when there have been changes
+            $scope.$on('projectsReady', function(event, args) {
+                ctrl.availableProjects = args.availableProjects;
+                ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
+                console.log(ctrl.availableProjects);
+                // display the project list as 10 per page?
+
+                /*angular.forEach(ctrl.availableProjectsCopy, function(project, index) {
+                    claimedFunds(project.id, index);
+                });*/
+
+                $mainCtrl.setPageHeight();
+            }); 
         };
         
         /* Funds that have been transferred from a promotional wallet to a different wallet (per project). */

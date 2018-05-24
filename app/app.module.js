@@ -45,7 +45,7 @@
             ctrl.setActivePage('dashboard');
             ctrl.sortOptions = {property: 'name', reverse: false};
             
-            ipcRenderer.on('onlineCheckAPP', (event, args) => {                
+            ipcRenderer.on('onlineCheckAPP', (event, args) => {
                 $scope.$apply(function() {
                     if (ctrl.isOnline !== undefined)
                         ctrl.isOnline = args.isOnline;
@@ -67,7 +67,7 @@
                 });
             });
             
-            ipcRenderer.on('rpcCheckAPP', (event, args) => {                
+            ipcRenderer.on('rpcCheckAPP', (event, args) => {
                 $scope.$apply(function() {
                     if (args.rpcConnected !== undefined) {
                         ctrl.rpcConnected = args.rpcConnected;
@@ -79,7 +79,7 @@
                 });
             });
             
-            ipcRenderer.on('coreSyncCheckAPP', (event, args) => {                
+            ipcRenderer.on('coreSyncCheckAPP', (event, args) => {
                 $scope.$apply(function() {
                     if (args.coreSynced !== undefined) {
                         ctrl.coreSynced = args.coreSynced;
@@ -88,6 +88,12 @@
                     else if (args.coreSyncError !== undefined) {
                         ctrl.coreSyncError = args.coreSyncError;
                     }
+                });
+            });
+            
+            ipcRenderer.on('projectsReady', (event, args) => {
+                $scope.$apply(function() {
+                    $scope.$broadcast('projectsReady', {availableProjects: electron.remote.getGlobal('availableProjects').list});
                 });
             });
         };
