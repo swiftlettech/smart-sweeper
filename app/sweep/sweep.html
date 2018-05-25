@@ -24,24 +24,26 @@
                         <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.sweepDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('sweepDate', false)"></i>
                         <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.sweepDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('sweepDate', true)"></i>
                     </td>
+                    <td class="sweepCol text-center"><strong>Swept?</strong></td>
                     <td class="editCol text-center"><strong>Edit</strong></td>
                 </tr>
 
                 <tr id="project.id" ng-class="{active: $sweepCtrl.activeProjectID == project.id}" ng-model="$sweepCtrl.availableProjects" ng-repeat="project in $sweepCtrl.availableProjectsCopy | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
-                    <td colspan="8" style="padding:0;">
+                    <td colspan="9" style="padding:0;">
                         <table class="innerTable">
                             <tr>
                                 <td class="sweepCol"><input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="true" ng-enabled="project.fundsSent || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError" /></td>
                                 <td class="nameCol">{{project.name}}</td>
                                 <td class="addrAmtCol text-center">{{project.addrAmt | toFixedNum: 8}}</td>
                                 <td class="numAddrCol text-center">{{project.numAddr}}</td>
-                                <td class="claimedAddrCol text-center">{{project.claimedAddrTotal}}</td>
-                                <td class="perClaimedCol text-center"><span ng-show="project.fundsSent">{{project.percentClaimed || 0}}%</span><span ng-show="!project.fundsSent">n/a</span></td>
+                                <td class="claimedAddrCol text-center">{{project.claimedAddr}}<span ng-show="!project.fundsSent">n/a</span></td>
+                                <td class="perClaimedCol text-center"><span ng-show="project.fundsSent">{{(project.claimedAddr / project.numAddr)*100 || 0}}%</span><span ng-show="!project.fundsSent">n/a</span></td>
                                 <td class="expCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>
+                                <td class="sweepCol text-center"><span ng-show="project.projectFunded"><span ng-show="project.fundsSwept">Yes</span><span ng-show="!project.fundsSwept">No</span></span><span ng-show="!project.projectFunded">n/a</span></td>
                                 <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$sweepCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
                             </tr>
                             <tr>
-                                <td colspan="8" class="addrCol">
+                                <td colspan="9" class="addrCol">
                                     <strong>Project Address:</strong> {{project.addressPair.publicKey}}<br />
                                     <strong>Private Key:</strong> <button class="btn btn-link" title="Show/hide private key" ng-click="$mainCtrl.showPK(project.id)"><i class="fa fa-fw fa-eye" aria-hidden="false" title="Show private key" ng-show="!project.showPrivateKey"></i> <i class="fa fa-fw fa-eye-slash" aria-hidden="false" title="Hide private key" ng-show="project.showPrivateKey"></i></button> 
                                     {{project.addressPair.privateKey | hidePrivateKey: project.showPrivateKey}}

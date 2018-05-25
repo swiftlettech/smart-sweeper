@@ -137,7 +137,7 @@
         
         /* The pending/confirmed state of all promotional wallets (all projects). */
         function txInfo() {
-            ipcRenderer.send('getAllTxInfo');
+            ipcRenderer.send('getWalletTxStatus');
         }
         
         /* Funds that have been swept back to a project address (all projects). */

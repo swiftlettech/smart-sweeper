@@ -2,35 +2,35 @@
     <div class="row">
         <div class="col-sm-6 col-md-4">
             <div class="panel panel-default">
-                <div class="panel-heading">Available Balance (<span ng-bind="$dashboardCtrl.projectCount"></span> projects)</div>
+                <div class="panel-heading">Available Balance (<span ng-bind="$dashboardCtrl.projectCount"></span> <span ng-show="$dashboardCtrl.projectCount == 1">project</span><span ng-show="$dashboardCtrl.projectCount != 1">projects</span>)</div>
                 <div class="panel-body">
                     <span ng-bind="$dashboardCtrl.availableBalance | toFixedNum: 8"></span>
                 </div>
             </div>
             
             <div class="panel panel-default">
-                <div class="panel-heading">Pending Transactions (<span ng-bind="$dashboardCtrl.pendingWalletsCount"></span> wallets)</div>
+                <div class="panel-heading">Pending Transactions (<span ng-bind="$dashboardCtrl.pendingWalletsCount"></span> promotional <span ng-show="$dashboardCtrl.pendingWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.pendingWalletsCount != 1">wallets</span>)</div>
                 <div class="panel-body">
                     <span ng-bind="$dashboardCtrl.pendingFunds | toFixedNum: 8"></span>
                 </div>
             </div>
             
             <div class="panel panel-default">
-                <div class="panel-heading">Confirmed Transactions (<span ng-bind="$dashboardCtrl.confirmedWalletsCount"></span> wallets)</div>
+                <div class="panel-heading">Confirmed Transactions (<span ng-bind="$dashboardCtrl.confirmedWalletsCount"></span> promotional <span ng-show="$dashboardCtrl.confirmedWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.confirmedWalletsCount != 1">wallets</span>)</div>
                 <div class="panel-body">
                     <span ng-bind="$dashboardCtrl.confirmedFunds | toFixedNum: 8"></span>
                 </div>
             </div>
             
             <div class="panel panel-default">
-                <div class="panel-heading">Claimed Funds (<span ng-bind="$dashboardCtrl.claimedWalletsCount"></span> wallets)</div>
+                <div class="panel-heading">Claimed Funds (<span ng-bind="$dashboardCtrl.claimedWalletsCount"></span> promotional <span ng-show="$dashboardCtrl.claimedWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.claimedWalletsCount != 1">wallets</span>)</div>
                 <div class="panel-body">
                     <span ng-bind="$dashboardCtrl.claimedFunds | toFixedNum: 8"></span>
                 </div>
             </div>
             
             <div class="panel panel-default">
-                <div class="panel-heading">Swept Funds (<span ng-bind="$dashboardCtrl.sweptWalletsCount"></span> wallets)</div>
+                <div class="panel-heading">Swept Funds (<span ng-bind="$dashboardCtrl.sweptWalletsCount"></span> promotional <span ng-show="$dashboardCtrl.sweptWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.sweptWalletsCount != 1">wallets</span>)</div>
                 <div class="panel-body">
                     <span ng-bind="$dashboardCtrl.sweptFunds | toFixedNum: 8"></span>
                 </div>

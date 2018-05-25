@@ -25,7 +25,7 @@
             // reload projects when there have been changes
             $scope.$on('projectsReady', function(event, args) {
                 ctrl.availableProjects = args.availableProjects;
-                console.log(ctrl.availableProjects);
+                console.log('fund page projectsReady: ', ctrl.availableProjects);
                 // display the project list as 10 per page?
                 $mainCtrl.setPageHeight();
             });            

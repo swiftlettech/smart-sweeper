@@ -52,7 +52,7 @@
                 console.log(ctrl.availableProjects);
 
                 // display the project list as 10 per page?
-                
+
                 $mainCtrl.setPageHeight();
             });
         };

@@ -38,16 +38,12 @@
                 console.log(ctrl.availableProjects);
                 // display the project list as 10 per page?
 
-                /*angular.forEach(ctrl.availableProjectsCopy, function(project, index) {
-                    claimedFunds(project.id, index);
-                });*/
-
                 $mainCtrl.setPageHeight();
             }); 
         };
         
         /* Funds that have been transferred from a promotional wallet to a different wallet (per project). */
-        function claimedFunds(projectID, index) {
+        /*function claimedFunds(projectID, index) {
             ipcRenderer.send('getClaimedFundsInfo', {projectID: projectID, type: 'receivers'});
             ipcRenderer.on('claimedFundsInfo', (event, args) => {
                 $scope.$apply(function() {
@@ -58,7 +54,7 @@
                     if (Number.isNaN(project.percentClaimed)) { project.percentClaimed = 0; }
                 });
             });
-        }
+        }*/
         
         /* Update the total number of projects selected. */
         ctrl.checkboxChanged = function() {

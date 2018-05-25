@@ -93,6 +93,7 @@
             
             ipcRenderer.on('projectsReady', (event, args) => {
                 $scope.$apply(function() {
+                    console.log('$mainCtrl projectsReady');
                     $scope.$broadcast('projectsReady', {availableProjects: electron.remote.getGlobal('availableProjects').list});
                 });
             });

@@ -37,9 +37,11 @@
 
             <tr id="project.id" ng-class="{active: $fundCtrl.activeProjectID == project.id}" ng-model="$fundCtrl.availableProjects" ng-repeat="project in $fundCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
                 <td colspan="9" style="padding:0;">
+                    <p style="display:none;">project.projectFunded: {{project.projectFunded}}</p>
+                    
                     <table class="innerTable">
                         <tr>
-                            <td class="nameCol">{{project.name}} <span ng-hide="project.txConfirmed === undefined">(<span ng-show="project.txConfirmed == false">pending</span><span ng-show="project.txConfirmed">confirmed</span>)</span></td>
+                            <td class="nameCol">{{project.name}} <span ng-hide="project.txConfirmed === undefined">(<span ng-show="!project.txConfirmed">pending</span><span ng-show="project.txConfirmed">confirmed</span>)</span></td>
                             
                             <td class="numAddrCol text-center">{{project.numAddr}}</td>
                             

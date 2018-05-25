@@ -63,7 +63,7 @@
                         <tr ng-repeat="tx in $fundCtrl.activeTxs | orderBy: tx.txid">
                             <td>{{tx.txid}}</td>
                             <td class="text-center">                                
-                                <span ng-show="tx.confirmed == false">Pending</span>
+                                <span ng-show="!tx.confirmed">Pending</span>
                                 <span ng-show="tx.confirmed">Confirmed</span>
                             </td>
                         </tr>
@@ -71,7 +71,7 @@
                     
                     <p><strong>Current Balance:</strong> {{$fundCtrl.activeProject.originalFunds | toFixedNum: 8}}</p>
                     
-                    <button type="button" class="btn btn-primary" ng-click="$fundCtrl.projectFullyFunded()" ng-disabled="$fundCtrl.activeTxs === undefined || $fundCtrl.activeProject.txConfirmed == false || $fundCtrl.projectFullyFundedFlag">Project fully funded?</button>
+                    <button type="button" class="btn btn-primary" ng-click="$fundCtrl.projectFullyFunded()" ng-disabled="$fundCtrl.activeTxs === undefined || !$fundCtrl.activeProject.txConfirmed || $fundCtrl.projectFullyFundedFlag">Project fully funded?</button>
                 </div>
             </uib-accordion>
 
@@ -88,7 +88,7 @@
                     </form>
                     
                     <div style="padding-top:10px;" role="alert">
-                        <span class="error" ng-show="$fundCtrl.validTx == false"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> {{$fundCtrl.msg}}</span>
+                        <span class="error" ng-show="!$fundCtrl.validTx"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> {{$fundCtrl.msg}}</span>
                         <span class="success" ng-show="$fundCtrl.validTx"><i class="fa fa-fw fa-check" aria-hidden="true"></i> {{$fundCtrl.msg}}</span>
                     </div>
                 </div>
