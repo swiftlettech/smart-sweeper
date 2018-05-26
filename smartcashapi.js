@@ -44,25 +44,77 @@ function checkBalance(projectInfo, callback) {
 
 /* Check the status of a transaction. */
 function checkTransaction(projectInfo, callback) {
-    var cmd = {
-        method: 'getrawtransaction',
-        params: [projectInfo.txid, 1]
+    //console.log('PROJECT INFO TXID: ', projectInfo.txid)
+    
+    var txArray = []
+    
+    if (typeof projectInfo.txid === "string") {
+        var obj = {}
+        obj[projectInfo.txid] = false
+        txArray.push(obj)
+    }
+    else {
+        txArray = projectInfo.txid
     }
     
-    rpc.sendCmd(cmd, function(err, resp) {
-        //console.log('checkTransaction')
-        //console.log(err)
-        //console.log(resp)
+    var txid
+    var txCounter = 0
+    var cmd
+    var response = []
+    
+    //console.log('txArray: ', txArray)
+    
+    txArray.forEach(function(tx, key) {
+        //console.log('TX KEYS: ', Object.keys(tx)[0])
         
-        if (err) {
-            callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
+        txid = Object.keys(tx)[0]
+        
+        cmd = {
+            method: 'getrawtransaction',
+            params: [txid, 1]
         }
-        else {
-            if (resp.confirmations !== undefined)
-                callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
-            else
-                callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
-        }
+        
+        //console.log('cmd: ', cmd)
+        
+        rpc.sendCmd(cmd, function(err, resp) {
+            //console.log('checkTransaction')
+            //console.log(err)
+            //console.log(resp)
+            //console.log('txid: ', cmd.params[0])
+            console.log('resp.confirmations: ', resp.confirmations)
+            
+            txCounter++
+            console.log('txCounter: ', txCounter);
+            console.log('txArray.length: ', txArray.length);
+
+            if (err) {
+                callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
+            }
+            else {
+                if (resp.confirmations !== undefined)
+                    callback({type: 'data', msg: response}, 'checkTransaction', projectInfo)
+                else
+                    callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
+                
+                
+                /*if (resp.confirmations === undefined)
+                    callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
+                
+                if (txCounter == txArray.length) {
+                    //console.log('response: ', response);
+                    
+                    //if (resp.confirmations !== undefined)
+                        //callback({type: 'data', msg: response}, 'checkTransaction', projectInfo)
+                }
+                else {
+                    var obj = {}
+                    obj[txid] = resp
+                    response.push(obj)
+                }
+                
+                console.log('response.length: ', response.length);*/
+            }
+        })
     })
 }
 

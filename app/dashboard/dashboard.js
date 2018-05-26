@@ -79,8 +79,8 @@
                 ctrl.projectCount = ctrl.availableProjects.length;
                 
                 availableFunds();
-                txInfo();
-                claimedFunds();
+                //txInfo();
+                //claimedFunds();
                 //sweptFunds();
             });
             

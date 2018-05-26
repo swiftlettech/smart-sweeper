@@ -65,15 +65,15 @@
                 // periodic background checking for online connectivity, SmartCash Core, and RPC connectivity
                 setInterval(() => {
                     checkOnlineStatus();
-                    /*smartcashCoreCheck();
+                    smartcashCoreCheck();
                     
                     if (remote.getGlobal('sharedObject').coreRunning)
                         rpcCheck();
                     
                     if (remote.getGlobal('sharedObject').rpcConnected) {
                         checkBlockchain();
-                        updateData();
-                    }*/
+                       // updateData();
+                    }
                 }, 30000);
             }
         })
@@ -90,7 +90,7 @@
 
                 // check to see if the local copy of the blockchain is current
                 checkBlockchain();
-                ipcRenderer.send('getProjectTxStatus');
+                //ipcRenderer.send('getProjectTxStatus');
             }
             else if (functionName === "checkBlockchain") {
                 // automatically sweep funds if necessary if the blockchain is up-to-date
@@ -246,7 +246,7 @@
         ipcRenderer.send('checkProjectBalances');
         ipcRenderer.send('getClaimedFundsInfo');
         ipcRenderer.send('getWalletTxStatus');
-        //ipcRenderer.send('getSweptFundsInfo');
+        ipcRenderer.send('getSweptFundsInfo');
         
         // update a project's txConfirmed flag
         ipcRenderer.send('getAllTxStatus');
