@@ -52,8 +52,8 @@
     })
     .filter('hasAddresses', function() {
         // returns whether or not a project has receiver addresses created for it
-        return function(project) {
-            if (project.recvAddrs.length > 0)
+        return function(project) {            
+            if (project.recvAddrs !== undefined && project.recvAddrs.length > 0)
                 return true;
             else
                 return false;

@@ -72,7 +72,7 @@
                     
                     if (remote.getGlobal('sharedObject').rpcConnected) {
                         checkBlockchain();
-                       // updateData();
+                        updateData();
                     }
                 }, 30000);
             }
@@ -90,7 +90,7 @@
 
                 // check to see if the local copy of the blockchain is current
                 checkBlockchain();
-                //ipcRenderer.send('getProjectTxStatus');
+                ipcRenderer.send('getProjectTxStatus');
             }
             else if (functionName === "checkBlockchain") {
                 // automatically sweep funds if necessary if the blockchain is up-to-date

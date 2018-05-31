@@ -20,16 +20,18 @@
             if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
             
-            $mainCtrl.setPageHeight();
-            
-            // reload projects when there have been changes
-            $scope.$on('projectsReady', function(event, args) {
-                ctrl.availableProjects = args.availableProjects;
+            $mainCtrl.setPageHeight();          
+        };
+        
+        // reload projects when there have been changes
+        ipcRenderer.on('projectsReady', (event, args) => {            
+            $scope.$apply(function() {
+                ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                 console.log('fund page projectsReady: ', ctrl.availableProjects);
                 // display the project list as 10 per page?
                 $mainCtrl.setPageHeight();
-            });            
-        };
+            });
+        });
         
         /* Load a modal used to edit a project. */
         ctrl.edit = function(id) {

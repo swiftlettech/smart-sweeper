@@ -430,8 +430,8 @@ function createDialog(event, window, type, text, fatal = false) {
 let apiCallback = function(resp, functionName, projectInfo) {
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.apiCallbackInfo.get(referrer)
-    //console.log('referrer: ', referrer)
-    //console.log('apiCallbackInfo: ', apiCallbackInfo)
+    console.log('referrer: ', referrer)
+    console.log('apiCallbackInfo: ', apiCallbackInfo)
     //console.log('resp: ', resp)
     //console.log()
     
@@ -470,27 +470,14 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     }
                 })
             }
-             /*else if (referrer === "checkProjectBalance") {
-               if (resp.msg.confirmations >= 6 && !projectInfo.fundsSent) {
-                    if (global.availableProjects.list[projectInfo.projectIndex].originalFunds == 0) {
-                        resp.msg.vout.forEach(function(tx, key) {
-                            if (tx.scriptPubKey.addresses.includes(projectInfo.address))
-                                apiCallbackInfo.total += tx.value
-                        })
-                    }
-                }
-                    
-            }*/
-            else if (referrer === "checkProjectBalances") {
-                if (resp.msg.confirmations >= 6 && !projectInfo.fundsSent) {
+            else if (referrer === "checkProjectBalances") {                
+                if (resp.msg.confirmations >= 6 && !projectInfo.fundsSent) {                    
                     resp.msg.vout.forEach(function(tx, key) {
                         if (tx.scriptPubKey.addresses.includes(projectInfo.address)) {
                             apiCallbackInfo.total += tx.value
-                            console.log('apiCallbackInfo.total: ', apiCallbackInfo.total)
                         }
                     })
-                }
-                    
+                } 
             }
             else if (referrer === "getProjectTxStatus") {
                 
@@ -503,14 +490,14 @@ let apiCallback = function(resp, functionName, projectInfo) {
             else if (referrer === "getWalletTxStatus") {
                 //console.log('resp.msg: ', resp.msg)
                 
-                /*if (resp.msg < 6) {
+                if (resp.msg.confirmations < 6) {
                     apiCallbackInfo.pendingFunds += projectInfo.addrAmt
                     apiCallbackInfo.pendingWallets++
                 }
                 else {
                     apiCallbackInfo.confirmedFunds += projectInfo.addrAmt
                     apiCallbackInfo.confirmedWallets++
-                }*/
+                }
             }
         }
         else if (functionName === "getAddressInfo") {
@@ -596,12 +583,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 modal.webContents.send('fundingTxidsChecked', {msgType: 'data', confirmed: global.availableProjects.list[projectInfo.projectIndex].txConfirmed, txInfo: apiCallbackInfo.txInfo, balance: apiCallbackInfo.balance})
                 global.apiCallbackInfo.delete(referrer)
             }
-            else if ((referrer === "checkProjectBalances") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
-                /*var availableBalance = 0
-                global.availableProjects.list.forEach(function(project, key) {
-                    availableBalance += project.originalFunds
-                })*/
-
+            else if ((referrer === "checkProjectBalances") && (apiCallbackCounter == apiCallbackInfo.totalTxs)) {
                 global.appConfig.availableBalanceTotal = apiCallbackInfo.total
                 config.set('config', global.appConfig)
                 db.set('projects', global.availableProjects)
@@ -609,20 +591,20 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 global.sharedObject.win.webContents.send('balancesChecked', {availableBalance: apiCallbackInfo.total})
                 global.apiCallbackInfo.delete(referrer)
             }
-            else if ((referrer === "getProjectTxStatus") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
+            else if ((referrer === "getProjectTxStatus") && (apiCallbackCounter == apiCallbackInfo.totalTxs)) {
                 /*db.set('projects', global.availableProjects)
                 global.sharedObject.win.webContents.send('projectsReady')
                 global.apiCallbackInfo.delete(referrer)*/
             }
             else if ((referrer === "getWalletTxStatus") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
-                /*global.appConfig.pendingFundsTotal = apiCallbackInfo.pendingFunds
+                global.appConfig.pendingFundsTotal = apiCallbackInfo.pendingFunds
                 global.appConfig.pendingWalletsTotal = apiCallbackInfo.pendingWallets
                 global.appConfig.confirmedFundsTotal = apiCallbackInfo.confirmedFunds
                 global.appConfig.confirmedWalletsTotal = apiCallbackInfo.confirmedWallets
                 config.set('config', global.appConfig)
 
                 global.sharedObject.win.webContents.send('allTxInfo', {pendingFunds: apiCallbackInfo.pendingFunds, pendingWallets: apiCallbackInfo.pendingWallets, confirmedFunds: apiCallbackInfo.confirmedFunds, confirmedWallets: apiCallbackInfo.confirmedWallets})
-                global.apiCallbackInfo.delete(referrer)*/
+                global.apiCallbackInfo.delete(referrer)
             }
         }
         else if (functionName === "getAddressInfo") {
@@ -900,26 +882,26 @@ ipcMain.on('checkFundingTxids', (event, args) => {
 
 // check the funded balances of all projects
 ipcMain.on('checkProjectBalances', (event, args) => {
-    var totalAddrs = 0
+    var totalTxs = 0
     
     if (global.availableProjects === undefined)
         global.availableProjects = db.get('projects')
     
     global.availableProjects.list.forEach(function(project, projectKey) {
         if (project.projectFunded)
-            totalAddrs++
+            totalTxs += project.txid.length
     })
     
-    if (totalAddrs > 0) {
+    if (totalTxs > 0) {
         global.apiCallbackInfo.set('checkProjectBalances', {
             apiCallbackCounter: 0,
-            totalAddrs: totalAddrs,
+            totalTxs: totalTxs,
             total: 0
         })
 
         global.availableProjects.list.forEach(function(project, projectKey) {
             if (project.projectFunded) {
-                smartcashapi.checkTransaction({referrer: "checkProjectBalances", projectName: project.name, projectIndex: projectKey, address: project.addressPair.publicKey, txid: project.txid}, apiCallback)
+                smartcashapi.checkTransaction({referrer: "checkProjectBalances", projectName: project.name, projectIndex: projectKey, fundsSent: project.fundsSent, address: project.addressPair.publicKey, txid: project.txid}, apiCallback)
             }
         })
     }
@@ -990,17 +972,17 @@ ipcMain.on('getProjectAddressInfo', (event, args) => {
 // get the status of all project funding transactions
 ipcMain.on('getProjectTxStatus', (event, args) => {
     console.log('in getProjectTxStatus')
-    var totalAddrs = 0
+    var totalTxs = 0
     
     global.availableProjects.list.forEach(function(project, projectKey) {
         if (project.projectFunded && !project.txConfirmed)
-            totalAddrs++
+            totalTxs += project.txid.length
     })
     
-    if (totalAddrs > 0) {
+    if (totalTxs > 0) {
         global.apiCallbackInfo.set('getProjectTxStatus', {
             apiCallbackCounter: 0,
-            totalAddrs: totalAddrs
+            totalTxs: totalTxs
         })
         
         global.availableProjects.list.forEach(function(project, projectKey) {            
@@ -1047,7 +1029,8 @@ ipcMain.on('getWalletTxStatus', (event, args) => {
 
 // get the total amount of gift funds that have been claimed
 ipcMain.on('getClaimedFundsInfo', (event, args) => {
-    //console.log(args)
+    console.log('in getClaimedFundsInfo')
+    console.log(args)
     
     var index
     var project
@@ -1114,37 +1097,6 @@ ipcMain.on('getClaimedFundsInfo', (event, args) => {
     }
 })
 
-// get the total amount of funds that were swept back from the promotional wallets
-ipcMain.on('getSweptFundsInfo', (event, args) => {
-    var totalAddrs = 0
-    
-    // get the swept amount for all wallets for all projects
-    global.availableProjects.list.forEach(function(project, projectKey) {
-        if (project.fundsSwept) {
-            project.recvAddrs.forEach(function(address, addrKey) {
-                totalAddrs++
-            })
-        }
-    })
-    
-    if (totalAddrs > 0) {
-        global.apiCallbackInfo.set('getSweptFundsInfo', {
-            apiCallbackCounter: 0,
-            totalAddrs: totalAddrs,
-            sweptFunds: 0,
-            sweptWallets: 0
-        })
-
-        global.availableProjects.list.forEach(function(project, projectKey) {
-            if (project.fundsSwept) {
-                project.recvAddrs.forEach(function(address, addrKey) {
-
-                })
-            }
-        })
-    }
-})
-
 // load the most recent log file
 ipcMain.on('loadLog', (event, args) => {
     var log = loadLog()
@@ -1174,8 +1126,7 @@ ipcMain.on('projectFullyFunded', (event, args) => {
     var index = getDbIndex(global.activeProject.id)
     global.availableProjects.list[index].projectFunded = true
     db.set('projects', global.availableProjects)
-    console.log('after sending project update: ', global.sharedObject.win.webContents.send('projectsReady'))
-    
+    global.sharedObject.win.webContents.send('projectsReady')
     global.sharedObject.logger.info('Project "' + global.activeProject.name + '" was marked "fully funded".')
     refreshLogFile()
 })

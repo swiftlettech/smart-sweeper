@@ -12,7 +12,6 @@ var options = {
         "^/.+[^/]+\.jpg",
         //"^/config($|/)",
         "^/dist($|/)",
-        "^/rpc-explorer($|/)",
         "^/startbootstrap-sb-admin-3.3.7($|/)",
         "^/packager\.js$"
     ],

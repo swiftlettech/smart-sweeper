@@ -48,6 +48,7 @@
         "exp-config": "^2.0.1",
         "is-online": "^7.0.0",
         "melanke-watchjs": "^1.4.3",
+        "node-smartcash": "^1.1.0",
         "ps-node": "^0.1.6",
         "request": "^2.85.0",
         "smartcashjs-lib": "^3.3.2",

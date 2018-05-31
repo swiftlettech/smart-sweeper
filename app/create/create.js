@@ -45,17 +45,19 @@
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
             
             $mainCtrl.setPageHeight();
-            
-            // reload projects when there have been changes
-            $scope.$on('projectsReady', function(event, args) {
-                ctrl.availableProjects = args.availableProjects;
+        };
+        
+        // reload projects when there have been changes
+        ipcRenderer.on('projectsReady', (event, args) => {            
+            $scope.$apply(function() {
+                ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                 console.log(ctrl.availableProjects);
 
                 // display the project list as 10 per page?
 
                 $mainCtrl.setPageHeight();
             });
-        };
+        });
         
         /* Is the calendar date in the future? */
         ctrl.checkCalendarDate = function() {

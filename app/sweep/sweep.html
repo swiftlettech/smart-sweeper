@@ -1,4 +1,6 @@
 <div id="sweepTab" ng-init="init()">
+    <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> "Claimed Addresses", "% Claimed", and "Swept?" will show "n/a" if funds have not been sent to the promotional wallets.</p>
+    
     <div id="projectList">
         <h4>Projects</h4>
         
@@ -36,10 +38,10 @@
                                 <td class="nameCol">{{project.name}}</td>
                                 <td class="addrAmtCol text-center">{{project.addrAmt | toFixedNum: 8}}</td>
                                 <td class="numAddrCol text-center">{{project.numAddr}}</td>
-                                <td class="claimedAddrCol text-center">{{project.claimedAddr}}<span ng-show="!project.fundsSent">n/a</span></td>
+                                <td class="claimedAddrCol text-center"><span ng-show="project.fundsSent">{{project.claimedAddr}}</span><span ng-show="!project.fundsSent">n/a</span></td>
                                 <td class="perClaimedCol text-center"><span ng-show="project.fundsSent">{{(project.claimedAddr / project.numAddr)*100 || 0}}%</span><span ng-show="!project.fundsSent">n/a</span></td>
                                 <td class="expCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>
-                                <td class="sweepCol text-center"><span ng-show="project.projectFunded"><span ng-show="project.fundsSwept">Yes</span><span ng-show="!project.fundsSwept">No</span></span><span ng-show="!project.projectFunded">n/a</span></td>
+                                <td class="sweepCol text-center"><span ng-show="project.fundsSent"><span ng-show="project.fundsSwept">Yes</span><span ng-show="!project.fundsSwept">No</span></span><span ng-show="!project.fundsSent">n/a</span></td>
                                 <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$sweepCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
                             </tr>
                             <tr>

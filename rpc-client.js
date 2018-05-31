@@ -3,7 +3,7 @@ const os = require('os')
 let config = require("exp-config")
 const electron = require('electron')
 const {ipcRenderer} = electron
-const smartcash = require('./smartcash-client')
+const smartcash = require('node-smartcash')
 
 let client
 
@@ -30,8 +30,10 @@ catch(err) {
         
         if (os.platform() === "win32")
             defaultSmartcashPath = "C:\\Program Files\\SmartCash\\"
-        //else if (os.platform() === "linux")
-        //else if (os.platform() === "darwin")
+        else if (os.platform() === "linux")
+            defaultSmartcashPath = ""
+        else if (os.platform() === "darwin")
+            defaultSmartcashPath = "//Applications//"
             
         content += "smartcashPath=" + defaultSmartcashPath
         

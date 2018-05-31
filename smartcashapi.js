@@ -44,7 +44,7 @@ function checkBalance(projectInfo, callback) {
 
 /* Check the status of a transaction. */
 function checkTransaction(projectInfo, callback) {
-    //console.log('PROJECT INFO TXID: ', projectInfo.txid)
+    //console.log('PROJECT INFO: ', projectInfo)
     
     var txArray = []
     
@@ -60,7 +60,6 @@ function checkTransaction(projectInfo, callback) {
     var txid
     var txCounter = 0
     var cmd
-    var response = []
     
     //console.log('txArray: ', txArray)
     
@@ -81,38 +80,20 @@ function checkTransaction(projectInfo, callback) {
             //console.log(err)
             //console.log(resp)
             //console.log('txid: ', cmd.params[0])
-            console.log('resp.confirmations: ', resp.confirmations)
+            //console.log('resp.confirmations: ', resp.confirmations)
             
             txCounter++
-            console.log('txCounter: ', txCounter);
-            console.log('txArray.length: ', txArray.length);
+            //console.log('txCounter: ', txCounter);
+            //console.log('txArray.length: ', txArray.length);
 
             if (err) {
                 callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
             }
             else {
                 if (resp.confirmations !== undefined)
-                    callback({type: 'data', msg: response}, 'checkTransaction', projectInfo)
+                    callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
                 else
                     callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
-                
-                
-                /*if (resp.confirmations === undefined)
-                    callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
-                
-                if (txCounter == txArray.length) {
-                    //console.log('response: ', response);
-                    
-                    //if (resp.confirmations !== undefined)
-                        //callback({type: 'data', msg: response}, 'checkTransaction', projectInfo)
-                }
-                else {
-                    var obj = {}
-                    obj[txid] = resp
-                    response.push(obj)
-                }
-                
-                console.log('response.length: ', response.length);*/
             }
         })
     })

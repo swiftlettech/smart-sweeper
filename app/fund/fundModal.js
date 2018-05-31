@@ -32,7 +32,7 @@
             });
             
             ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
-        };        
+        };
 
         /* Close the modal without funding the project. */
         ctrl.cancel = function() {
@@ -40,7 +40,7 @@
         };
         
         /* Send funding information back to the main process. */
-        ctrl.fundInfo = function(form) {            
+        ctrl.fundInfo = function(form) {
             ipcRenderer.on('dialogNo', (event, args) => {
                 if (electron.remote.getGlobal('referrer') !== "fundProjectModal")
                     return;

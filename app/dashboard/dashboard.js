@@ -64,28 +64,31 @@
             if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
             
-            // reload projects when there have been changes
-            $scope.$on('projectsReady', function(event, args) {
-                angular.forEach(args.availableProjects, function(project, key) {
-                    project.showPrivateKey = false;
-                });
-
-                ctrl.availableProjects = args.availableProjects;
-                ctrl.projectCount = ctrl.availableProjects.length;
-                console.log(ctrl.availableProjects);
-            });
-            
             ipcRenderer.on('rpcConnected', (event, args) => {
                 ctrl.projectCount = ctrl.availableProjects.length;
                 
                 availableFunds();
-                //txInfo();
-                //claimedFunds();
-                //sweptFunds();
+                txInfo();
+                claimedFunds();
+                sweptFunds();
             });
             
             $mainCtrl.setPageHeight();
         };
+        
+        // reload projects when there have been changes
+        ipcRenderer.on('projectsReady', (event, args) => {            
+            $scope.$apply(function() {
+                ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                
+                angular.forEach(ctrl.availableProjects, function(project, key) {
+                    project.showPrivateKey = false;
+                });
+
+                ctrl.projectCount = ctrl.availableProjects.length;
+                console.log(ctrl.availableProjects);
+            });
+        });
         
         ipcRenderer.on('balancesChecked', (event, args) => {
             ctrl.availableBalance = $filter('toFixedNum')(args.availableBalance, 8);
@@ -135,14 +138,23 @@
             ipcRenderer.send('getClaimedFundsInfo');
         }
         
+        /* Funds that have been swept back to a project address (all projects). */
+        function sweptFunds() {            
+            angular.forEach(ctrl.availableProjects, function(project, projectKey) {
+                if (project.fundsSwept) {
+                    project.recvAddrs.forEach(function(address, addrKey) {
+                        if (!address.claimed) {
+                            ctrl.sweptFunds += project.addrAmt
+                            ctrl.sweptWalletsCount++
+                        }
+                    })
+                }
+            });
+        }
+        
         /* The pending/confirmed state of all promotional wallets (all projects). */
         function txInfo() {
             ipcRenderer.send('getWalletTxStatus');
-        }
-        
-        /* Funds that have been swept back to a project address (all projects). */
-        function sweptFunds() {
-            ipcRenderer.send('getSweptFundsInfo');
         }
         
         /* Resets all amounts/counts for dashboard variables. */
