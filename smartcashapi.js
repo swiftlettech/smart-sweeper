@@ -57,6 +57,7 @@ function checkTransaction(projectInfo, callback) {
         txArray = projectInfo.txid
     }
     
+    var confirmedTxFlag
     var txid
     var txCounter = 0
     var cmd
@@ -66,6 +67,7 @@ function checkTransaction(projectInfo, callback) {
     txArray.forEach(function(tx, key) {
         //console.log('TX KEYS: ', Object.keys(tx)[0])
         
+        confirmedTxFlag = 0
         txid = Object.keys(tx)[0]
         
         cmd = {
@@ -90,10 +92,21 @@ function checkTransaction(projectInfo, callback) {
                 callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
             }
             else {
-                if (resp.confirmations !== undefined)
-                    callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
-                else
-                    callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
+                if (projectInfo.referrer !== "getProjectTxStatus") {
+                    if (resp.confirmations !== undefined)
+                        callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
+                    else
+                        callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
+                }
+                else {
+                    if (resp.confirmations !== undefined)
+                        if (resp.confirmations >= 6) confirmedTxFlag++
+                    else
+                        callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
+                    
+                    if (txCounter == txArray.length)
+                        callback({type: 'data', msg: confirmedTxFlag}, 'checkTransaction', projectInfo)
+                }
             }
         })
     })
@@ -154,6 +167,8 @@ function sendFunds(projectInfo, callback) {
         // broadcast to network
         //console.log(tx)
     //}
+    
+    //createrawtransaction [{"txid":"id","vout":n},...] {"address":amount,"data":"hex",...}
     
     var sender = smartcash.ECPair.fromWIF(projectInfo.fromPK)
     var receiver = projectInfo.toAddr

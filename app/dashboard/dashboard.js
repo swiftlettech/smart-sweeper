@@ -14,9 +14,9 @@
             resetDashboardVals();
             
             if (electron.remote.getGlobal('sharedObject').rpcConnected) {
-                availableFunds();
-                txInfo();
-                claimedFunds();
+                //availableFunds();
+                //txInfo();
+                //claimedFunds();
                 //sweptFunds();
             }
             
@@ -67,10 +67,10 @@
             ipcRenderer.on('rpcConnected', (event, args) => {
                 ctrl.projectCount = ctrl.availableProjects.length;
                 
-                availableFunds();
-                txInfo();
-                claimedFunds();
-                sweptFunds();
+                //availableFunds();
+                //txInfo();
+                //claimedFunds();
+                //sweptFunds();
             });
             
             $mainCtrl.setPageHeight();
@@ -124,7 +124,7 @@
 
             $scope.$apply(function() {
                 ctrl.sweptFunds = args.sweptFunds;
-                ctrl.sweptWalletsCount = args.sweptWallets;
+                ctrl.sweptWalletsCount = args.sweptWalletsCount;
             });
         });
         
@@ -139,17 +139,8 @@
         }
         
         /* Funds that have been swept back to a project address (all projects). */
-        function sweptFunds() {            
-            angular.forEach(ctrl.availableProjects, function(project, projectKey) {
-                if (project.fundsSwept) {
-                    project.recvAddrs.forEach(function(address, addrKey) {
-                        if (!address.claimed) {
-                            ctrl.sweptFunds += project.addrAmt
-                            ctrl.sweptWalletsCount++
-                        }
-                    })
-                }
-            });
+        function sweptFunds() {
+            ipcRenderer.send('getSweptFundsInfo');
         }
         
         /* The pending/confirmed state of all promotional wallets (all projects). */

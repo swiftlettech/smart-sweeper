@@ -72,7 +72,7 @@
                     
                     if (remote.getGlobal('sharedObject').rpcConnected) {
                         checkBlockchain();
-                        updateData();
+                        //updateData();
                     }
                 }, 30000);
             }
@@ -246,7 +246,6 @@
         ipcRenderer.send('checkProjectBalances');
         ipcRenderer.send('getClaimedFundsInfo');
         ipcRenderer.send('getWalletTxStatus');
-        ipcRenderer.send('getSweptFundsInfo');
         
         // update a project's txConfirmed flag
         ipcRenderer.send('getAllTxStatus');
