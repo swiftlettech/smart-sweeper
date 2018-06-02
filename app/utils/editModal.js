@@ -18,7 +18,12 @@
             
             ctrl.activeProject = electron.remote.getGlobal('activeProject');
             ctrl.activeProject.sweepDate !== "" ? ctrl.calendarDate = new Date(ctrl.activeProject.sweepDate) : ctrl.calendarDate = "";
-            ctrl.activeProject.recvAddrs.length > 0 ? ctrl.hasRecvAddrs = true : ctrl.hasRecvAddrs = false;
+            
+            if (ctrl.activeProject.recvAddrs !== undefined && ctrl.activeProject.recvAddrs.length > 0)
+                ctrl.hasRecvAddrs = true;
+            else
+                ctrl.hasRecvAddrs = false;
+            
             ctrl.updateAddrAmt();
             console.log(ctrl.activeProject);
             
@@ -59,7 +64,7 @@
                 
                 ctrl.activeProject = electron.remote.getGlobal('activeProject');
                 
-                if (ctrl.activeProject.recvAddrs.length == 0) {
+                if (ctrl.activeProject.recvAddrs === undefined) {
                     // create the addresses and add them to the project
                     ipcRenderer.send('createRecvAddresses', {project: ctrl.activeProject, newProjectFlag: false});
                     ipcRenderer.on('addressesCreated', (event, arg) => {

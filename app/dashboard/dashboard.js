@@ -14,10 +14,10 @@
             resetDashboardVals();
             
             if (electron.remote.getGlobal('sharedObject').rpcConnected) {
-                //availableFunds();
-                //txInfo();
-                //claimedFunds();
-                //sweptFunds();
+                availableFunds();
+                txInfo();
+                claimedFunds();
+                sweptFunds();
             }
             
             $scope.$on('onlineCheck', function(event, args) {
@@ -67,10 +67,10 @@
             ipcRenderer.on('rpcConnected', (event, args) => {
                 ctrl.projectCount = ctrl.availableProjects.length;
                 
-                //availableFunds();
-                //txInfo();
-                //claimedFunds();
-                //sweptFunds();
+                availableFunds();
+                txInfo();
+                claimedFunds();
+                sweptFunds();
             });
             
             $mainCtrl.setPageHeight();

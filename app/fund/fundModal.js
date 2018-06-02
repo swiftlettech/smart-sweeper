@@ -50,7 +50,7 @@
                 if (electron.remote.getGlobal('referrer') !== "fundProjectModal")
                     return;
                 
-                ipcRenderer.send('fundProject', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, amount: parseFloat(ctrl.originalFunds), toAddr: ctrl.activeProject.addressPair.publicKey, fromAddr: ctrl.fundingAddr, fromPK: ctrl.fundingPK});
+                ipcRenderer.send('fundProject', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, amount: parseFloat(ctrl.originalFunds), toAddr: [ctrl.activeProject.addressPair.publicKey], fromAddr: ctrl.fundingAddr, fromPK: ctrl.fundingPK});
                 
                 ipcRenderer.on('projectFunded', (event, args) => {
                     $scope.$apply(function() {

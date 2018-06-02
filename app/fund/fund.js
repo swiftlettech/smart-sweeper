@@ -61,7 +61,9 @@
                 if (electron.remote.getGlobal('referrer') !== "sendPromotionalFunds")
                     return;
                 
-                ipcRenderer.send('sendPromotionalFunds', {originalFunds: project.originalFunds, addressPair: project.addressPair, wallets: project.recvAddrs});
+                console.log('in dialogYes')
+                
+                ipcRenderer.send('sendPromotionalFunds', {projectID: project.id, originalFunds: project.originalFunds, fromAddr: project.addressPair.publicKey, fromPK: project.addressPair.privateKey, wallets: project.recvAddrs});
             });
         };
     }

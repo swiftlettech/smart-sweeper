@@ -430,8 +430,8 @@ function createDialog(event, window, type, text, fatal = false) {
 let apiCallback = function(resp, functionName, projectInfo) {
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.apiCallbackInfo.get(referrer)
-    console.log('referrer: ', referrer)
-    console.log('apiCallbackInfo: ', apiCallbackInfo)
+    //console.log('referrer: ', referrer)
+    //console.log('apiCallbackInfo: ', apiCallbackInfo)
     //console.log('resp: ', resp)
     //console.log()
     
@@ -614,11 +614,9 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 global.apiCallbackInfo.delete(referrer)
             }
             else if ((referrer === "getProjectTxStatus") && (apiCallbackCounter == apiCallbackInfo.totalProjects)) {
-                console.log('modified project: ', global.availableProjects.list[projectInfo.projectIndex])
-                
-                /*db.set('projects', global.availableProjects)
+                db.set('projects', global.availableProjects)
                 global.sharedObject.win.webContents.send('projectsReady')
-                global.apiCallbackInfo.delete(referrer)*/
+                global.apiCallbackInfo.delete(referrer)
             }
             else if ((referrer === "getWalletTxStatus") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                 global.appConfig.pendingFundsTotal = apiCallbackInfo.pendingFunds
@@ -695,6 +693,7 @@ function autoSweepFunds() {
 
 // create the receiver addresses for a project
 function createRecvAddresses(project) {
+    project.recvAddrs = []
     let addressPair
     
     for (var i=0; i<project.numAddr; i++) {
@@ -810,11 +809,6 @@ function refreshLogFile() {
     var log = logDB.get('log')
     global.availableLog = {date: stats.mtime, content: log}
     global.sharedObject.win.webContents.send('logReady')
-}
-
-function removeCallbackInfo(index) {
-    global.apiCallbackInfo = global.apiCallbackInfo.splice(index, 1)
-    console.log('global.apiCallbackInfo: ', global.apiCallbackInfo);
 }
 
 // set the active project based on a project ID
@@ -995,7 +989,7 @@ ipcMain.on('getProjectAddressInfo', (event, args) => {
 
 // get the status of all project funding transactions
 ipcMain.on('getProjectTxStatus', (event, args) => {
-    console.log('in getProjectTxStatus')
+    //console.log('in getProjectTxStatus')
     var totalProjects = 0
     
     global.availableProjects.list.forEach(function(project, projectKey) {
@@ -1019,7 +1013,7 @@ ipcMain.on('getProjectTxStatus', (event, args) => {
 
 // 
 ipcMain.on('getSweptFundsInfo', (event, args) => {
-    console.log('in getSweptFundsInfo')
+    //console.log('in getSweptFundsInfo')
     var totalAddrs = 0
     
     global.availableProjects.list.forEach(function(project, projectKey) {
@@ -1043,7 +1037,7 @@ ipcMain.on('getSweptFundsInfo', (event, args) => {
 
 // get pending/confirmed status for all promotional wallet transactions
 ipcMain.on('getWalletTxStatus', (event, args) => {
-    console.log('in getWalletTxStatus')
+    //console.log('in getWalletTxStatus')
     var totalAddrs = 0
     
     global.availableProjects.list.forEach(function(project, projectKey) {
@@ -1075,8 +1069,8 @@ ipcMain.on('getWalletTxStatus', (event, args) => {
 
 // get the total amount of gift funds that have been claimed
 ipcMain.on('getClaimedFundsInfo', (event, args) => {
-    console.log('in getClaimedFundsInfo')
-    console.log(args)
+    //console.log('in getClaimedFundsInfo')
+    //console.log(args)
     
     var index
     var project
@@ -1183,7 +1177,17 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
     var amtToSend = (args.originalFunds-0.001) / args.wallets.length
     console.log('amtToSend: ', amtToSend)
     
-    //smartcash.sendFunds(args);
+    var index = getDbIndex(args.projectID)
+    global.availableProjects.list[index].addrAmt = amtToSend
+    db.set('projects', global.availableProjects)
+    
+    var toAddr = []
+    args.wallets.forEach(function(wallet, key) {
+        toAddr.push(wallet.publicKey)
+    })
+    console.log('toAddr: ', toAddr)
+    
+    //smartcash.sendFunds({referrer: "sendPromotionalFunds", amount: amtToSend, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
     
     //global.sharedObject.logger.info('Funds were send to wallets for project "' + global.activeProject.name + '".')
     //refreshLogFile()

@@ -9,6 +9,8 @@ const util = require('util')
 const smartcashExplorer = "http://explorer3.smartcash.cc"
 const minTxFee = 0.001;
 
+global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per function call
+
 //console.log(smartcash)
 
 /* Check the balance for a given address. */
@@ -57,10 +59,16 @@ function checkTransaction(projectInfo, callback) {
         txArray = projectInfo.txid
     }
     
-    var confirmedTxFlag
     var txid
-    var txCounter = 0
     var cmd
+    
+    if (global.smartcashCallbackInfo.get(projectInfo.referrer) === undefined) {
+        global.smartcashCallbackInfo.set(projectInfo.referrer, {
+            apiCallbackCounter: 0,
+            txCounter: 0,
+            confirmedTxFlag: 0
+        })
+    }
     
     //console.log('txArray: ', txArray)
     
@@ -84,8 +92,8 @@ function checkTransaction(projectInfo, callback) {
             //console.log('txid: ', cmd.params[0])
             //console.log('resp.confirmations: ', resp.confirmations)
             
-            txCounter++
-            //console.log('txCounter: ', txCounter);
+            global.smartcashCallbackInfo.get(projectInfo.referrer).txCounter++
+            //console.log('txCounter: ', global.smartcashCallbackInfo.get(projectInfo.referrer).txCounter);
             //console.log('txArray.length: ', txArray.length);
 
             if (err) {
@@ -100,12 +108,12 @@ function checkTransaction(projectInfo, callback) {
                 }
                 else {
                     if (resp.confirmations !== undefined)
-                        if (resp.confirmations >= 6) confirmedTxFlag++
+                        if (resp.confirmations >= 6) global.smartcashCallbackInfo.get(projectInfo.referrer).confirmedTxFlag++
                     else
                         callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
                     
-                    if (txCounter == txArray.length)
-                        callback({type: 'data', msg: confirmedTxFlag}, 'checkTransaction', projectInfo)
+                    if (global.smartcashCallbackInfo.get(projectInfo.referrer).txCounter == txArray.length)
+                        callback({type: 'data', msg: global.smartcashCallbackInfo.get(projectInfo.referrer).confirmedTxFlag}, 'checkTransaction', projectInfo)
                 }
             }
         })
@@ -187,6 +195,8 @@ function sendFunds(projectInfo, callback) {
             if (parseFloat(resp.body.balance) >= projectInfo.amount) {
                 var txArray = []
                 var newTx
+                var transactions = []
+                var outputs = {}
                 var cmd
                 
                 resp.body.last_txs.forEach(function(tx, n) {
@@ -215,35 +225,68 @@ function sendFunds(projectInfo, callback) {
                                 if (vout.scriptPubKey.addresses.includes(projectInfo.fromAddr)) {
                                     //console.log('vout: ', vout)
                                     newTx.addInput(txid, vout.n)
+                                    
+                                    transactions.push({
+                                        'txid': txid,
+                                        'vout': vout.n
+                                    })
                                 }
                             })
 
-                            newTx.addOutput(receiver, projectInfo.amount)
+                            receiver.forEach(function(address, key) {
+                                newTx.addOutput(address, projectInfo.amount)
+                                outputs[address] = projectInfo.amount
+                            })
+                            
                             newTx.sign(0, sender)
-
+                            
                             //console.log('tx: ', newTx)
 
                             // add to local blockchain
                             console.log('newTx.toHex(): ', newTx.toHex())
                             console.log('newTx.build().toHex(): ', newTx.build().toHex())
-
-                            /*cmd = {
-                                method: 'sendrawtransaction',
-                                params: [txHex, false, false]
+                            
+                            var createTxCmd = {
+                                method: 'createrawtransaction',
+                                params: [transactions, outputs]
                             }
-
-                            rpc.sendCmd(cmd, function(err, resp) {
-                                console.log('sendFunds')
-                                console.log(err)
-                                console.log(resp)
-
+                            
+                            rpc.sendCmd(createTxCmd, function(err, resp) {
                                 if (err) {
-                                    callback({type: 'error', msg: "sendrawtransaction failed."}, 'sendFunds', projectInfo)
+                                    console.log('error: ', err)
+                                    //callback({type: 'error', msg: "getrawtransaction failed."}, 'sendFunds', projectInfo)
                                 }
                                 else {
-                                    callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
+                                    console.log(resp)
+                                    
+                                    /*var signTxCmd = {
+                                        method: 'signrawtransaction',
+                                        params: [resp, null, projectInfo.fromPK]
+                                    }
+                                    
+                                    rpc.sendCmd(signTxCmd, function(err, resp) {
+                                        
+                                    })*/
                                 }
-                            })*/
+
+                                /*cmd = {
+                                    method: 'sendrawtransaction',
+                                    params: [txHex, false, false]
+                                }
+
+                                rpc.sendCmd(cmd, function(err, resp) {
+                                    console.log('sendFunds')
+                                    console.log(err)
+                                    console.log(resp)
+
+                                    if (err) {
+                                        callback({type: 'error', msg: "sendrawtransaction failed."}, 'sendFunds', projectInfo)
+                                    }
+                                    else {
+                                        callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
+                                    }
+                                })*/
+                            })
                         }
                     })
                 })
