@@ -1187,7 +1187,7 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
     })
     console.log('toAddr: ', toAddr)
     
-    //smartcash.sendFunds({referrer: "sendPromotionalFunds", amount: amtToSend, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
+    smartcashapi.sendFunds({referrer: "sendPromotionalFunds", amount: amtToSend, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
     
     //global.sharedObject.logger.info('Funds were send to wallets for project "' + global.activeProject.name + '".')
     //refreshLogFile()

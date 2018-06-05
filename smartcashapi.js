@@ -197,7 +197,6 @@ function sendFunds(projectInfo, callback) {
                 var newTx
                 var transactions = []
                 var outputs = {}
-                var cmd
                 
                 resp.body.last_txs.forEach(function(tx, n) {
                     if (tx.type === "vout")
@@ -205,12 +204,12 @@ function sendFunds(projectInfo, callback) {
                 })
                 
                 txArray.forEach(function(txid, txIndex) {
-                    cmd = {
+                    var getTxInfoCmd = {
                         method: 'getrawtransaction',
                         params: [txid, 1]
                     }
                     
-                    rpc.sendCmd(cmd, function(err, resp) {
+                    rpc.sendCmd(getTxInfoCmd, function(err, resp) {
                         //console.log('sendFunds')
                         //console.log(err)
                         //console.log(resp)
@@ -234,17 +233,17 @@ function sendFunds(projectInfo, callback) {
                             })
 
                             receiver.forEach(function(address, key) {
-                                newTx.addOutput(address, projectInfo.amount)
+                                //newTx.addOutput(address, projectInfo.amount)
                                 outputs[address] = projectInfo.amount
                             })
                             
-                            newTx.sign(0, sender)
+                            //newTx.sign(0, sender)
                             
                             //console.log('tx: ', newTx)
 
                             // add to local blockchain
-                            console.log('newTx.toHex(): ', newTx.toHex())
-                            console.log('newTx.build().toHex(): ', newTx.build().toHex())
+                            //console.log('newTx.toHex(): ', newTx.toHex())
+                            //console.log('newTx.build().toHex(): ', newTx.build().toHex())
                             
                             var createTxCmd = {
                                 method: 'createrawtransaction',
@@ -253,20 +252,37 @@ function sendFunds(projectInfo, callback) {
                             
                             rpc.sendCmd(createTxCmd, function(err, resp) {
                                 if (err) {
-                                    console.log('error: ', err)
-                                    //callback({type: 'error', msg: "getrawtransaction failed."}, 'sendFunds', projectInfo)
+                                    callback({type: 'error', msg: "createrawtransaction failed."}, 'sendFunds', projectInfo)
                                 }
-                                else {
-                                    console.log(resp)
-                                    
-                                    /*var signTxCmd = {
+                                else {                                    
+                                    var signTxCmd = {
                                         method: 'signrawtransaction',
-                                        params: [resp, null, projectInfo.fromPK]
+                                        params: [resp, null, [projectInfo.fromPK]]
                                     }
                                     
                                     rpc.sendCmd(signTxCmd, function(err, resp) {
-                                        
-                                    })*/
+                                        if (err) {
+                                            callback({type: 'error', msg: "signrawtransaction failed."}, 'sendFunds', projectInfo)
+                                        }
+                                        else if (resp.complete) {
+                                            var sendTxCmd = {
+                                                method: 'sendrawtransaction',
+                                                params: [resp.hex, false, false]
+                                            }
+                                            
+                                            rpc.sendCmd(sendTxCmd, function(err, resp) {
+                                                console.log(err)
+                                                console.log(resp)
+                                                
+                                                if (err) {
+                                                    callback({type: 'error', msg: "sendrawtransaction failed."}, 'sendFunds', projectInfo)
+                                                }
+                                                else {
+                                                    //callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
+                                                }
+                                            })
+                                        }
+                                    })
                                 }
 
                                 /*cmd = {
