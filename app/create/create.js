@@ -14,7 +14,7 @@
             $mainCtrl.nameSortFlag = 1;
             $mainCtrl.totalFundsSortFlag = 1;
             $mainCtrl.sweepDateSortFlag = 1;
-            
+
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;            
             ctrl.showAddNewProject = false;
             ctrl.newProject = {

@@ -1,5 +1,7 @@
 (function() {
     'use strict';
+    
+    const {ipcRenderer} = window.nodeRequire('electron');
 
     angular.module('SmartSweeperUtils')
     .directive('calcNumber', function() {
@@ -37,6 +39,23 @@
                 });
                 ngModel.$formatters.push(function(val) {
                     return '' + val;
+                });
+            }
+        };
+    })
+    .directive('addrValidation', function() {
+        /* Checks to see if a SmartCash address is valid. */
+        return {
+            require: 'ngModel',
+            link: function(scope, element, attrs, ngModel) {                
+                ngModel.$parsers.push(function(val) {                    
+                    ipcRenderer.send('checkAddress', {address: val});
+                    ipcRenderer.on('addressChecked', (event, args) => {
+                        scope.$apply(function() {
+                            ngModel.$valid = args.result;
+                            ngModel.$invalid = !args.result;
+                        });
+                    });
                 });
             }
         };

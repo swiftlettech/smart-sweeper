@@ -20,7 +20,6 @@
                 $scope.$apply(function() {
                     ctrl.logContent = "No entries found.";
                     ctrl.mostRecentLog = electron.remote.getGlobal('availableLog');
-                    console.log(ctrl.mostRecentLog);
                     if (ctrl.mostRecentLog != null) {
                         ctrl.logDate = $filter('date')(ctrl.mostRecentLog.date, 'longDate');
                         

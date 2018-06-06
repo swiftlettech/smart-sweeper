@@ -16,7 +16,7 @@
         $scope.init = function() {
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
             ctrl.originalFunds = 0;
-            ctrl.txFee = 0.001;
+            ctrl.txFee = electron.remote.getGlobal('sharedObject').txFee;
             ctrl.walletAmt = 1;
             ctrl.activeProject = electron.remote.getGlobal('activeProject');
             
@@ -106,6 +106,7 @@
             ipcRenderer.on('fundingTxidsChecked', (event, args) => {
                 $scope.$apply(function() {
                     ctrl.activeProject.txConfirmed = args.confirmed;
+                    ctrl.currentBalance = args.balance;
                     ctrl.activeTxs = [];
                     
                     angular.forEach(args.txInfo, function(confirmed, key) {

@@ -17,7 +17,7 @@ Requirements
 * [npm](http://npmjs.com) - 5.6.0+
 * [SmartCash wallet](https://smartcash.cc/wallets/) for Windows, Linux, or Mac OS - 1.1.1+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
 
-Run node -v and npm -v from a command prompt to make sure they're in your PATH. Open your wallet to make sure it is up to date before launching SmartSweeper.
+Run node -v and npm -v from a command prompt to make sure they're in your PATH. Open your SmartCash desktop wallet application to make sure it is up to date before launching SmartSweeper.
 
 
 Installation
@@ -100,9 +100,10 @@ Software | License
 [elemon](https://github.com/manidlou/elemon) | MIT
 [exp-config](https://github.com/ExpressenAB/exp-config) | MIT
 [melanke-watchjs](https://github.com/melanke/Watch.JS) | MIT
+[node-smartcash](https://github.com/miyakoj/node-smartcash) | MIT
 [ps-node](https://github.com/neekey/ps) | MIT
 [smartcashjs-lib](https://github.com/SmartCash/SmartCashjs-lib) | MIT
 [SmartCash Paper Wallet Generator](https://github.com/SmartCash/PaperWalletGenerator) | ?
 [winston](https://github.com/winstonjs/winston) | MIT
 
-[The SmartExplorer API](http://explorer3.smartcash.cc) is used to check the current block count and get info about project addresses.
+[The SmartExplorer API](http://explorer3.smartcash.cc) is used to check the current block count and to get info about project addresses.

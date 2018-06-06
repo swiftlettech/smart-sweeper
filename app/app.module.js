@@ -14,7 +14,7 @@
         'router',
         'ngTouch'
     ])
-    .controller('SmartController', function($scope, $document, $filter) {
+    .controller('SmartController', function($scope, $document, $filter, $timeout, alertTimeout) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         const isOnline = window.nodeRequire('is-online');
@@ -44,6 +44,7 @@
             
             ctrl.setActivePage('dashboard');
             ctrl.sortOptions = {property: 'name', reverse: false};
+            ctrl.generalMsgFlag = false;
         };
         
         ipcRenderer.on('onlineCheckAPP', (event, args) => {
@@ -115,14 +116,16 @@
             if (!ctrl.coreSynced)
                 statusMsgs++;
             
-            if ((ctrl.activePage === "dashboard" && (statusMsgs > 2)) ||
-               ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && (electron.remote.getGlobal('availableProjects').list.length > 7)))
+            if ((ctrl.activePage === "dashboard" && statusMsgs > 2) ||
+                ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && ((electron.remote.getGlobal('availableProjects').list.length > 4 && statusMsgs > 0) || (electron.remote.getGlobal('availableProjects').list.length > 7))))
             {
+                //console.log('this page should scroll');
                 $document.find('#page-wrapper').css('height', '');
                 return;
             }
 
             if (window.innerWidth >= 700 && window.innerHeight >= 600) {
+                //console.log('this page should not scroll');
                 $document.find('#page-wrapper').css({
                     height: function() {
                         return window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
@@ -143,7 +146,7 @@
             return arrayIndex;
         }
 
-        /* Cleanup all page-related ipcRenderer events if they're not system events or global app events. */
+        /* Clean up all page-related ipcRenderer events if they're not system events or global app events. */
         function eventCleanup() {
             var events = ipcRenderer._events;
 
@@ -155,6 +158,21 @@
                     ipcRenderer.removeAllListeners(key);
             });
         }
+        
+        ctrl.setGeneralStatusMsg = function(type, msg) {
+            if (type === "data")
+                ctrl.generalMsgSuccess = true;
+            else
+                ctrl.generalMsgSuccess = false;
+            
+            ctrl.generalMsg = msg;
+            ctrl.generalMsgFlag = true;
+            
+            $timeout(function() {
+                ctrl.generalMsgFlag = false;
+                console.log('ctrl.generalMsgFlag: ', ctrl.generalMsgFlag);
+            }, alertTimeout);
+        };
         
         /* Show/hide a project's private key. */
         ctrl.showPK = function(projectID) {

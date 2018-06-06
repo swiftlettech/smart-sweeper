@@ -80,6 +80,7 @@ function appInit() {
     // create global object to be shared amongst renderer processes
     global.sharedObject = {
         win: null,
+        txFee: 0.002,
         logger: null,
         isOnline: false,
         referrer: "",
@@ -514,10 +515,13 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 apiCallbackInfo.msg = "Success. Project information updated."
             }
             else if ((referrer === "sendPromotionalFunds")) {
+                global.availableProjects.list[projectInfo.projectIndex].recvAddrs.forEach(function(address, key) {
+                    address.sentTxid = resp.msg
+                });
             }
         }
         /*else if (functionName === "sweepFunds") {
-            // add swept = true to each wallet address object
+            //sweptTxid (per promotional wallet)
         } */      
         
         
@@ -646,10 +650,18 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 refreshLogFile()
             }
             else if ((referrer === "sendPromotionalFunds")) {
-                //sentTxid (per promotional wallet)
+                global.sharedObject.logger.info('Funds were sent to promotional wallets for project "' + projectInfo.projectName + '".')
+                refreshLogFile()
+                
+                global.availableProjects.list[projectInfo.projectIndex].fundsSent = true
+                db.set('projects', global.availableProjects)
+                global.sharedObject.win.webContents.send('projectsReady')
+
+                global.sharedObject.win.webContents.send('promotionalFundsSent', {msgType: 'data', msg: 'Funds were sent to promotional wallets for project "' + projectInfo.projectName + '".'})
+                global.apiCallbackInfo.delete(referrer)
             }
             else if (functionName === "sweepFunds") {
-                //sweptTxid (per promotional wallet)
+                
             }
         }
         /*else if (functionName === "") {
@@ -668,9 +680,10 @@ let apiCallback = function(resp, functionName, projectInfo) {
             /*if (referrer === "fundProject") {
                 apiCallbackInfo.msg = resp.msg
                 modal.webContents.send('fundingTxidChecked', {msgType: 'error', msg: apiCallbackInfo.msg})
-            }
-            else*/ if (referrer === "sendPromotionalFunds") {
-                     
+            }*/
+            
+            if (referrer === "sendPromotionalFunds") {
+                global.sharedObject.win.webContents.send('promotionalFundsSent', {msgType: 'error', msg: 'Promotional funds could not be sent for project "' + projectInfo.projectName + '"."'})
             }
         }
         else {
@@ -882,6 +895,13 @@ app.on('activate', () => {
     }
 })
 
+
+
+// check a SmartCash address for validity
+ipcMain.on('checkAddress', (event, args) => {
+    var result = smartcashapi.checkAddress(args.address)
+    event.sender.send('addressChecked', {result: result})
+})
 
 // check the txid to get project funding info
 ipcMain.on('checkFundingTxids', (event, args) => {
@@ -1174,7 +1194,7 @@ ipcMain.on('projectFullyFunded', (event, args) => {
 // send funds to receiver addresses
 ipcMain.on('sendPromotionalFunds', (event, args) => {    
     // calculate and save the amount per address
-    var amtToSend = (args.originalFunds-0.001) / args.wallets.length
+    var amtToSend = (args.originalFunds-global.sharedObject.txFee) / args.wallets.length
     console.log('amtToSend: ', amtToSend)
     
     var index = getDbIndex(args.projectID)
@@ -1187,10 +1207,11 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
     })
     console.log('toAddr: ', toAddr)
     
-    smartcashapi.sendFunds({referrer: "sendPromotionalFunds", amount: amtToSend, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
+    global.apiCallbackInfo.set('sendPromotionalFunds', {
+        apiCallbackCounter: 0
+    })
     
-    //global.sharedObject.logger.info('Funds were send to wallets for project "' + global.activeProject.name + '".')
-    //refreshLogFile()
+    smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectName: global.availableProjects.list[index].name, amount: amtToSend, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
 })
 
 // set which function opened a modal/dialog

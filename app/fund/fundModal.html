@@ -27,7 +27,7 @@
                     <div class="form-group">
                         <label for="txFee" class="control-label">Transaction Fee</label>
                         <input name="txFee" type="text" class="form-control" ng-model="$fundCtrl.txFee" calc-number />
-                        <p>The minimum SmartCash transaction fee is Σ0.001 but the fee for the wallet/exchange you use to fund the project may vary.</p>
+                        <p>The minimum SmartCash transaction fee is Σ0.001 or Σ0.002 in most cases but the fee for the wallet/exchange you use to fund the project may vary.</p>
                     </div>
 
                     <div class="form-group">
@@ -68,7 +68,7 @@
                         </tr>
                     </table>
                     
-                    <p><strong>Current Balance:</strong> {{$fundCtrl.activeProject.originalFunds | toFixedNum: 8}}</p>
+                    <p><strong>Current Balance:</strong> {{$fundCtrl.currentBalance | toFixedNum: 8}}</p>
                     
                     <button type="button" class="btn btn-primary" ng-click="$fundCtrl.projectFullyFunded()" ng-disabled="$fundCtrl.activeTxs === undefined || !$fundCtrl.activeProject.txConfirmed || $fundCtrl.projectFullyFundedFlag">Project fully funded?</button>
                 </div>

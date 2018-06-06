@@ -11,3 +11,5 @@
 <div id="coreSync" class="alert alert-info" role="alert" ng-hide="$mainCtrl.coreSynced || $mainCtrl.coreError || $mainCtrl.rpcError || $mainCtrl.coreSyncError"><i class="fa fa-fw fa-exclamation-circle"></i> Checking to see if the local blockchain is up-to-date...</div>
 
 <div id="noCoreSync" class="alert alert-danger" role="alert" ng-show="$mainCtrl.coreSyncError"><i class="fa fa-fw fa-exclamation-circle"></i> The local blockchain is behind. Information on this page may be out of date.</div>
+
+<div id="generalMsg" class="alert" ng-class="{'alert-success': $mainCtrl.generalMsgSuccess, 'alert-danger': !$mainCtrl.generalMsgSuccess}" role="alert" ng-show="$mainCtrl.generalMsgFlag"><i class="fa fa-fw fa-exclamation-circle"></i> {{$mainCtrl.generalMsg}}</div>

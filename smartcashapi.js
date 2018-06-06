@@ -1,5 +1,5 @@
 /* Smart Cash API calls. */
-//const electron = require('electron')
+const electron = require('electron')
 const request = require('request')
 const smartcash = require('smartcashjs-lib')
 const rpc = require('./rpc-client')
@@ -7,11 +7,22 @@ const http = require('http')
 const util = require('util')
 
 const smartcashExplorer = "http://explorer3.smartcash.cc"
-const minTxFee = 0.001;
 
 global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per function call
 
 //console.log(smartcash)
+
+
+/* Check a SmartCash address for validity. */
+function checkAddress(address) {
+    try {
+        smartcash.address.fromBase58Check(address)
+        return true
+    }
+    catch(err) {
+        return false
+    }
+}
 
 /* Check the balance for a given address. */
 function checkBalance(projectInfo, callback) {
@@ -155,31 +166,10 @@ function getAddressInfo(projectInfo, callback) {
 
 /* Send funds from one address to another. */
 function sendFunds(projectInfo, callback) {
-    //var callback = function(resp) {
-        //var tx = new smartcash.TransactionBuilder()
-        //tx.addInput(txHash, vout)
-
-        // get address info and get all unspent outputs for each txhash associated with sender address
-        /*tx.addInput(txHash, vout)
-        tx.addOutput(publicKey, amttosend)
-        tx.addOutput(sender, remainder) // the "change"
-        tx.sign(vinIndex, keyPair)*/
-
-        // check all previous transactions for the sender address and get the UTXOs
-
-        //tx.addInput(txHash, vout)    
-        //tx.addOutput(publicKey, amttosend)
-        //tx.addOutput(sender, remainder) // the "change"
-        //tx.sign(vinIndex, keyPair)
-
-        // broadcast to network
-        //console.log(tx)
-    //}
-    
     //createrawtransaction [{"txid":"id","vout":n},...] {"address":amount,"data":"hex",...}
     
     var sender = smartcash.ECPair.fromWIF(projectInfo.fromPK)
-    var receiver = projectInfo.toAddr
+    var receivers = projectInfo.toAddr
     
     request({
         url: smartcashExplorer + '/ext/getaddress/' + projectInfo.fromAddr,
@@ -218,12 +208,12 @@ function sendFunds(projectInfo, callback) {
                             callback({type: 'error', msg: "getrawtransaction failed."}, 'sendFunds', projectInfo)
                         }
                         else {
-                            newTx = new smartcash.TransactionBuilder()
+                            //newTx = new smartcash.TransactionBuilder()
                             
                             resp.vout.forEach(function(vout, voutIndex) {
                                 if (vout.scriptPubKey.addresses.includes(projectInfo.fromAddr)) {
                                     //console.log('vout: ', vout)
-                                    newTx.addInput(txid, vout.n)
+                                    //newTx.addInput(txid, vout.n)
                                     
                                     transactions.push({
                                         'txid': txid,
@@ -232,7 +222,7 @@ function sendFunds(projectInfo, callback) {
                                 }
                             })
 
-                            receiver.forEach(function(address, key) {
+                            receivers.forEach(function(address, key) {
                                 //newTx.addOutput(address, projectInfo.amount)
                                 outputs[address] = projectInfo.amount
                             })
@@ -265,7 +255,24 @@ function sendFunds(projectInfo, callback) {
                                             callback({type: 'error', msg: "signrawtransaction failed."}, 'sendFunds', projectInfo)
                                         }
                                         else if (resp.complete) {
-                                            var sendTxCmd = {
+                                            /*var decodeTxCmd = {
+                                                method: 'decoderawtransaction',
+                                                params: [resp.hex]
+                                            }
+                                            
+                                            rpc.sendCmd(decodeTxCmd, function(err, resp) {
+                                                console.log(err)
+                                                console.log(resp)
+                                                
+                                                if (err) {
+                                                    console.log(err)
+                                                }
+                                            })*/
+                                            
+                                            callback({type: 'error', msg: "sendrawtransaction failed."}, 'sendFunds', projectInfo)
+                                            //callback({type: 'data', msg: "2cfba6b505b95e022191c30a8d084ab29662438d0b704655fd349b2a43117d8d"}, 'sendFunds', projectInfo)
+                                            
+                                            /*var sendTxCmd = {
                                                 method: 'sendrawtransaction',
                                                 params: [resp.hex, false, false]
                                             }
@@ -278,9 +285,9 @@ function sendFunds(projectInfo, callback) {
                                                     callback({type: 'error', msg: "sendrawtransaction failed."}, 'sendFunds', projectInfo)
                                                 }
                                                 else {
-                                                    //callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
+                                                    callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
                                                 }
-                                            })
+                                            })*/
                                         }
                                     })
                                 }
@@ -329,6 +336,7 @@ function sweepFunds(projectInfo, callback) {
 }
 
 module.exports = {
+    checkAddress: checkAddress,
     checkBalance: checkBalance,
     checkTransaction: checkTransaction,
     generateAddress: generateAddress,

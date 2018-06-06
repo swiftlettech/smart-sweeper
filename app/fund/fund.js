@@ -15,6 +15,7 @@
             $mainCtrl.totalFundsSortFlag = 1;
             $mainCtrl.addrAmtSortFlag = 1;
             $mainCtrl.sweepDateSortFlag = 1;
+            ctrl.txFee = electron.remote.getGlobal('sharedObject').txFee;
             
             // load all projects
             if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
@@ -27,7 +28,6 @@
         ipcRenderer.on('projectsReady', (event, args) => {            
             $scope.$apply(function() {
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-                console.log('fund page projectsReady: ', ctrl.availableProjects);
                 // display the project list as 10 per page?
                 $mainCtrl.setPageHeight();
             });
@@ -66,5 +66,11 @@
                 ipcRenderer.send('sendPromotionalFunds', {projectID: project.id, originalFunds: project.originalFunds, fromAddr: project.addressPair.publicKey, fromPK: project.addressPair.privateKey, wallets: project.recvAddrs});
             });
         };
+        
+        ipcRenderer.on('promotionalFundsSent', (event, args) => {
+            $scope.$apply(function() {
+                $mainCtrl.setGeneralStatusMsg(args.msgType, args.msg);
+            });
+        });
     }
 })();

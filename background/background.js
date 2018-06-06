@@ -72,7 +72,7 @@
                     
                     if (remote.getGlobal('sharedObject').rpcConnected) {
                         checkBlockchain();
-                        //updateData();
+                        updateData();
                     }
                 }, 30000);
             }
