@@ -55,8 +55,7 @@
                             
                             <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-click="$fundCtrl.fundProject(project)" ng-disabled="project.projectFunded || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw sigma">Σ</i></button></td>
                             
-                            <td class="sendCol text-center"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project)" ng-disabled="true"><i class="fa fa-fw fa-share"></i></button></td>
-                            <!--!project.projectFunded || project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError-->
+                            <td class="sendCol text-center"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project)" ng-disabled="!project.projectFunded || project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw fa-share"></i></button></td>
                             
                             <td class="printCol text-center"><button class="btn btn-link" title="Print paper wallets" ng-click="$fundCtrl.createPaperWallets(project.id)" ng-disabled="!project.fundsSent"><i class="fa fa-fw fa-print"></i></button></td>
                             

@@ -33,7 +33,7 @@
                 
                 // load the last saved dashboard values from the app config file
                 // if the user has not gone online during the current session
-                if (!args.isOnline && $mainCtrl.hasBeenOnline) {
+                if (!args.isOnline && !$mainCtrl.hasBeenOnline) {
                     var appConfig = electron.remote.getGlobal('appConfig');
                     
                     ctrl.availableBalance = appConfig.availableBalanceTotal;

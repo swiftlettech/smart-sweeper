@@ -79,8 +79,8 @@ module.exports = {
 function appInit() {
     // create global object to be shared amongst renderer processes
     global.sharedObject = {
-        win: null,
         txFee: 0.002,
+        win: null,
         logger: null,
         isOnline: false,
         referrer: "",
@@ -683,7 +683,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
             }*/
             
             if (referrer === "sendPromotionalFunds") {
-                global.sharedObject.win.webContents.send('promotionalFundsSent', {msgType: 'error', msg: 'Promotional funds could not be sent for project "' + projectInfo.projectName + '"."'})
+                global.sharedObject.win.webContents.send('promotionalFundsSent', {msgType: 'error', msg: 'Promotional funds could not be sent for project "' + projectInfo.projectName + '".'})
             }
         }
         else {

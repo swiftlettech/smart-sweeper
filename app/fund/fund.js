@@ -69,7 +69,7 @@
         
         ipcRenderer.on('promotionalFundsSent', (event, args) => {
             $scope.$apply(function() {
-                $mainCtrl.setGeneralStatusMsg(args.msgType, args.msg);
+                $mainCtrl.setModalMsg(args.msgType, args.msg);
             });
         });
     }

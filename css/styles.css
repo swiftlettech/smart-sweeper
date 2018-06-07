@@ -50,6 +50,55 @@ a.disabled {
     margin-bottom: 8px;
 }
 
+/* from: https://stackoverflow.com/a/35693444/7843806 */
+.modal {
+    text-align: center;
+    padding: 0!important;
+}
+.modal::before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+    margin-right: -4px;
+}
+.modal-dialog {
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.modalAlertSucess {
+    color: #00CC00;
+}
+
+.modalAlertError {
+    color: #FF0000;
+}
+
+#modalMsg .alertModalBg {
+    background-color: #A8A8A8;
+}
+
+#modalMsg .modal-close {
+    float: right;
+    font-size: 120%;
+    z-index: 2000;
+}
+
+/*#modalMsg .modal-close .fa {
+    cursor: pointer;
+}*/
+
+#modalMsg .modal-close .btn {
+    padding: 1px 6px;
+    border: none;
+}
+
+#modalMsg .modal-close .btn-default {
+    background-color: transparent;
+}
+
 input[disabled] {
     background-color: transparent;
     width: 25%;
@@ -100,7 +149,6 @@ button, .btn, .form-control, .input-group-addon {
 }
 
 #page-wrapper {
-    /*background-image: url('../images/SmartSweeper-logo.png');*/
     background-repeat: no-repeat;
     background-size: 35%;
     background-position: 85% 50%; 

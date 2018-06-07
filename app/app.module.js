@@ -14,7 +14,7 @@
         'router',
         'ngTouch'
     ])
-    .controller('SmartController', function($scope, $document, $filter, $timeout, alertTimeout) {
+    .controller('SmartController', function($scope, $document, $filter, $uibModal) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         const isOnline = window.nodeRequire('is-online');
@@ -44,7 +44,8 @@
             
             ctrl.setActivePage('dashboard');
             ctrl.sortOptions = {property: 'name', reverse: false};
-            ctrl.generalMsgFlag = false;
+            
+            //ctrl.setModalMsg('data', 'test');
         };
         
         ipcRenderer.on('onlineCheckAPP', (event, args) => {
@@ -159,19 +160,45 @@
             });
         }
         
-        ctrl.setGeneralStatusMsg = function(type, msg) {
+        ctrl.setModalMsg = function(type, msg) {
+            var alertSuccess;
+            
             if (type === "data")
-                ctrl.generalMsgSuccess = true;
+                alertSuccess = true;
             else
-                ctrl.generalMsgSuccess = false;
+                alertSuccess = false;
             
-            ctrl.generalMsg = msg;
-            ctrl.generalMsgFlag = true;
-            
-            $timeout(function() {
-                ctrl.generalMsgFlag = false;
-                console.log('ctrl.generalMsgFlag: ', ctrl.generalMsgFlag);
-            }, alertTimeout);
+            ctrl.alertModal = $uibModal.open({
+                ariaDescribedBy: 'modal-body',
+                templateUrl: 'app/utils/alertModal.html',
+                controller: function($uibModalInstance, alertSuccess, modalMsg) {
+                    var ctrl = this;
+                    
+                    ctrl.alertSuccess = alertSuccess;
+                    ctrl.modalMsg = modalMsg;
+                    
+                    ctrl.close = function() {
+                        console.log('click');
+                        $uibModalInstance.close('close');
+                    };
+                    
+                    // fix unhandled modal promise error when ignoring the result
+                    // from: https://github.com/angular-ui/bootstrap/issues/6501#issuecomment-292255152
+                    $uibModalInstance.result.catch(function () { $uibModalInstance.close(); })
+                    
+                },
+                controllerAs: '$modalCtrl',
+                backdrop: true,
+                backdropClass: 'alertModalBg',
+                resolve: {
+                    alertSuccess: function() {
+                        return alertSuccess;
+                    },
+                    modalMsg: function() {
+                        return msg;
+                    }
+                }
+            });
         };
         
         /* Show/hide a project's private key. */
