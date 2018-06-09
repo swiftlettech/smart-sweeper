@@ -1,6 +1,11 @@
 SmartSweeper
 =============
 
+NOTE
+---------------
+SmartSweeper is still in the development stage so it is unstable and missing functionality. DO NOT attempt to create transactions with this app.
+
+
 Description
 ---------------
 Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac OS. It isn't necessary to input your wallet passphrase to use SmartSweeper.
@@ -8,7 +13,7 @@ Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow
 
 Releases
 ---------------
-Releases are forthcoming. SmartSweeper is still in the development stage.
+Releases are forthcoming.
 
 
 Requirements
