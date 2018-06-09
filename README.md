@@ -1,4 +1,4 @@
-SMART Sweeper
+SmartSweeper
 =============
 
 NOTE
