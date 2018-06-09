@@ -1,13 +1,17 @@
 SMART Sweeper
 =============
 
+NOTE
+---------------
+SmartSweeper is still in the development stage so it is unstable and missing functionality. DO NOT attempt to create transactions with this app.
+
 Description
 ---------------
 Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac OS. It isn't necessary to input your wallet passphrase to use SmartSweeper.
 
 Releases
 ---------------
-Releases are forthcoming. SMART Sweeper is still in the development stage. Please see the [dev branch](https://github.com/swiftlettech/smart-sweeper/tree/dev).
+Releases are forthcoming. Please see the [dev branch](https://github.com/swiftlettech/smart-sweeper/tree/dev).
 
 Requirements
 ---------------
@@ -76,7 +80,7 @@ The values of rpc.host, rpc.port, rpc.username, and rpc.password in .env must ma
 
 User files
 ---------------
-The database (smart-sweeper.json) and the log files are saved in the following folders:
+The database (smart-sweeper.json), the app config file (smart-sweeper-config.json) and the log files are saved in the following folders:
 
 * **Windows**: %APPDATA%/SmartSweeper
 * **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/SmartSweeper
@@ -98,9 +102,10 @@ Software | License
 [elemon](https://github.com/manidlou/elemon) | MIT
 [exp-config](https://github.com/ExpressenAB/exp-config) | MIT
 [melanke-watchjs](https://github.com/melanke/Watch.JS) | MIT
+[node-smartcash](https://github.com/miyakoj/node-smartcash) | MIT
 [ps-node](https://github.com/neekey/ps) | MIT
 [smartcashjs-lib](https://github.com/SmartCash/SmartCashjs-lib) | MIT
 [SmartCash Paper Wallet Generator](https://github.com/SmartCash/PaperWalletGenerator) | ?
 [winston](https://github.com/winstonjs/winston) | MIT
 
-[The SmartExplorer API](http://explorer3.smartcash.cc) is used to check the current block count and get info about project addresses.
+[The SmartExplorer API](http://explorer3.smartcash.cc) is used to check the current block count and to get info about project addresses.
