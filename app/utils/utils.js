@@ -47,16 +47,21 @@
         /* Checks to see if a SmartCash address is valid. */
         return {
             require: 'ngModel',
-            link: function(scope, element, attrs, ngModel) {                
-                ngModel.$parsers.push(function(val) {                    
-                    ipcRenderer.send('checkAddress', {address: val});
+            link: function(scope, element, attrs, ngModel) {
+                ngModel.$validators.addrvalidation = function(modelValue, viewValue) {
+                    var value = modelValue || viewValue;
+                    
+                    if (ngModel.$isEmpty(value))
+                        return false;
+                    
+                    ipcRenderer.send('checkAddress', {address: value});
                     ipcRenderer.on('addressChecked', (event, args) => {
                         scope.$apply(function() {
-                            ngModel.$valid = args.result;
-                            ngModel.$invalid = !args.result;
+                            console.log("args.result: ", args.result);
+                            return args.result;
                         });
                     });
-                });
+                }
             }
         };
     })

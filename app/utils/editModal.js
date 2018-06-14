@@ -25,6 +25,7 @@
                 ctrl.hasRecvAddrs = false;
             
             ctrl.updateAddrAmt();
+            console.log("activeProject");
             console.log(ctrl.activeProject);
             
             ctrl.datepickerOptions = {

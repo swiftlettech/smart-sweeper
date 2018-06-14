@@ -329,7 +329,8 @@ function createModal(type, text) {
     else if (type === "paperWallets") {
         title = "Paper Wallet Generator"
         parent = global.sharedObject.win
-        width = Math.ceil(winBounds.width - (winBounds.width*0.52))
+        width = 1000
+        //width = Math.ceil(winBounds.width - (winBounds.width*0.52))
         height = winBounds.height
         pathname = path.join(__dirname, 'app', 'fund', 'paperWallet.html')
         resizable = true
@@ -1197,6 +1198,10 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
     var amtToSend = (args.originalFunds-global.sharedObject.txFee) / args.wallets.length
     console.log('amtToSend: ', amtToSend)
     
+    console.log('args.originalFunds: ', args.originalFunds)
+    console.log('global.sharedObject.txFee: ', global.sharedObject.txFee)
+    console.log('args.wallets.length: ', args.wallets.length)
+    
     var index = getDbIndex(args.projectID)
     global.availableProjects.list[index].addrAmt = amtToSend
     db.set('projects', global.availableProjects)
@@ -1211,7 +1216,7 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
         apiCallbackCounter: 0
     })
     
-    smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectName: global.availableProjects.list[index].name, amount: amtToSend, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
+    //smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectName: global.availableProjects.list[index].name, amount: amtToSend, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
 })
 
 // set which function opened a modal/dialog

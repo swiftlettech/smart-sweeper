@@ -245,12 +245,16 @@ button, .btn, .form-control, .input-group-addon {
     font-weight: 700;
 }
 
-#editProjectForm input[name='name'], #editProjectForm input[name='sweepAddr'] {
+#editProjectForm input[name='name'] {
     width: 40%;
 }
 
 #editProjectForm input[name='numAddr'] {
     width: 15%;
+}
+
+#editProjectForm input[name='sweepAddr'] {
+    width: 70%;
 }
 
 #editProjectForm input[name='addrAmt'], #editProjectForm input[name='originalFunds'] {

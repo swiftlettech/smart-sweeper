@@ -15,11 +15,16 @@ global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per
 
 /* Check a SmartCash address for validity. */
 function checkAddress(address) {
+    //console.log('in checkAddress');
+    //console.log('address: ', address);
+    
     try {
-        smartcash.address.fromBase58Check(address)
+        var result = smartcash.address.fromBase58Check(address)
+        //console.log('result: ', result);
         return true
     }
     catch(err) {
+        //console.log('err: ', err);
         return false
     }
 }
