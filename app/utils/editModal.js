@@ -65,7 +65,7 @@
                 
                 ctrl.activeProject = electron.remote.getGlobal('activeProject');
                 
-                if (ctrl.activeProject.recvAddrs === undefined) {
+                if (ctrl.activeProject.recvAddrs === undefined || ctrl.activeProject.recvAddrs.length == 0) {
                     // create the addresses and add them to the project
                     ipcRenderer.send('createRecvAddresses', {project: ctrl.activeProject, newProjectFlag: false});
                     ipcRenderer.on('addressesCreated', (event, arg) => {

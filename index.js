@@ -14,8 +14,8 @@ const {combine, timestamp, prettyPrint} = format
 
 const Store = require('electron-store')
 const smartcashapi = require('./smartcashapi')
-//const rpc = require('./rpc-client')
 const {watch} = require('melanke-watchjs')
+
 const baseLogPath = "logs"
 const sysLogsPath = baseLogPath + path.sep + 'system'
 const userLogsPath = baseLogPath + path.sep + 'user'
@@ -901,6 +901,22 @@ app.on('activate', () => {
 // check a SmartCash address for validity
 ipcMain.on('checkAddress', (event, args) => {
     var result = smartcashapi.checkAddress(args.address)
+    
+    /*var promise = new Promise((resolve, reject) => {
+        var result = smartcashapi.checkAddress(args.address)
+        
+        if (result)
+            resolve(result)
+        else
+            reject(result)
+    })
+    
+    console.log(promise)*/
+    
+    /*promise.then(function(resp) {
+        console.log(resp)
+    })*/
+    
     event.sender.send('addressChecked', {result: result})
 })
 
@@ -1216,7 +1232,7 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
         apiCallbackCounter: 0
     })
     
-    //smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectName: global.availableProjects.list[index].name, amount: amtToSend, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
+    smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectName: global.availableProjects.list[index].name, amount: amtToSend, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
 })
 
 // set which function opened a modal/dialog

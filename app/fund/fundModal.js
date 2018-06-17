@@ -39,6 +39,11 @@
             ipcRenderer.send('modalNo');
         };
         
+        ctrl.copyAddress = function() {
+            //console.log(document.getElementById('projectAddress').innerHtml);
+            document.execCommand("copy", false, $document.find('#projectAddress').html());
+        };
+        
         /* Send funding information back to the main process. */
         ctrl.fundInfo = function(form) {
             ipcRenderer.on('dialogNo', (event, args) => {

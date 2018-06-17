@@ -43,23 +43,38 @@
             }
         };
     })
-    .directive('addrValidation', function() {
+    .directive('addrValidation', function($q) {
         /* Checks to see if a SmartCash address is valid. */
         return {
             require: 'ngModel',
-            link: function(scope, element, attrs, ngModel) {
-                ngModel.$validators.addrvalidation = function(modelValue, viewValue) {
-                    var value = modelValue || viewValue;
-                    
+            link: function(scope, element, attrs, ngModel) {                
+                ngModel.$asyncValidators.addrvalidation = function(modelValue, viewValue) {
+                    var value = modelValue || viewValue;                    
                     if (ngModel.$isEmpty(value))
-                        return false;
+                        return $q.reject();
                     
                     ipcRenderer.send('checkAddress', {address: value});
-                    ipcRenderer.on('addressChecked', (event, args) => {
-                        scope.$apply(function() {
-                            console.log("args.result: ", args.result);
-                            return args.result;
-                        });
+                    ipcRenderer.on('addressChecked', (event, arg) => {
+                        console.log(arg.result)
+                        //console.log(promise)
+                        
+                        //scope.$apply(function() {
+                            if (arg.result)
+                                return $q.resolve();
+                            else
+                                return $q.reject();
+                        //});
+                        
+                        /*scope.$apply(function() {
+                            promise.then(function resolved() {
+                                console.log('promise resolved');
+                            },
+                            function rejected() {
+                                console.log('promise rejected');
+                            });
+                            //console.log("args.result: ", args.result);
+                            //return args.result;
+                        });*/
                     });
                 }
             }

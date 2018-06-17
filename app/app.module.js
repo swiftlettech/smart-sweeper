@@ -118,7 +118,7 @@
                 statusMsgs++;
             
             if ((ctrl.activePage === "dashboard" && statusMsgs > 2) ||
-                ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && ((electron.remote.getGlobal('availableProjects').list.length > 4 && statusMsgs > 0) || (electron.remote.getGlobal('availableProjects').list.length > 7))))
+                ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && ((electron.remote.getGlobal('availableProjects').list.length > 4 && statusMsgs > 0) || (electron.remote.getGlobal('availableProjects').list.length > 5))))
             {
                 //console.log('this page should scroll');
                 $document.find('#page-wrapper').css('height', '');
@@ -179,7 +179,7 @@
                     
                     ctrl.close = function() {
                         console.log('click');
-                        $uibModalInstance.close('close');
+                        $uibModalInstance.dismiss('close');
                     };
                     
                     // fix unhandled modal promise error when ignoring the result

@@ -82,13 +82,12 @@ a.disabled {
 
 #modalMsg .modal-close {
     float: right;
-    font-size: 120%;
     z-index: 2000;
 }
 
-/*#modalMsg .modal-close .fa {
-    cursor: pointer;
-}*/
+#modalMsg .modal-close i {
+    vertical-align: text-top;
+}
 
 #modalMsg .modal-close .btn {
     padding: 1px 6px;
@@ -274,7 +273,20 @@ button, .btn, .form-control, .input-group-addon {
 }
 
 
-/* Fund */
+/* Fund & Fund Modal */
+
+.fundInstr #projectAddress {
+    font-weight: bold;
+}
+
+.fundInstr button {
+    padding: 0 0 0 5px;
+    border: none;
+}
+
+.fundInstr .fa-clone {
+    cursor: pointer;
+}
 
 #calculator input[name='txFee'], #calculator input[name='walletAmt'] {
     width: 25%;

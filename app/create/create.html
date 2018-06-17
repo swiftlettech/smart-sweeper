@@ -30,8 +30,8 @@
                             <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Required.</span>
                         </div>
                         
-                        <!--{{addNewProjectForm.sweepAddr.$error}}<br />
-                        {{addNewProjectForm.sweepAddr.$error.required}}<br />-->
+                        <!--errors: {{addNewProjectForm.sweepAddr.$error}}<br />
+                        missing required: {{addNewProjectForm.sweepAddr.$error.required}}<br />-->
                         <div ng-show="addNewProjectForm.sweepAddr.$error.addrvalidation && !addNewProjectForm.sweepAddr.$error.required" role="alert">
                             <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Not a valid SmartCash address.</span>
                         </div>
