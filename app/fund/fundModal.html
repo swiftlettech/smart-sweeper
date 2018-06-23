@@ -15,7 +15,7 @@
     <body ng-controller="FundProjectController as $fundCtrl" style="margin:20px 0;" ng-init="init()">
         <div id="page-wrapper" style="padding:15px;">
             <p style="display:none;">You can fund a project by using this form or by using your wallet and inputting the txid (recommended).</p>
-            <p class="fundInstr">Send funds to this address: <span id="projectAddress">{{$fundCtrl.activeProject.addressPair.publicKey}}</span> <i class="fa fa-fw fa-clone hide" ng-click="$fundCtrl.copyAddress()"></i></p>
+            <p class="fundInstr">Send funds to this address: <span id="projectAddress">{{$fundCtrl.activeProject.addressPair.publicKey}}</span> <button class="btn btn-link copy-btn"><i class="fa fa-fw fa-clone" data-clipboard-text="{{$fundCtrl.activeProject.addressPair.publicKey}}"></i></button></p>
             
             <div style="padding:10px 0; padding-right:0;" class="hide">
                 <button type="button" class="btn btn-primary" ng-click="$fundCtrl.showForm('txidEntry')" ng-disabled="$fundCtrl.txSuccessful">Enter Existing TXID</button>
@@ -142,5 +142,6 @@
         <script type="text/javascript" src="../utils/app.module.js"></script>
         <script type="text/javascript" src="../utils/constants.js"></script>
         <script type="text/javascript" src="../utils/utils.js"></script>
+        <script type="text/javascript" src="../../js/clipboard.min.js"></script>
     </body>
 </html>

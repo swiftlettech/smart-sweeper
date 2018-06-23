@@ -2,6 +2,7 @@
     'use strict';
     
     const {ipcRenderer} = window.nodeRequire('electron');
+    const smartcashapi = window.nodeRequire('./smartcashapi');
 
     angular.module('SmartSweeperUtils')
     .directive('calcNumber', function() {
@@ -48,34 +49,23 @@
         return {
             require: 'ngModel',
             link: function(scope, element, attrs, ngModel) {                
-                ngModel.$asyncValidators.addrvalidation = function(modelValue, viewValue) {
+                /*ngModel.$asyncValidators.addrvalidation = function(modelValue, viewValue) {
                     var value = modelValue || viewValue;                    
                     if (ngModel.$isEmpty(value))
                         return $q.reject();
                     
-                    ipcRenderer.send('checkAddress', {address: value});
-                    ipcRenderer.on('addressChecked', (event, arg) => {
-                        console.log(arg.result)
-                        //console.log(promise)
-                        
-                        //scope.$apply(function() {
-                            if (arg.result)
-                                return $q.resolve();
-                            else
-                                return $q.reject();
-                        //});
-                        
-                        /*scope.$apply(function() {
-                            promise.then(function resolved() {
-                                console.log('promise resolved');
-                            },
-                            function rejected() {
-                                console.log('promise rejected');
-                            });
-                            //console.log("args.result: ", args.result);
-                            //return args.result;
-                        });*/
-                    });
+                    if (smartcashapi.checkAddress(value))
+                        return $q.resolve();
+                    else
+                        return $q.reject();
+                }*/
+                
+                ngModel.$validators.addrvalidation = function(modelValue, viewValue) {
+                    var value = modelValue || viewValue;                    
+                    if (ngModel.$isEmpty(value))
+                        return false;
+                    
+                    return smartcashapi.checkAddress(value);
                 }
             }
         };

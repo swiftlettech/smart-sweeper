@@ -9,6 +9,12 @@ a:focus {
   color: #FFF;
 }
 
+.btn-link,
+.btn-link:hover,
+.btn-link:focus {
+    color: inherit;
+}
+
 .panel-heading a,
 .panel-heading a:hover,
 .panel-heading a:focus {

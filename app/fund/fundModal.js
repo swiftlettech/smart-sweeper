@@ -14,6 +14,19 @@
         var ctrl = this;
 
         $scope.init = function() {
+            var clipboard = new ClipboardJS('.copy-btn');
+        
+            clipboard.on('success', function(e) {
+                console.log('Action:', e.action);
+                console.log('Text:', e.text);
+                console.log('Trigger:', e.trigger);
+            });
+
+            clipboard.on('error', function(e) {
+                console.log('Action:', e.action);
+                console.log('Trigger:', e.trigger);
+            });
+            
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
             ctrl.originalFunds = 0;
             ctrl.txFee = electron.remote.getGlobal('sharedObject').txFee;

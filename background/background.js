@@ -67,12 +67,13 @@
                     checkOnlineStatus();
                     smartcashCoreCheck();
                     
-                    if (remote.getGlobal('sharedObject').coreRunning)
+                    if (remote.getGlobal('sharedObject').coreRunning) {
                         rpcCheck();
                     
-                    if (remote.getGlobal('sharedObject').rpcConnected) {
-                        checkBlockchain();
-                        updateData();
+                        if (remote.getGlobal('sharedObject').rpcConnected) {
+                            checkBlockchain();
+                            updateData();
+                        }
                     }
                 }, 30000);
             }
@@ -246,7 +247,7 @@
         ipcRenderer.send('checkProjectBalances');
         ipcRenderer.send('getClaimedFundsInfo');
         ipcRenderer.send('getWalletTxStatus');
-        
+
         // update a project's txConfirmed flag
         ipcRenderer.send('getAllTxStatus');
     }

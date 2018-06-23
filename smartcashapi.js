@@ -191,7 +191,7 @@ function sendFunds(projectInfo, callback) {
         
         if (resp) {
             // check to see if there is enough in the balance to cover the amount to send
-            if (parseFloat(resp.body.balance) >= projectInfo.amount) {
+            if (parseFloat(resp.body.balance) >= projectInfo.total) {
                 var txArray = []
                 var newTx
                 var transactions = []

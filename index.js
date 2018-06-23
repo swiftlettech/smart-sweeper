@@ -3,7 +3,6 @@ const electron = require('electron')
 const {app, BrowserWindow, dialog, ipcMain, shell} = electron
 const path = require('path')
 const url = require('url')
-//const cp = require('child_process')
 const fs = require('fs')
 const util = require('util')
 
@@ -898,28 +897,6 @@ app.on('activate', () => {
 
 
 
-// check a SmartCash address for validity
-ipcMain.on('checkAddress', (event, args) => {
-    var result = smartcashapi.checkAddress(args.address)
-    
-    /*var promise = new Promise((resolve, reject) => {
-        var result = smartcashapi.checkAddress(args.address)
-        
-        if (result)
-            resolve(result)
-        else
-            reject(result)
-    })
-    
-    console.log(promise)*/
-    
-    /*promise.then(function(resp) {
-        console.log(resp)
-    })*/
-    
-    event.sender.send('addressChecked', {result: result})
-})
-
 // check the txid to get project funding info
 ipcMain.on('checkFundingTxids', (event, args) => {
     global.apiCallbackInfo.set('checkFundingTxids', {
@@ -1160,7 +1137,7 @@ ipcMain.on('getClaimedFundsInfo', (event, args) => {
         else {
             // get the claimed amount for all wallets for one project
             if (project.fundsSent) {
-                project.recvAddrs.forEach(function(address, addrKey) {                    
+                project.recvAddrs.forEach(function(address, addrKey) {
                     if (!address.claimed) {
                         smartcashapi.checkBalance({referrer: "getClaimedFundsInfo", addrIndex: addrKey, address: address.publicKey, projectIndex: index, addrAmt: project.addrAmt, projectID: args.projectID}, apiCallback)
                     }
@@ -1211,7 +1188,8 @@ ipcMain.on('projectFullyFunded', (event, args) => {
 // send funds to receiver addresses
 ipcMain.on('sendPromotionalFunds', (event, args) => {    
     // calculate and save the amount per address
-    var amtToSend = (args.originalFunds-global.sharedObject.txFee) / args.wallets.length
+    var totalAmtToSend = args.originalFunds-global.sharedObject.txFee
+    var amtPerWallet = totalAmtToSend / args.wallets.length
     console.log('amtToSend: ', amtToSend)
     
     console.log('args.originalFunds: ', args.originalFunds)
@@ -1232,7 +1210,7 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
         apiCallbackCounter: 0
     })
     
-    smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectName: global.availableProjects.list[index].name, amount: amtToSend, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
+    smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectName: global.availableProjects.list[index].name, total: totalAmtToSend, amount: amtPerWallet, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
 })
 
 // set which function opened a modal/dialog
@@ -1308,12 +1286,21 @@ ipcMain.on('sweepFunds', (event, projectID) => {
         apiCallbackCounter: 0
     })
     
-    /*project.recvAddrs.forEach(function(addr, addrKey) {
-        smartcashapi.sweepFunds({sender: addr, receiver: project.publicKey})
-    })*/
+    var unclaimedWallets = [];
     
-    global.sharedObject.logger.info('Funds were manually swept for project "' + global.activeProject.name + '".')
-    refreshLogFile()
+    project.recvAddrs.forEach(function(address, key) {
+        if (!address.claimed) {
+            unclaimedWallets.push({
+                publicKey: address.publicKey,
+                privateKey: address.privateKey
+            })
+        }
+    })
+    
+    //smartcashapi.sweepFunds({sender: unclaimedWallets, receiver: project.publicKey})
+    
+    //global.sharedObject.logger.info('Funds were manually swept for project "' + global.activeProject.name + '".')
+    //refreshLogFile()
 })
 
 // update a project edited in the modal

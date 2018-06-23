@@ -21,8 +21,7 @@
                     
                     <div class="form-group">
                         <label for="sweepAddr" class="control-label">Sweep address<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
-                        <input name="sweepAddr" type="text" class="form-control" ng-model="$createCtrl.newProject.sweepAddr" required />
-                        <!-- addr-validation-->
+                        <input name="sweepAddr" type="text" class="form-control" ng-model="$createCtrl.newProject.sweepAddr" addr-validation required />
                         
                         <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This is the address that unclaimed funds will be swept to.</p>
                         
@@ -30,8 +29,6 @@
                             <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Required.</span>
                         </div>
                         
-                        <!--errors: {{addNewProjectForm.sweepAddr.$error}}<br />
-                        missing required: {{addNewProjectForm.sweepAddr.$error.required}}<br />-->
                         <div ng-show="addNewProjectForm.sweepAddr.$error.addrvalidation && !addNewProjectForm.sweepAddr.$error.required" role="alert">
                             <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Not a valid SmartCash address.</span>
                         </div>
