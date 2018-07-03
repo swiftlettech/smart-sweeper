@@ -9,13 +9,14 @@
         <link type="text/css" rel="stylesheet" href="../../css/bootstrap-3.3.7.min.css" />
         <link type="text/css" rel="stylesheet" href="../../css/sb-admin.css">
         <link type="text/css" rel="stylesheet" href="../../css/font-awesome-4.7.0.min.css" />
+        <link type="text/css" rel="stylesheet" href="../../css/primer-tooltips-1.5.6.css" />
 		<link type="text/css" rel="stylesheet" href="../../css/styles.css" />
     </head>
     
     <body ng-controller="FundProjectController as $fundCtrl" style="margin:20px 0;" ng-init="init()">
         <div id="page-wrapper" style="padding:15px;">
             <p style="display:none;">You can fund a project by using this form or by using your wallet and inputting the txid (recommended).</p>
-            <p class="fundInstr">Send funds to this address: <span id="projectAddress">{{$fundCtrl.activeProject.addressPair.publicKey}}</span> <button class="btn btn-link copy-btn"><i class="fa fa-fw fa-clone" data-clipboard-text="{{$fundCtrl.activeProject.addressPair.publicKey}}"></i></button></p>
+            <p class="fundInstr">Send funds to this address: <span id="projectAddress">{{$fundCtrl.activeProject.addressPair.publicKey}}</span> <button class="btn btn-link copy-btn" data-clipboard-text="{{$fundCtrl.activeProject.addressPair.publicKey}}"><i class="fa fa-fw fa-clone"></i> <span class="copy-tooltip" aria-label="Copied!"></span></button></p>
             
             <div style="padding:10px 0; padding-right:0;" class="hide">
                 <button type="button" class="btn btn-primary" ng-click="$fundCtrl.showForm('txidEntry')" ng-disabled="$fundCtrl.txSuccessful">Enter Existing TXID</button>
@@ -27,7 +28,7 @@
                     <div class="form-group">
                         <label for="txFee" class="control-label">Transaction Fee</label>
                         <input name="txFee" type="text" class="form-control" ng-model="$fundCtrl.txFee" calc-number />
-                        <p>The minimum SmartCash transaction fee is Σ0.001 or Σ0.002 in most cases but the fee for the wallet/exchange you use to fund the project may vary.</p>
+                        <p>The minimum SmartCash transaction fee is Σ0.001 or Σ0.002 in most cases, but the fee for the wallet/exchange you use to fund the project may vary.</p>
                     </div>
 
                     <div class="form-group">

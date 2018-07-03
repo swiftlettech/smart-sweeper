@@ -95,8 +95,10 @@
             }
             else if (functionName === "checkBlockchain") {
                 // automatically sweep funds if necessary if the blockchain is up-to-date
-                //if (resp.msg)
-                    //autoSweepFunds();
+                //if (resp.msg) {
+                    // auto sweep funds on startup
+                    // start 24 hour background process (w/ 24hr delay) to check for projects past their auto sweep date
+                }
             }
         }
         else if (resp.type === "error") {

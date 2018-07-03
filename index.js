@@ -1031,8 +1031,12 @@ ipcMain.on('getSweptFundsInfo', (event, args) => {
     var totalAddrs = 0
     
     global.availableProjects.list.forEach(function(project, projectKey) {
-        if (project.fundsSwept)
-            totalAddrs ++
+        if (project.fundsSwept) {
+            project.recvAddrs.forEach(function(address, addrKey) {
+                if (!address.claimed)
+                    totalAddrs++
+            }
+        }
     })
     
     if (totalAddrs > 0) {
@@ -1277,7 +1281,7 @@ ipcMain.on('smartcashLaunch', (event, args) => {
     global.sharedObject.win.webContents.send('smartcashLaunch', {isOnline: global.sharedObject.isOnline})
 })
 
-// manually sweep project funds
+// sweep project funds
 ipcMain.on('sweepFunds', (event, projectID) => {
     var index = getDbIndex(projectID)
     var project = global.availableProjects.list[index]
@@ -1292,14 +1296,15 @@ ipcMain.on('sweepFunds', (event, projectID) => {
         if (!address.claimed) {
             unclaimedWallets.push({
                 publicKey: address.publicKey,
-                privateKey: address.privateKey
+                privateKey: address.privateKey,
+                txin: project.txid
             })
         }
     })
     
     //smartcashapi.sweepFunds({sender: unclaimedWallets, receiver: project.publicKey})
     
-    //global.sharedObject.logger.info('Funds were manually swept for project "' + global.activeProject.name + '".')
+    //global.sharedObject.logger.info('Funds were swept for project "' + global.activeProject.name + '".')
     //refreshLogFile()
 })
 

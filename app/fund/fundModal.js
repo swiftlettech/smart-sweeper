@@ -2,8 +2,7 @@
     'use strict';
 
     angular.module('SmartSweeper.fundModal', [
-        'SmartSweeperUtils',
-        'ui.bootstrap'
+        'SmartSweeperUtils'
     ])
     .controller('FundProjectController', FundProjectController);
 
@@ -14,18 +13,13 @@
         var ctrl = this;
 
         $scope.init = function() {
-            var clipboard = new ClipboardJS('.copy-btn');
-        
-            clipboard.on('success', function(e) {
-                console.log('Action:', e.action);
-                console.log('Text:', e.text);
-                console.log('Trigger:', e.trigger);
+            var clipboardjs = new ClipboardJS('.copy-btn');
+            clipboardjs.on('success', function(event) {
+                $document.find('.copy-tooltip').addClass('tooltipped tooltipped-e tooltipped-no-delay');
             });
-
-            clipboard.on('error', function(e) {
-                console.log('Action:', e.action);
-                console.log('Trigger:', e.trigger);
-            });
+            /*$document.find('.copy-btn').on('mouseleave', function(event) {
+                $document.find('.copy-tooltip').removeClass('tooltipped tooltipped-e tooltipped-no-delay');
+            });*/
             
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
             ctrl.originalFunds = 0;

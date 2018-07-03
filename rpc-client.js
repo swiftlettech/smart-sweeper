@@ -16,7 +16,7 @@ try {
         port: config.rpc.port,
         user: config.rpc.username,
         pass: config.rpc.password,
-        timeout: 30000
+        timeout: 5000
     })
 }
 catch(err) {

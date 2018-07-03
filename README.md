@@ -20,7 +20,7 @@ Requirements
 ---------------
 * [Node.js](http://nodejs.org) - 8.9.0+
 * [npm](http://npmjs.com) - 5.6.0+
-* [SmartCash node client](https://smartcash.cc/wallets/) for Windows, Linux, or Mac OS - 1.1.1+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
+* [SmartCash node client](https://smartcash.cc/wallets/) for Windows, Linux, or Mac OS - 1.2.2+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
 
 Run node -v and npm -v from a command prompt to make sure they're in your PATH. Open your SmartCash desktop wallet application to make sure it is up to date before launching SmartSweeper.
 
@@ -59,7 +59,7 @@ smartcashPath=C:\Program Files\SmartCash\
 
 Your SmartCash wallet must be started with the following arguments:
 ```
--txindex=1
+-txindex=1 (if SmartCash node client is < v1.2.3)
 -server
 -rpcbind=127.0.0.1
 -rpcport=9678
@@ -70,7 +70,7 @@ Your SmartCash wallet must be started with the following arguments:
 If it isn't running, SmartSweeper will start it for you with the above arguments. You can also [edit your wallet's smartcash.conf file](https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file). Please don't do this with your wallet running.
 
 ```
-txindex=1
+txindex=1 (if SmartCash node client is < v1.2.3)
 server=1
 rpcbind=127.0.0.1
 rpcport=9678
@@ -89,13 +89,17 @@ The database (smart-sweeper.json), the app config file (smart-sweeper-config.jso
 * **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/SmartSweeper
 * **Mac**: ~/Library/Application Support/SmartSweeper
 
-The log files are also in JSON format and can be read with a general log viewer such as [glogg](https://github.com/nickbnf/glogg).
+The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg).
 
 
 Other software used
 -------------------
 Software | License
 -------- | --------
+[AngularJS](http://angularjs.org) | MIT
+[AngularUI Bootstrap](https://github.com/angular-ui/bootstrap) | MIT
+[Bootstrap](https://getbootstrap.com/docs/3.3/) | MIT
+[clipboard.js](https://clipboardjs.com) | MIT
 [devtron](https://github.com/electron/devtron) | MIT
 [electron](https://github.com/electron/electron) | MIT
 [electron-debug](https://github.com/sindresorhus/electron-debug) | MIT

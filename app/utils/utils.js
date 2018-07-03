@@ -44,22 +44,11 @@
             }
         };
     })
-    .directive('addrValidation', function($q) {
+    .directive('addrValidation', function() {
         /* Checks to see if a SmartCash address is valid. */
         return {
             require: 'ngModel',
-            link: function(scope, element, attrs, ngModel) {                
-                /*ngModel.$asyncValidators.addrvalidation = function(modelValue, viewValue) {
-                    var value = modelValue || viewValue;                    
-                    if (ngModel.$isEmpty(value))
-                        return $q.reject();
-                    
-                    if (smartcashapi.checkAddress(value))
-                        return $q.resolve();
-                    else
-                        return $q.reject();
-                }*/
-                
+            link: function(scope, element, attrs, ngModel) {
                 ngModel.$validators.addrvalidation = function(modelValue, viewValue) {
                     var value = modelValue || viewValue;                    
                     if (ngModel.$isEmpty(value))
