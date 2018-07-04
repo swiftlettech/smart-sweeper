@@ -76,11 +76,14 @@
         
         /* Return funds back to project address manually after expiration date. */
         ctrl.sweep = function() {
-            console.log(ctrl.projectsToSweep)
+            var projectIDs = [];
             
-            /*angular.forEach(, function(checkbox, index) {
-                console.log();
-            });*/
+            angular.forEach(ctrl.projectsToSweep, function(checkedProject, key) {
+                if (checkedProject)
+                    projectIDs.push(parseInt(key));
+            });
+            
+            ipcRenderer.send('sweepFunds', {projectIDs: projectIDs});
             
             //project.hasBeenSwept (true/false)
         };

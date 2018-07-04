@@ -15,7 +15,10 @@
         $scope.init = function() {
             var clipboardjs = new ClipboardJS('.copy-btn');
             clipboardjs.on('success', function(event) {
-                $document.find('.copy-tooltip').addClass('tooltipped tooltipped-e tooltipped-no-delay');
+                // select the text on clicking the copy button
+                $('#projectAddress').selectText();
+                
+                //$document.find('.copy-tooltip').addClass('tooltipped tooltipped-e tooltipped-no-delay');
             });
             /*$document.find('.copy-btn').on('mouseleave', function(event) {
                 $document.find('.copy-tooltip').removeClass('tooltipped tooltipped-e tooltipped-no-delay');
@@ -145,4 +148,23 @@
             }
         };
     }
+    
+    // from: https://jsfiddle.net/edelman/KcX6A/1506/
+    jQuery.fn.selectText = function(){
+        var doc = document
+            , element = this[0]
+            , range, selection
+        ;
+        if (doc.body.createTextRange) {
+            range = document.body.createTextRange();
+            range.moveToElementText(element);
+            range.select();
+        } else if (window.getSelection) {
+            selection = window.getSelection();        
+            range = document.createRange();
+            range.selectNodeContents(element);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    };
 })();

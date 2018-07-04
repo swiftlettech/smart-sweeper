@@ -5,12 +5,58 @@ const smartcash = require('smartcashjs-lib')
 const rpc = require('./rpc-client')
 const http = require('http')
 const util = require('util')
-
+const {watch} = require('melanke-watchjs')
+const Store = require('electron-store')
 const smartcashExplorer = "http://explorer3.smartcash.cc"
 
+db = new Store({name: "smart-sweeper"})
 global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per function call
 
-//console.log(smartcash)
+/* Generic API callback function. */
+let smartcashCallback = function(resp, functionName, projectInfo) {    
+    var referrer = projectInfo.referrer
+    var apiCallbackInfo = global.smartcashCallbackInfo.get(referrer)
+    console.log('referrer: ', referrer)
+    console.log('apiCallbackInfo: ', apiCallbackInfo)
+    console.log('resp: ', resp)
+    console.log()
+    
+    if (resp.type === "data") {
+        if (functionName === "sweepFunds") {
+            if (referrer === "getaddress") {
+                if (parseInt(resp.data.balance) == 0) {
+                    project.recvAddrs.forEach(function(address, key) {
+                        if (address.publicKey == resp.data.address) {
+                            address.claimed = true
+                        }
+                    })
+                }
+            }
+        }
+        
+        // once all of the projects/promotional wallets have been processed, send data back to the initiator
+        apiCallbackInfo.apiCallbackCounter++
+        var apiCallbackCounter = apiCallbackInfo.apiCallbackCounter
+        
+        if (functionName === "sweepFunds") {
+            if ((referrer === "getaddress") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
+                global.smartcashCallbackInfo.checkAddrFlag = true
+                global.availableProjects.list[projectInfo.projectIndex] = project // update project info
+                db.set('projects', global.availableProjects)
+            }
+        }
+    }
+    else if (resp.type === "error") {
+        console.log('error msg: ', resp.msg)
+        
+        if (projectInfo.projectName) {
+            global.sharedObject.logger.error(functionName + ': ' + resp.msg + " project " + projectInfo.projectName)
+        }
+        else {
+            global.sharedObject.logger.error(functionName + ': ' + resp.msg)
+        }
+    }
+}
 
 
 /* Check a SmartCash address for validity. */
@@ -19,12 +65,10 @@ function checkAddress(address) {
     //console.log('address: ', address);
     
     try {
-        var result = smartcash.address.fromBase58Check(address)
-        //console.log('result: ', result);
+        smartcash.address.fromBase58Check(address)
         return true
     }
     catch(err) {
-        //console.log('err: ', err);
         return false
     }
 }
@@ -284,10 +328,47 @@ function sendFunds(projectInfo, callback) {
     })
 }
 
-/* Sweep (send) funds back from a promotional wallet address. */
+/* Sweep (send) funds back from the promotional wallet addresses. */
 function sweepFunds(projectInfo, callback) {
-    //var receiver = addresses.receiver
-    //var sender = addresses.sender
+    console.log(projectInfo);
+    var project = projectInfo.project
+    projectInfo.projectName = project.name
+    var receiver = projectInfo.receiver
+    var sender = projectInfo.sender
+    
+    global.smartcashCallbackInfo.set('getaddress', {
+        apiCallbackCounter: 0,
+        totalAddrs: projectInfo.sender.length
+    })
+    
+    // check the balance of each "unclaimed" promotional wallet
+    projectInfo.referrer = "getaddress"
+    projectInfo.sender.forEach(function(address, key) {
+        request({
+            url: smartcashExplorer + '/ext/getaddress/' + address.publicKey,
+            method: 'GET',
+            json: true
+        }, function (err, resp, body) {            
+            if (resp) {
+                smartcashCallback({type: 'data', msg: resp}, 'sweepFunds', projectInfo)
+            }
+            else {
+                callback({type: 'error', msg: err}, 'sweepFunds', projectInfo)
+            }
+        })
+    })
+    
+    watch(global.smartcashCallbackInfo, function(property, action, newValue, oldValue) {
+        console.log(property)
+        console.log(oldValue)
+        console.log(newValue)
+        console.log()
+        
+        // actually perform the sweep once the status of the promotional wallets have been updated
+        if ((property === "checkAddrFlag") && (newValue == true)) {
+            // project.sweepAddr
+        }
+    })
     
     // claimed = true
     // swept = true

@@ -52,7 +52,8 @@
             if (err) {
                throw new Error(err);
             }
-            else {                
+            else {
+                console.log("ps lookup results: ", results);
                 if (results.length == 0) {
                     // not running
                     startSmartcashCore();
@@ -98,7 +99,7 @@
                 //if (resp.msg) {
                     // auto sweep funds on startup
                     // start 24 hour background process (w/ 24hr delay) to check for projects past their auto sweep date
-                }
+                //}
             }
         }
         else if (resp.type === "error") {
@@ -199,9 +200,7 @@
     }
     
     // check to see if SmartCash Core is running
-    function smartcashCoreCheck() {
-        //ipcRenderer.send('showMainWindow');
-        
+    function smartcashCoreCheck() {        
         ps.lookup({command: smartcashProg}, function (err, results) {
             if (err) {
                throw new Error(err);

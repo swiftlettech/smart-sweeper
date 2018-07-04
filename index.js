@@ -134,7 +134,7 @@ function appInit() {
     global.apiCallbackInfo = new Map() // keeps track of API callback vars per function call
     
     // app config
-    ipcMain.setMaxListeners(0)
+    ipcMain.setMaxListeners(0) // set max listeners to unlimited
     
     // load the project db or create it if it doesn't exist
     // saved in %APPDATA%/smart-sweeper on Win
@@ -520,9 +520,10 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 });
             }
         }
-        /*else if (functionName === "sweepFunds") {
-            //sweptTxid (per promotional wallet)
-        } */      
+        else if (functionName === "sweepFunds") {
+            //sweptTxid (per project)
+            //fundsSwept = true
+        }    
         
         
         // once all of the projects/promotional wallets have been processed, send data back to the initiator
@@ -660,16 +661,11 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 global.sharedObject.win.webContents.send('promotionalFundsSent', {msgType: 'data', msg: 'Funds were sent to promotional wallets for project "' + projectInfo.projectName + '".'})
                 global.apiCallbackInfo.delete(referrer)
             }
-            else if (functionName === "sweepFunds") {
-                
-            }
         }
-        /*else if (functionName === "") {
-
+        else if ((functionName === "sweepFunds") && (apiCallbackCounter == apiCallbackInfo.totalProjects)) {
+            //global.sharedObject.logger.info('Funds were swept for project "' + projectInfo.projectName + '".')
+            //refreshLogFile()
         }
-        else if (functionName === "") {
-
-        }*/
     }
     else if (resp.type === "error") {
         console.log('error msg: ', resp.msg)
@@ -1035,7 +1031,7 @@ ipcMain.on('getSweptFundsInfo', (event, args) => {
             project.recvAddrs.forEach(function(address, addrKey) {
                 if (!address.claimed)
                     totalAddrs++
-            }
+            })
         }
     })
     
@@ -1282,30 +1278,34 @@ ipcMain.on('smartcashLaunch', (event, args) => {
 })
 
 // sweep project funds
-ipcMain.on('sweepFunds', (event, projectID) => {
-    var index = getDbIndex(projectID)
-    var project = global.availableProjects.list[index]
-    
+ipcMain.on('sweepFunds', (event, args) => {
     global.apiCallbackInfo.set('sweepFunds', {
-        apiCallbackCounter: 0
+        apiCallbackCounter: 0,
+        totalProjects: args.projectIDs.length
     })
     
-    var unclaimedWallets = [];
+    var index
+    var project
+    var unclaimedWallets
     
-    project.recvAddrs.forEach(function(address, key) {
-        if (!address.claimed) {
-            unclaimedWallets.push({
-                publicKey: address.publicKey,
-                privateKey: address.privateKey,
-                txin: project.txid
-            })
-        }
+    args.projectIDs.forEach(function(projectID, projectKey) {
+        index = getDbIndex(projectID)
+        project = global.availableProjects.list[index]
+        unclaimedWallets = []
+
+        project.recvAddrs.forEach(function(address, addressKey) {
+            if (!address.claimed) {
+                unclaimedWallets.push({
+                    index: addressKey,
+                    publicKey: address.publicKey,
+                    privateKey: address.privateKey,
+                    txin: address.sentTxid
+                })
+            }
+        })
+        
+        smartcashapi.sweepFunds({projectIndex: index, project: project, sender: unclaimedWallets, receiver: project.publicKey})
     })
-    
-    //smartcashapi.sweepFunds({sender: unclaimedWallets, receiver: project.publicKey})
-    
-    //global.sharedObject.logger.info('Funds were swept for project "' + global.activeProject.name + '".')
-    //refreshLogFile()
 })
 
 // update a project edited in the modal
