@@ -93,6 +93,15 @@
                 }
             });
         });
+        
+        ipcRenderer.on('blockExplorerErrorAPP', (event, args) => {
+            $scope.$apply(function() {
+                if (args.blockExplorerError !== undefined) {
+                    ctrl.blockExplorerError = args.blockExplorerError;
+                    ctrl.setPageHeight();
+                }
+            });
+        });
 
         ctrl.setActivePage = function(page) {
             ctrl.activePage = page;
@@ -115,6 +124,8 @@
             if (!ctrl.rpcConnected)
                 statusMsgs++;
             if (!ctrl.coreSynced)
+                statusMsgs++;
+            if (ctrl.blockExplorerError)
                 statusMsgs++;
             
             if ((ctrl.activePage === "dashboard" && statusMsgs > 2) ||
@@ -205,7 +216,6 @@
         ctrl.showPK = function(projectID) {
             var index = ctrl.getDbIndex(projectID);
             electron.remote.getGlobal('availableProjects').list[index].showPrivateKey = !electron.remote.getGlobal('availableProjects').list[index].showPrivateKey;
-            
             ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
         };
 

@@ -9,13 +9,14 @@ const {watch} = require('melanke-watchjs')
 const Store = require('electron-store')
 const smartcashExplorer = "http://explorer3.smartcash.cc"
 
-db = new Store({name: "smart-sweeper"})
+let db = new Store({name: "smart-sweeper"})
+let activeProject
 global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per function call
 
 /* Generic API callback function. */
 let smartcashCallback = function(resp, functionName, projectInfo) {    
     var referrer = projectInfo.referrer
-    var apiCallbackInfo = global.smartcashCallbackInfo.get(referrer)
+    var apiCallbackInfo = global.smartcashCallbackInfo.get(referrer+projectInfo.projectID)
     console.log('referrer: ', referrer)
     console.log('apiCallbackInfo: ', apiCallbackInfo)
     console.log('resp: ', resp)
@@ -41,8 +42,10 @@ let smartcashCallback = function(resp, functionName, projectInfo) {
         if (functionName === "sweepFunds") {
             if ((referrer === "getaddress") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                 global.smartcashCallbackInfo.checkAddrFlag = true
+                activeProject = project
                 global.availableProjects.list[projectInfo.projectIndex] = project // update project info
                 db.set('projects', global.availableProjects)
+                global.smartcashCallbackInfo.delete(referrer)
             }
         }
     }
@@ -330,19 +333,23 @@ function sendFunds(projectInfo, callback) {
 
 /* Sweep (send) funds back from the promotional wallet addresses. */
 function sweepFunds(projectInfo, callback) {
-    console.log(projectInfo);
     var project = projectInfo.project
     projectInfo.projectName = project.name
-    var receiver = projectInfo.receiver
-    var sender = projectInfo.sender
+    var receiver = project.sweepAddr
     
-    global.smartcashCallbackInfo.set('getaddress', {
+    global.smartcashCallbackInfo.set('getaddress'+project.id, {
         apiCallbackCounter: 0,
-        totalAddrs: projectInfo.sender.length
+        totalAddrs: project.recvAddrs.length,
+        project: project
     })
     
+    //console.log(projectInfo)
+    console.log(global.apiCallbackInfo)
+    console.log('=============================')
+    console.log(global.smartcashCallbackInfo)
+    
     // check the balance of each "unclaimed" promotional wallet
-    projectInfo.referrer = "getaddress"
+    /*projectInfo.referrer = "getaddress"
     projectInfo.sender.forEach(function(address, key) {
         request({
             url: smartcashExplorer + '/ext/getaddress/' + address.publicKey,
@@ -366,9 +373,13 @@ function sweepFunds(projectInfo, callback) {
         
         // actually perform the sweep once the status of the promotional wallets have been updated
         if ((property === "checkAddrFlag") && (newValue == true)) {
-            // project.sweepAddr
+            //unclaimedWallets = []
+            activeProject.recvAddrs.forEach(function(address, addressKey) {
+            })
+            
+            // activeProject.sweepAddr
         }
-    })
+    })*/
     
     // claimed = true
     // swept = true

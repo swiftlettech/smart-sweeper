@@ -88,7 +88,8 @@ function appInit() {
         rpcConnected: false,
         rpcError: false,
         coreSynced: false,
-        coreSyncError: false
+        coreSyncError: false,
+        blockExplorerError: false
     }
     
     // watch for changes on the shared object
@@ -127,8 +128,16 @@ function appInit() {
                 global.sharedObject.win.webContents.send('coreSyncCheckAPP', {coreSyncError: global.sharedObject.coreSyncError})
                 global.sharedObject.win.webContents.send('coreSyncError')
             }
+            else if (property === "blockExplorerError") {
+                global.sharedObject.win.webContents.send('blockExplorerErrorAPP', {blockExplorerError: global.sharedObject.blockExplorerError})
+            }
         }
     }, 0, true)
+    
+    // send a notice to renderer when availableProjects is updated
+    watch(global.availableProjects, function(property, action, newValue, oldValue) {
+        global.sharedObject.win.webContents.send('projectsReady')
+    })
     
     global.referrer = ""
     global.apiCallbackInfo = new Map() // keeps track of API callback vars per function call
@@ -665,6 +674,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
         else if ((functionName === "sweepFunds") && (apiCallbackCounter == apiCallbackInfo.totalProjects)) {
             //global.sharedObject.logger.info('Funds were swept for project "' + projectInfo.projectName + '".')
             //refreshLogFile()
+            //global.sharedObject.win.webContents.send('fundsSwept')
         }
     }
     else if (resp.type === "error") {
@@ -677,6 +687,10 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 apiCallbackInfo.msg = resp.msg
                 modal.webContents.send('fundingTxidChecked', {msgType: 'error', msg: apiCallbackInfo.msg})
             }*/
+            
+            if (functionName === "checkBalance") {
+                global.sharedObject.blockExplorerError = true
+            }
             
             if (referrer === "sendPromotionalFunds") {
                 global.sharedObject.win.webContents.send('promotionalFundsSent', {msgType: 'error', msg: 'Promotional funds could not be sent for project "' + projectInfo.projectName + '".'})
@@ -1290,10 +1304,10 @@ ipcMain.on('sweepFunds', (event, args) => {
     
     args.projectIDs.forEach(function(projectID, projectKey) {
         index = getDbIndex(projectID)
-        project = global.availableProjects.list[index]
-        unclaimedWallets = []
+        project = global.availableProjects.list[index]        
+        smartcashapi.sweepFunds({projectIndex: index, projectID: project.id, project: project})
 
-        project.recvAddrs.forEach(function(address, addressKey) {
+        /*project.recvAddrs.forEach(function(address, addressKey) {
             if (!address.claimed) {
                 unclaimedWallets.push({
                     index: addressKey,
@@ -1304,7 +1318,7 @@ ipcMain.on('sweepFunds', (event, args) => {
             }
         })
         
-        smartcashapi.sweepFunds({projectIndex: index, project: project, sender: unclaimedWallets, receiver: project.publicKey})
+        smartcashapi.sweepFunds({projectIndex: index, project: project, sender: unclaimedWallets, receiver: project.sweepAddr})*/
     })
 })
 

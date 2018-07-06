@@ -30,11 +30,11 @@
                     <td class="editCol text-center"><strong>Edit</strong></td>
                 </tr>
 
-                <tr id="project.id" ng-class="{active: $sweepCtrl.activeProjectID == project.id}" ng-model="$sweepCtrl.availableProjects" ng-repeat="project in $sweepCtrl.availableProjectsCopy | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
+                <tr id="project.id" ng-class="{active: $sweepCtrl.activeProjectID == project.id}" ng-model="$sweepCtrl.availableProjects" ng-repeat="project in $sweepCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
                     <td colspan="9" style="padding:0;">
                         <table class="innerTable">
                             <tr>
-                                <td class="sweepCol"><input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-enabled="project.fundsSent || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError" /></td>
+                                <td class="sweepCol"><input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="$sweepCtrl.disableChecks" ng-enabled="project.fundsSent || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError" /></td>
                                 <td class="nameCol">{{project.name}}</td>
                                 <td class="addrAmtCol text-center">{{project.addrAmt | toFixedNum: 8}}</td>
                                 <td class="numAddrCol text-center">{{project.numAddr}}</td>
@@ -45,7 +45,8 @@
                                 <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$sweepCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
                             </tr>
                             <tr>
-                                <td colspan="9" class="addrCol">
+                                <td><span class="spinner" ng-show="$sweepCtrl.showSpinner[project.id]"></span></td>
+                                <td colspan="8" class="addrCol">
                                     <strong>Project Address:</strong> {{project.addressPair.publicKey}}<br />
                                     <strong>Private Key:</strong> <button class="btn btn-link" title="Show/hide private key" ng-click="$mainCtrl.showPK(project.id)"><i class="fa fa-fw fa-eye" aria-hidden="false" title="Show private key" ng-show="!project.showPrivateKey"></i> <i class="fa fa-fw fa-eye-slash" aria-hidden="false" title="Hide private key" ng-show="project.showPrivateKey"></i></button> 
                                     {{project.addressPair.privateKey | hidePrivateKey: project.showPrivateKey}}

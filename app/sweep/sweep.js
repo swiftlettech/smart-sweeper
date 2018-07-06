@@ -17,6 +17,7 @@
             $mainCtrl.sweepDateSortFlag = 1;
             
             /* some form code from: http://embed.plnkr.co/ScqA4aqno5XFSp9n3q6d */
+            ctrl.disableChecks = false;
             ctrl.projectsToSweep = {};
             ctrl.projectsToSweepCount = 0;
             ctrl.formData = {
@@ -26,7 +27,12 @@
             // load all projects
             if (angular.isArray(electron.remote.getGlobal('availableProjects').list)) {
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-                ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
+                //ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
+                
+                ctrl.showSpinner = new Array(ctrl.availableProjects.length);
+                for (var i=0; i<ctrl.showSpinner.length; i++) {
+                    ctrl.showSpinner[i] = false;
+                }
             }
             
             $mainCtrl.setPageHeight();
@@ -36,7 +42,7 @@
         ipcRenderer.on('projectsReady', (event, args) => {            
             $scope.$apply(function() {
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-                ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
+                //ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
                 console.log(ctrl.availableProjects);
                 // display the project list as 10 per page?
 
@@ -79,13 +85,25 @@
             var projectIDs = [];
             
             angular.forEach(ctrl.projectsToSweep, function(checkedProject, key) {
-                if (checkedProject)
+                if (checkedProject) {
                     projectIDs.push(parseInt(key));
+                    ctrl.showSpinner[parseInt(key)] = true;
+                }
             });
             
-            ipcRenderer.send('sweepFunds', {projectIDs: projectIDs});
+            // reset form and disable checkboxes while sweeping
+            ctrl.disableChecks = true;
+            $scope.sweepForm.$setPristine();
+            $scope.sweepForm.$setUntouched();
+            ctrl.projectsToSweep = [];
             
-            //project.hasBeenSwept (true/false)
+            ipcRenderer.send('sweepFunds', {projectIDs: projectIDs});
+            ipcRenderer.on('fundsSwept', (event, args) => {
+                ctrl.disableChecks = false;
+                for (var i=0; i<ctrl.showSpinner.length; i++) {
+                    ctrl.showSpinner[i] = false;
+                }
+            });
         };
     }
 })();
