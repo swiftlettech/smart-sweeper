@@ -10,7 +10,6 @@ const Store = require('electron-store')
 const smartcashExplorer = "http://explorer3.smartcash.cc"
 
 let db = new Store({name: "smart-sweeper"})
-let activeProject
 global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per function call
 
 /* Generic API callback function. */
@@ -25,27 +24,25 @@ let smartcashCallback = function(resp, functionName, projectInfo) {
     if (resp.type === "data") {
         if (functionName === "sweepFunds") {
             if (referrer === "getaddress") {
-                if (parseInt(resp.data.balance) == 0) {
-                    project.recvAddrs.forEach(function(address, key) {
-                        if (address.publicKey == resp.data.address) {
+                if (parseInt(resp.msg.body.balance) == 0) {
+                    apiCallbackInfo.project.recvAddrs.forEach(function(address, key) {
+                        if (address.publicKey == resp.msg.body.address)
                             address.claimed = true
-                        }
                     })
                 }
             }
         }
         
-        // once all of the projects/promotional wallets have been processed, send data back to the initiator
+        // once all of a project's promotional wallets have been processed, send data back to the initiator
         apiCallbackInfo.apiCallbackCounter++
         var apiCallbackCounter = apiCallbackInfo.apiCallbackCounter
         
         if (functionName === "sweepFunds") {
             if ((referrer === "getaddress") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                 global.smartcashCallbackInfo.checkAddrFlag = true
-                activeProject = project
                 global.availableProjects.list[projectInfo.projectIndex] = project // update project info
-                db.set('projects', global.availableProjects)
-                global.smartcashCallbackInfo.delete(referrer)
+                console.log(global.availableProjects.list[projectInfo.projectIndex])
+                //db.set('projects', global.availableProjects)
             }
         }
     }
@@ -63,10 +60,7 @@ let smartcashCallback = function(resp, functionName, projectInfo) {
 
 
 /* Check a SmartCash address for validity. */
-function checkAddress(address) {
-    //console.log('in checkAddress');
-    //console.log('address: ', address);
-    
+function checkAddress(address) {    
     try {
         smartcash.address.fromBase58Check(address)
         return true
@@ -126,6 +120,9 @@ function checkTransaction(projectInfo, callback) {
     var cmd
     
     if (global.smartcashCallbackInfo.get(projectInfo.referrer) === undefined) {
+        if (projectInfo.referrer !== "checkFundingTxids")
+            global.smartcashCallbackInfo.delete(projectInfo.referrer)
+        
         global.smartcashCallbackInfo.set(projectInfo.referrer, {
             apiCallbackCounter: 0,
             txCounter: 0,
@@ -163,7 +160,7 @@ function checkTransaction(projectInfo, callback) {
                 callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
             }
             else {
-                if (projectInfo.referrer !== "getWalletTxStatus") {                
+                if (projectInfo.referrer !== "getWalletTxStatus") {
                     if (projectInfo.referrer !== "getProjectTxStatus") {
                         if (resp.confirmations !== undefined)
                             callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
@@ -176,8 +173,10 @@ function checkTransaction(projectInfo, callback) {
                         else
                             callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
 
-                        if (global.smartcashCallbackInfo.get(projectInfo.referrer).txCounter == txArray.length)
+                        if (global.smartcashCallbackInfo.get(projectInfo.referrer).txCounter == txArray.length) {
                             callback({type: 'data', msg: global.smartcashCallbackInfo.get(projectInfo.referrer).confirmedTxFlag}, 'checkTransaction', projectInfo)
+                            global.smartcashCallbackInfo.delete(projectInfo.referrer)
+                        }
                     }
                 }
                 else {
@@ -337,20 +336,19 @@ function sweepFunds(projectInfo, callback) {
     projectInfo.projectName = project.name
     var receiver = project.sweepAddr
     
-    global.smartcashCallbackInfo.set('getaddress'+project.id, {
-        apiCallbackCounter: 0,
-        totalAddrs: project.recvAddrs.length,
-        project: project
-    })
+    if (global.smartcashCallbackInfo.get('getaddress'+project.id) === undefined) {
+        global.smartcashCallbackInfo.set('getaddress'+project.id, {
+            apiCallbackCounter: 0,
+            totalAddrs: project.recvAddrs.length,
+            project: project
+        })
+    }
     
-    //console.log(projectInfo)
-    console.log(global.apiCallbackInfo)
-    console.log('=============================')
-    console.log(global.smartcashCallbackInfo)
+    //console.log(global.smartcashCallbackInfo)
     
     // check the balance of each "unclaimed" promotional wallet
-    /*projectInfo.referrer = "getaddress"
-    projectInfo.sender.forEach(function(address, key) {
+    projectInfo.referrer = "getaddress"
+    project.recvAddrs.forEach(function(address, key) {
         request({
             url: smartcashExplorer + '/ext/getaddress/' + address.publicKey,
             method: 'GET',
@@ -371,15 +369,17 @@ function sweepFunds(projectInfo, callback) {
         console.log(newValue)
         console.log()
         
-        // actually perform the sweep once the status of the promotional wallets have been updated
-        if ((property === "checkAddrFlag") && (newValue == true)) {
+        // actually perform the sweep once the status of all the promotional wallets has been updated
+        /*if ((property === "checkAddrFlag") && (newValue == true)) {
             //unclaimedWallets = []
+            var activeProject = global.smartcashCallbackInfo.get(referrer+projectInfo.projectID)
             activeProject.recvAddrs.forEach(function(address, addressKey) {
             })
             
             // activeProject.sweepAddr
-        }
-    })*/
+            global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
+        }*/
+    })
     
     // claimed = true
     // swept = true
