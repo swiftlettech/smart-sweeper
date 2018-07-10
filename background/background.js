@@ -112,7 +112,7 @@
         apiCallbackCounter++        
     }
     
-    /* Get the current block count as a way to see if the local blockchain is valid. */
+    /* Get the current block count as a way to see if the local blockchain is current. */
     function checkBlockchain() {
         var valid = 0;
         
@@ -173,10 +173,13 @@
                 else {
                     if (valid == 1) {
                         remote.getGlobal('sharedObject').coreSynced = true;
+                        remote.getGlobal('sharedObject').coreSyncError = false;
                         apiCallback({type: 'data', msg: true}, 'checkBlockchain');
                     }
-                    else
+                    else {
+                        remote.getGlobal('sharedObject').coreSynced = false;
                         remote.getGlobal('sharedObject').coreSyncError = true;
+                    }
                 }
             }
         });

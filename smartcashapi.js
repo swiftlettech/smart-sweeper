@@ -13,18 +13,21 @@ let db = new Store({name: "smart-sweeper"})
 global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per function call
 
 /* Generic API callback function. */
-let smartcashCallback = function(resp, functionName, projectInfo) {    
+let smartcashCallback = function(resp, functionName, projectInfo, callback = null) {    
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.smartcashCallbackInfo.get(referrer+projectInfo.projectID)
     console.log('referrer: ', referrer)
+    console.log('apiCallbackInfo ID: ', referrer+projectInfo.projectID)
     console.log('apiCallbackInfo: ', apiCallbackInfo)
-    console.log('resp: ', resp)
+    console.log('resp: ', resp.msg.body)
     console.log()
     
     if (resp.type === "data") {
         if (functionName === "sweepFunds") {
-            if (referrer === "getaddress") {
-                if (parseInt(resp.msg.body.balance) == 0) {
+            if (referrer === "getaddressbalance") {
+                global.sharedObject.blockExplorerError = false
+                
+                if (parseFloat(resp.msg.body.balance) == 0) {
                     apiCallbackInfo.project.recvAddrs.forEach(function(address, key) {
                         if (address.publicKey == resp.msg.body.address)
                             address.claimed = true
@@ -38,16 +41,19 @@ let smartcashCallback = function(resp, functionName, projectInfo) {
         var apiCallbackCounter = apiCallbackInfo.apiCallbackCounter
         
         if (functionName === "sweepFunds") {
-            if ((referrer === "getaddress") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
-                global.smartcashCallbackInfo.checkAddrFlag = true
-                global.availableProjects.list[projectInfo.projectIndex] = project // update project info
-                console.log(global.availableProjects.list[projectInfo.projectIndex])
-                //db.set('projects', global.availableProjects)
+            if ((referrer === "getaddressbalance") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
+                global.availableProjects.list[projectInfo.projectIndex] = apiCallbackInfo.project // update project info
+                db.set('projects', global.availableProjects)
+                doSweep(projectInfo, callback)
             }
         }
     }
     else if (resp.type === "error") {
         console.log('error msg: ', resp.msg)
+        
+        if (referrer === "getaddressbalance") {
+            global.sharedObject.blockExplorerError = true
+        }
         
         if (projectInfo.projectName) {
             global.sharedObject.logger.error(functionName + ': ' + resp.msg + " project " + projectInfo.projectName)
@@ -187,6 +193,41 @@ function checkTransaction(projectInfo, callback) {
             }
         })
     })
+}
+
+/* Actually do the sweep. */
+function doSweep(projectInfo, callback) {
+    //unclaimedWallets = []
+    
+    var functionName = "sweepFunds"
+    var referrer = "getaddressbalance"
+    var project = projectInfo.project
+    
+    var txArray = []
+    var newTx
+    var transactions = []
+    var outputs[project.sweepAddr] = project.addrAmt
+
+    /*resp.body.last_txs.forEach(function(tx, n) {
+        if (tx.type === "vout")
+            txArray.push(tx.addresses)
+    })*/
+    
+    project.recvAddrs.forEach(function(address, addressKey) {
+        transactions.push()
+    })
+
+    //global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
+    
+    // claimed = true
+    // swept = true
+    
+    // add all non-claimed addresses to an array to use as inputs into transaction
+    
+    
+    
+    
+    //callback(resp, functionName, projectInfo)
 }
 
 /* Generate a random public/private key pair. */
@@ -336,8 +377,8 @@ function sweepFunds(projectInfo, callback) {
     projectInfo.projectName = project.name
     var receiver = project.sweepAddr
     
-    if (global.smartcashCallbackInfo.get('getaddress'+project.id) === undefined) {
-        global.smartcashCallbackInfo.set('getaddress'+project.id, {
+    if (global.smartcashCallbackInfo.get('getaddressbalance'+project.id) === undefined) {
+        global.smartcashCallbackInfo.set('getaddressbalance'+project.id, {
             apiCallbackCounter: 0,
             totalAddrs: project.recvAddrs.length,
             project: project
@@ -347,7 +388,7 @@ function sweepFunds(projectInfo, callback) {
     //console.log(global.smartcashCallbackInfo)
     
     // check the balance of each "unclaimed" promotional wallet
-    projectInfo.referrer = "getaddress"
+    projectInfo.referrer = "getaddressbalance"
     project.recvAddrs.forEach(function(address, key) {
         request({
             url: smartcashExplorer + '/ext/getaddress/' + address.publicKey,
@@ -355,36 +396,13 @@ function sweepFunds(projectInfo, callback) {
             json: true
         }, function (err, resp, body) {            
             if (resp) {
-                smartcashCallback({type: 'data', msg: resp}, 'sweepFunds', projectInfo)
+                smartcashCallback({type: 'data', msg: resp}, 'sweepFunds', projectInfo, callback)
             }
             else {
                 callback({type: 'error', msg: err}, 'sweepFunds', projectInfo)
             }
         })
     })
-    
-    watch(global.smartcashCallbackInfo, function(property, action, newValue, oldValue) {
-        console.log(property)
-        console.log(oldValue)
-        console.log(newValue)
-        console.log()
-        
-        // actually perform the sweep once the status of all the promotional wallets has been updated
-        /*if ((property === "checkAddrFlag") && (newValue == true)) {
-            //unclaimedWallets = []
-            var activeProject = global.smartcashCallbackInfo.get(referrer+projectInfo.projectID)
-            activeProject.recvAddrs.forEach(function(address, addressKey) {
-            })
-            
-            // activeProject.sweepAddr
-            global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
-        }*/
-    })
-    
-    // claimed = true
-    // swept = true
-    
-    // add all non-claimed addresses to an array to use as inputs into transaction
 }
 
 module.exports = {

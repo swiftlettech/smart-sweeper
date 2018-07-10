@@ -259,7 +259,7 @@ function createBgWindow() {
     bgWin.on("ready-to-show", () => {
         setTimeout(function() {
             closeSplashScreen()
-            //bgWin.show()
+            bgWin.show()
         }, 12000)
     })
 
@@ -540,6 +540,8 @@ let apiCallback = function(resp, functionName, projectInfo) {
         var apiCallbackCounter = apiCallbackInfo.apiCallbackCounter
 
         if (functionName === "checkBalance") {
+            global.sharedObject.blockExplorerError = false
+            
             if ((referrer === "getClaimedFundsInfo") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                 // store the claimed funds and claimed wallets total in a config file
                 global.appConfig.claimedFundsTotal = apiCallbackInfo.claimedFunds
@@ -1306,19 +1308,6 @@ ipcMain.on('sweepFunds', (event, args) => {
         index = getDbIndex(projectID)
         project = global.availableProjects.list[index]        
         smartcashapi.sweepFunds({projectIndex: index, projectID: project.id, project: project})
-
-        /*project.recvAddrs.forEach(function(address, addressKey) {
-            if (!address.claimed) {
-                unclaimedWallets.push({
-                    index: addressKey,
-                    publicKey: address.publicKey,
-                    privateKey: address.privateKey,
-                    txin: address.sentTxid
-                })
-            }
-        })
-        
-        smartcashapi.sweepFunds({projectIndex: index, project: project, sender: unclaimedWallets, receiver: project.sweepAddr})*/
     })
 })
 
