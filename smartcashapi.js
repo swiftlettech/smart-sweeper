@@ -44,6 +44,7 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
             if ((referrer === "getaddressbalance") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                 global.availableProjects.list[projectInfo.projectIndex] = apiCallbackInfo.project // update project info
                 db.set('projects', global.availableProjects)
+                console.log("callback:", callback)
                 doSweep(projectInfo, callback)
             }
         }
@@ -196,36 +197,95 @@ function checkTransaction(projectInfo, callback) {
 }
 
 /* Actually do the sweep. */
-function doSweep(projectInfo, callback) {
-    //unclaimedWallets = []
-    
+function doSweep(projectInfo, callback) {    
     var functionName = "sweepFunds"
     var referrer = "getaddressbalance"
     var project = projectInfo.project
     
+    var unclaimedWallets = []
+    var unclaimedWalletsPKs = []
     var txArray = []
     var newTx
     var transactions = []
-    var outputs[project.sweepAddr] = project.addrAmt
-
-    /*resp.body.last_txs.forEach(function(tx, n) {
-        if (tx.type === "vout")
-            txArray.push(tx.addresses)
-    })*/
+    var outputs = {}
     
+    // put all unclaimed wallets in a separate array
     project.recvAddrs.forEach(function(address, addressKey) {
-        transactions.push()
+        if (!address.claimed) {
+            unclaimedWallets.push(address.publicKey)
+            unclaimedWalletsPKs.push(address.privateKey)
+        }
     })
+    
+    var getTxInfoCmd = {
+        method: 'getrawtransaction',
+        params: [project.recvAddrs[0].sentTxid, 1]
+    }
+
+    rpc.sendCmd(getTxInfoCmd, function(err, resp) {
+        console.log("getrawtransaction resp: ", resp)
+        
+        if (err) {
+            callback({type: 'error', msg: "getrawtransaction failed."}, 'sweepFunds', projectInfo)
+        }
+        else {
+            resp.vout.forEach(function(vout, voutIndex) {
+                unclaimedWallets.forEach(function(address, addrIndex) {
+                    if (vout.scriptPubKey.addresses.includes(address)) {
+                        transactions.push({
+                            'txid': resp.txid,
+                            'vout': vout.n
+                        })
+                    }
+                })
+            })
+
+            outputs[project.sweepAddr] = (project.addrAmt * transactions.length) - global.sharedObject.txFee
+            
+            var createTxCmd = {
+                method: 'createrawtransaction',
+                params: [transactions, outputs]
+            }
+            
+            rpc.sendCmd(createTxCmd, function(err, resp) {
+                console.log("createrawtransaction resp: ", resp)
+                
+                if (err) {
+                    callback({type: 'error', msg: "createrawtransaction failed."}, 'sweepFunds', projectInfo)
+                }
+                else {
+                    /*var decodeTxCmd = {
+                        method: 'decoderawtransaction',
+                        params: [resp]
+                    }
+                    
+                    rpc.sendCmd(decodeTxCmd, function(err, resp) {
+                        console.log("decoderawtransaction resp: ", resp)
+                    })*/
+                    
+                    var signTxCmd = {
+                        method: 'signrawtransaction',
+                        params: [resp, null, unclaimedWalletsPKs]
+                    }
+
+                    rpc.sendCmd(signTxCmd, function(err, resp) {
+                        console.log("signrawtransaction resp: ", resp)
+                        
+                        if (err) {
+                            callback({type: 'error', msg: "signrawtransaction failed."}, 'sweepFunds', projectInfo)
+                        }
+                        else if (resp.complete) {
+                        }
+                    })
+                }
+            })
+        }
+    })
+    
+    
 
     //global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
-    
-    // claimed = true
     // swept = true
-    
-    // add all non-claimed addresses to an array to use as inputs into transaction
-    
-    
-    
     
     //callback(resp, functionName, projectInfo)
 }
@@ -303,7 +363,7 @@ function sendFunds(projectInfo, callback) {
                         if (err) {
                             callback({type: 'error', msg: "getrawtransaction failed."}, 'sendFunds', projectInfo)
                         }
-                        else {                            
+                        else {
                             resp.vout.forEach(function(vout, voutIndex) {
                                 if (vout.scriptPubKey.addresses.includes(projectInfo.fromAddr)) {
                                     transactions.push({
@@ -326,7 +386,7 @@ function sendFunds(projectInfo, callback) {
                                 if (err) {
                                     callback({type: 'error', msg: "createrawtransaction failed."}, 'sendFunds', projectInfo)
                                 }
-                                else {                                    
+                                else {
                                     var signTxCmd = {
                                         method: 'signrawtransaction',
                                         params: [resp, null, [projectInfo.fromPK]]
@@ -336,7 +396,7 @@ function sendFunds(projectInfo, callback) {
                                         if (err) {
                                             callback({type: 'error', msg: "signrawtransaction failed."}, 'sendFunds', projectInfo)
                                         }
-                                        else if (resp.complete) {                                            
+                                        else if (resp.complete) {
                                             var sendTxCmd = {
                                                 method: 'sendrawtransaction',
                                                 params: [resp.hex]

@@ -156,10 +156,13 @@
 
                             if (valid == 2) {
                                 remote.getGlobal('sharedObject').coreSynced = true;
+                                remote.getGlobal('sharedObject').coreSyncError = false;
                                 apiCallback({type: 'data', msg: true}, 'checkBlockchain');
                             }
-                            else
+                            else {
                                 remote.getGlobal('sharedObject').coreSyncError = true;
+                                remote.getGlobal('sharedObject').coreSynced = false;
+                            }
                         }
                         else {
                             console.log('checkBlockchain');
