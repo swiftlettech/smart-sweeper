@@ -89,7 +89,7 @@ The database (smart-sweeper.json), the app config file (smart-sweeper-config.jso
 * **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/SmartSweeper
 * **Mac**: ~/Library/Application Support/SmartSweeper
 
-The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg).
+The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). **It is recommended that you backup smart-sweeper.json to a safe place.**
 
 
 Other software used

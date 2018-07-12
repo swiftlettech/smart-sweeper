@@ -16,11 +16,11 @@ global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per
 let smartcashCallback = function(resp, functionName, projectInfo, callback = null) {    
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.smartcashCallbackInfo.get(referrer+projectInfo.projectID)
-    console.log('referrer: ', referrer)
-    console.log('apiCallbackInfo ID: ', referrer+projectInfo.projectID)
-    console.log('apiCallbackInfo: ', apiCallbackInfo)
-    console.log('resp: ', resp.msg.body)
-    console.log()
+    //console.log('smartcashCallback referrer: ', referrer)
+    //console.log('apiCallbackInfo ID: ', referrer+projectInfo.projectID)
+    //console.log('apiCallbackInfo: ', apiCallbackInfo)
+    //console.log('resp: ', resp.msg.body)
+    //console.log()
     
     if (resp.type === "data") {
         if (functionName === "sweepFunds") {
@@ -44,7 +44,6 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
             if ((referrer === "getaddressbalance") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                 global.availableProjects.list[projectInfo.projectIndex] = apiCallbackInfo.project // update project info
                 db.set('projects', global.availableProjects)
-                console.log("callback:", callback)
                 doSweep(projectInfo, callback)
             }
         }
@@ -103,7 +102,7 @@ function checkBalance(projectInfo, callback) {
             console.log(err)
             
             if (err)
-                callback({type: 'error', msg: err.code}, 'checkBalance', projectInfo)
+                callback({type: 'error', msg: resp}, 'checkBalance', projectInfo)
         }
     })
 }
@@ -196,11 +195,11 @@ function checkTransaction(projectInfo, callback) {
     })
 }
 
-/* Actually do the sweep. */
-function doSweep(projectInfo, callback) {    
-    var functionName = "sweepFunds"
+/* Actually sweep the funds. */
+function doSweep(projectInfo, callback) {
     var referrer = "getaddressbalance"
     var project = projectInfo.project
+    projectInfo.referrer = "sweepFunds"
     
     var unclaimedWallets = []
     var unclaimedWalletsPKs = []
@@ -223,7 +222,7 @@ function doSweep(projectInfo, callback) {
     }
 
     rpc.sendCmd(getTxInfoCmd, function(err, resp) {
-        console.log("getrawtransaction resp: ", resp)
+        //console.log("getrawtransaction resp: ", resp)
         
         if (err) {
             callback({type: 'error', msg: "getrawtransaction failed."}, 'sweepFunds', projectInfo)
@@ -248,7 +247,7 @@ function doSweep(projectInfo, callback) {
             }
             
             rpc.sendCmd(createTxCmd, function(err, resp) {
-                console.log("createrawtransaction resp: ", resp)
+                //console.log("createrawtransaction resp: ", resp)
                 
                 if (err) {
                     callback({type: 'error', msg: "createrawtransaction failed."}, 'sweepFunds', projectInfo)
@@ -269,25 +268,35 @@ function doSweep(projectInfo, callback) {
                     }
 
                     rpc.sendCmd(signTxCmd, function(err, resp) {
-                        console.log("signrawtransaction resp: ", resp)
+                        //console.log("signrawtransaction resp: ", resp)
                         
                         if (err) {
                             callback({type: 'error', msg: "signrawtransaction failed."}, 'sweepFunds', projectInfo)
                         }
                         else if (resp.complete) {
+                            var sendTxCmd = {
+                                method: 'sendrawtransaction',
+                                params: [resp.hex]
+                            }
+
+                            rpc.sendCmd(sendTxCmd, function(err, resp) {
+                                console.log(err)
+                                console.log(resp)
+
+                                if (err) {
+                                    callback({type: 'error', msg: "sendrawtransaction failed."}, 'sweepFunds', projectInfo)
+                                }
+                                else {
+                                    global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
+                                    callback({type: 'data', msg: resp}, 'sweepFunds', projectInfo)
+                                }
+                            })
                         }
                     })
                 }
             })
         }
     })
-    
-    
-
-    //global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
-    // swept = true
-    
-    //callback(resp, functionName, projectInfo)
 }
 
 /* Generate a random public/private key pair. */

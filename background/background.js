@@ -11,6 +11,7 @@
     const request = window.nodeRequire('request');
     const {is} = window.nodeRequire('electron-util');
     const isOnline = window.nodeRequire('is-online');
+    const Store = window.nodeRequire('electron-store')
     const ps = window.nodeRequire('ps-node');
     const smartcashapi = window.nodeRequire('./smartcashapi');
     const smartcashExplorer = "http://explorer3.smartcash.cc";
@@ -20,8 +21,9 @@
     basepath.pop();
     basepath = basepath.join(path.sep);
     
-    var apiCallbackCounter, isOnlineFlag;
-    var smartcashProg, smartcashPath, smartcash;
+    let apiCallbackCounter, isOnlineFlag;
+    let smartcashProg, smartcashPath, smartcash;
+    let db = new Store({name: "smart-sweeper"});
     
     init();
     
@@ -77,6 +79,12 @@
                         }
                     }
                 }, 30000);
+                
+                // check address balances once per minute to avoid block explorer connection issues
+                setInterval(() => {
+                    ipcRenderer.send('getClaimedFundsInfo');
+                    ipcRenderer.send('getWalletTxStatus');
+                }, 60000);
             }
         })
     }
@@ -95,10 +103,11 @@
                 ipcRenderer.send('getProjectTxStatus');
             }
             else if (functionName === "checkBlockchain") {
+                remote.getGlobal('sharedObject').blockExplorerError = false
+                
                 // automatically sweep funds if necessary if the blockchain is up-to-date
                 //if (resp.msg) {
-                    // auto sweep funds on startup
-                    // start 24 hour background process (w/ 24hr delay) to check for projects past their auto sweep date
+                    //autoSweep()
                 //}
             }
         }
@@ -110,6 +119,15 @@
         }
         
         apiCallbackCounter++        
+    }
+    
+    /* Auto-sweep funds. */
+    function autoSweep() {
+        // auto sweep funds on startup
+        
+        // start 24 hour background process to check for projects past their auto sweep date
+        /*setInterval(() => {
+          }, );*/
     }
     
     /* Get the current block count as a way to see if the local blockchain is current. */
@@ -139,12 +157,12 @@
                 
                 //console.log('valid #1: ', valid);
                 
-                // there is an active internet connection, get the total block count from the online block explorer
+                // there is an active internet connection, also get the total block count from the online block explorer
                 if (remote.getGlobal('sharedObject').isOnline) {
                     request({
                         url: smartcashExplorer + '/api/getblockcount',
                         method: 'GET'
-                    }, function (err, resp, body) {                        
+                    }, function (err, resp, body) {
                         if (resp && resp.body) {
                             var onlineBlockCount = parseInt(resp.body);
 
@@ -168,8 +186,10 @@
                             console.log('checkBlockchain');
                             console.log(err);
 
-                            if (err)
+                            if (err) {
+                                remote.getGlobal('sharedObject').blockExplorerError = true;
                                 apiCallback({type: 'error', msg: err}, 'checkBlockchain');
+                            }
                         }
                     });
                 }
@@ -200,8 +220,9 @@
         rpc.statusCheck(function(resp) {
             if (!resp)
                 apiCallback({type: 'error'}, 'rpcCheck');
-            else
+            else {
                 apiCallback({type: 'data'}, 'rpcCheck');
+            }
         });
     }
     
@@ -252,8 +273,6 @@
     function updateData() {
         // dashboard info
         ipcRenderer.send('checkProjectBalances');
-        ipcRenderer.send('getClaimedFundsInfo');
-        ipcRenderer.send('getWalletTxStatus');
 
         // update a project's txConfirmed flag
         ipcRenderer.send('getAllTxStatus');

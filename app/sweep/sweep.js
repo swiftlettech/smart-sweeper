@@ -103,6 +103,7 @@
                 for (var i=0; i<ctrl.showSpinner.length; i++) {
                     ctrl.showSpinner[i] = false;
                 }
+                $mainCtrl.setModalMsg(args.msgType, args.msg);
             });
         };
     }
