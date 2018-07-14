@@ -14,7 +14,7 @@
     const Store = window.nodeRequire('electron-store')
     const ps = window.nodeRequire('ps-node');
     const smartcashapi = window.nodeRequire('./smartcashapi');
-    const smartcashExplorer = "http://explorer3.smartcash.cc";
+    const smartcashExplorer = "https://smart.ccore.online";
     const rpc = window.nodeRequire('./rpc-client');
     
     var basepath = __dirname.split(path.sep);

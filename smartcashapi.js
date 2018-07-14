@@ -7,7 +7,7 @@ const http = require('http')
 const util = require('util')
 const {watch} = require('melanke-watchjs')
 const Store = require('electron-store')
-const smartcashExplorer = "http://explorer3.smartcash.cc"
+const smartcashExplorer = "https://smart.ccore.online"
 
 let db = new Store({name: "smart-sweeper"})
 global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per function call
@@ -27,7 +27,7 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
             if (referrer === "getaddressbalance") {
                 global.sharedObject.blockExplorerError = false
                 
-                if (parseFloat(resp.msg.body.balance) == 0) {
+                if (resp.msg.body.balance == 0) {
                     apiCallbackInfo.project.recvAddrs.forEach(function(address, key) {
                         if (address.publicKey == resp.msg.body.address)
                             address.claimed = true
@@ -83,9 +83,10 @@ function checkBalance(projectInfo, callback) {
         method: 'GET',
         json: true
     }, function (err, resp, body) {
-        //console.log('checkBalance')
+        console.log('checkBalance')
+        console.log(projectInfo.address)
         //console.log(err)
-        //console.log(resp.body)
+        console.log(resp.body)
         
         if (resp) {
             var balance
@@ -347,7 +348,7 @@ function sendFunds(projectInfo, callback) {
         
         if (resp) {
             // check to see if there is enough in the balance to cover the amount to send
-            if (parseFloat(resp.body.balance) >= projectInfo.total) {
+            if (resp.body.balance >= projectInfo.total) {
                 var txArray = []
                 var newTx
                 var transactions = []

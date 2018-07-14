@@ -79,6 +79,7 @@ function appInit() {
     // create global object to be shared amongst renderer processes
     global.sharedObject = {
         txFee: 0.002,
+        explorerCheckInterval: 1200,
         win: null,
         logger: null,
         isOnline: false,
@@ -440,21 +441,25 @@ function createDialog(event, window, type, text, fatal = false) {
 let apiCallback = function(resp, functionName, projectInfo) {
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.apiCallbackInfo.get(referrer)
-    console.log('apiCallback referrer: ', referrer)
-    console.log('apiCallbackInfo: ', apiCallbackInfo)
-    //console.log('resp: ', resp)
-    //console.log()
+    
+    if (referrer === "getClaimedFundsInfo") {
+        //console.log('apiCallback referrer: ', referrer)
+        //console.log('apiCallbackInfo: ', apiCallbackInfo)
+        //console.log()
+    }
     
     if (apiCallbackInfo !== undefined) {
         if (resp.type === "data") {
-            console.log('projectInfo: ', projectInfo)
-            console.log('from ' + functionName)
-            console.log(resp)
-            console.log()
+            if (referrer === "getClaimedFundsInfo") {
+                console.log('projectInfo: ', projectInfo)
+                //console.log('from ' + functionName)
+                console.log(resp)
+                console.log()
+            }
 
             if (functionName === "checkBalance") {
                 if (referrer === "getClaimedFundsInfo") {
-                    if (resp.msg === "0") {
+                    if (resp.msg == 0 && !global.availableProjects.list[projectInfo.projectIndex].fundsSwept) {
                         global.availableProjects.list[projectInfo.projectIndex].recvAddrs[projectInfo.addrIndex].claimed = true
                         apiCallbackInfo.claimedFunds += projectInfo.addrAmt
                         apiCallbackInfo.claimedWallets++
@@ -464,7 +469,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     }
                 }
                 else if (referrer === "getSweptFundsInfo") {
-                    if (resp.msg === "0")
+                    if (resp.msg == 0)
                         global.availableProjects.list[projectInfo.projectIndex].recvAddrs[projectInfo.addrIndex].swept = true
                 }
             }
@@ -577,8 +582,6 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     var projectSweptFunds
                     var sweptWalletsCount = 0
 
-                    //console.log(global.availableProjects.list[projectInfo.projectIndex])
-
                     global.availableProjects.list.forEach(function(project, projectKey) {
                         projectSweptFunds = 0
                         
@@ -586,17 +589,15 @@ let apiCallback = function(resp, functionName, projectInfo) {
                             project.recvAddrs.forEach(function(address, addrKey) {
                                 if (address.swept) {
                                     projectSweptFunds += project.addrAmt
-                                    //sweptFunds += project.currentFunds
                                     sweptWalletsCount++
                                 }
                             })
                             
-                            if (projectSweptFunds > 0)
-                                totalSweptFunds = totalSweptFunds + (projectSweptFunds - global.sharedObject.txFee)
+                            totalSweptFunds = totalSweptFunds + (projectSweptFunds - global.sharedObject.txFee)
                         }
                     });
 
-                    //db.set('projects', global.availableProjects)
+                    db.set('projects', global.availableProjects)
                     global.sharedObject.win.webContents.send('projectsReady')
                     global.sharedObject.win.webContents.send('sweptFundsInfo', {sweptFunds: totalSweptFunds, sweptWalletsCount: sweptWalletsCount})
                     global.apiCallbackInfo.delete(referrer)
