@@ -1,10 +1,10 @@
 {
     "name": "smart-sweeper",
     "productName": "SmartSweeper",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Sweeper application for SmartCash cryptocurrency to allow easy retrieval of gift funds.",
     "homepage": "https://swiftlettech.github.io/smart-sweeper-website/",
-    "author": "Swiftlet Technology",
+    "author": "Swiftlet Technology, LLC",
     "keywords": [],
     "license": "GPL-3.0",
     "repository": {
@@ -19,22 +19,17 @@
         "dist": "electron-builder build -w"
     },
     "build": {
-        "files": [
-            "**/*",
-            "config/"
-        ],
+		"files": [
+			"**/*",
+			"config/*"
+		],
         "appId": "smart-sweeper.app",
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true
+        },
         "win": {
-            "target": {
-                "nsis": {
-                    "oneClick": false,
-                    "allowToChangeInstallationDirectory": true
-                },
-                "arch": [
-                    "x64",
-                    "ia32"
-                ]
-            }
+            "target": "NSIS"
         }
     },
     "dependencies": {
@@ -48,15 +43,15 @@
         "exp-config": "^2.0.1",
         "is-online": "^7.0.0",
         "melanke-watchjs": "^1.4.3",
-        "node-smartcash": "^1.1.0",
+        "node-smartcash": "^1.1.1",
         "ps-node": "^0.1.6",
-        "request": "^2.85.0",
-        "smartcashjs-lib": "^3.3.2",
-        "winston": "^3.0.0-rc5"
+        "request": "^2.87.0",
+        "smartcashjs-lib": "^3.3.4",
+        "winston": "^3.0.0"
     },
     "devDependencies": {
-        "electron": "^1.8.3",
+        "electron": "^1.8.7",
         "electron-builder": "^20.11.1",
-        "electron-packager": "^12.0.2"
+        "electron-packager": "^12.1.0"
     }
 }
