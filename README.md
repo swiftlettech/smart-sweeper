@@ -89,7 +89,12 @@ The database (smart-sweeper.json), the app config file (smart-sweeper-config.jso
 * **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/SmartSweeper
 * **Mac**: ~/Library/Application Support/SmartSweeper
 
-The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). **It is recommended that you backup smart-sweeper.json to a safe place.**
+The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). **It is recommended that you back up smart-sweeper.json to a safe place.**
+
+
+KNOWN ISSUES
+---------------
+* electron-store error: "EPERM operation not permitted" randomly occurs on Windows when reading a config file. SmartSweeper will exit when it does.
 
 
 Other software used
@@ -111,8 +116,10 @@ Software | License
 [melanke-watchjs](https://github.com/melanke/Watch.JS) | MIT
 [node-smartcash](https://github.com/miyakoj/node-smartcash) | MIT
 [ps-node](https://github.com/neekey/ps) | MIT
+[request](https://github.com/request/request) | Apache-2.0
 [smartcashjs-lib](https://github.com/SmartCash/SmartCashjs-lib) | MIT
 [SmartCash Paper Wallet Generator](https://github.com/SmartCash/PaperWalletGenerator) | ?
 [winston](https://github.com/winstonjs/winston) | MIT
 
-[The SmartExplorer API](http://explorer3.smartcash.cc) is used to check the current block count and to get info about project addresses.
+
+[The CryptoCore Explorer API](https://smart.ccore.online) is used to check the current block count and to get info about project addresses.

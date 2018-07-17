@@ -10,10 +10,15 @@ const Store = require('electron-store')
 const smartcashExplorer = "https://smart.ccore.online"
 
 let db = new Store({name: "smart-sweeper"})
+let reqPerMin
 global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per function call
 
+function init() {
+    reqPerMin = parseInt(60 / global.sharedObject.explorerCheckInterval)
+}
+
 /* Generic API callback function. */
-let smartcashCallback = function(resp, functionName, projectInfo, callback = null) {    
+let smartcashCallback = function(resp, functionName, projectInfo, callback = null) {
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.smartcashCallbackInfo.get(referrer+projectInfo.projectID)
     //console.log('smartcashCallback referrer: ', referrer)
@@ -88,7 +93,7 @@ function checkBalance(projectInfo, callback) {
         //console.log(err)
         console.log(resp.body)
         
-        if (resp) {
+        if (resp.body.error === undefined) {
             var balance
             
             if (resp.body.balance !== undefined)
@@ -476,6 +481,7 @@ function sweepFunds(projectInfo, callback) {
 }
 
 module.exports = {
+    init: init,
     checkAddress: checkAddress,
     checkBalance: checkBalance,
     checkTransaction: checkTransaction,

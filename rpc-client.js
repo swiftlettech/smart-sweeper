@@ -1,11 +1,26 @@
 const fs = require('fs')
+const path = require('path')
 const os = require('os')
-let config = require("exp-config")
 const electron = require('electron')
 const {ipcRenderer} = electron
 const smartcash = require('node-smartcash')
 
-let client
+let config, client
+
+// check for default config file, create an empty one if it doesn't exist
+if (!fs.existsSync('config'))
+    fs.mkdirSync('config')
+
+var defaultConfigPath = path.join('config', 'development.json')
+try {
+    fs.openSync(defaultConfigPath, 'r')
+}
+catch(err) {
+    if (err.code === "ENOENT")
+        fs.writeFileSync(defaultConfigPath, '{}')
+}
+
+config = require("exp-config")
 
 // check for existing config file, create it if it doesn't exist
 try {

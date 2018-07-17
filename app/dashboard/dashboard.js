@@ -34,17 +34,25 @@
                 // load the last saved dashboard values from the app config file
                 // if the user has not gone online during the current session
                 if (!args.isOnline && !$mainCtrl.hasBeenOnline) {
-                    var appConfig = electron.remote.getGlobal('appConfig');
+                    var appConfig;
                     
-                    ctrl.availableBalance = appConfig.availableBalanceTotal;
-                    ctrl.claimedFunds = appConfig.claimedFundsTotal;
-                    ctrl.claimedWalletsCount = appConfig.claimedWalletsTotal;
-                    ctrl.pendingFunds = appConfig.pendingFundsTotal;
-                    ctrl.pendingWalletsCount = appConfig.pendingWalletsTotal;
-                    ctrl.confirmedFunds = appConfig.confirmedFundsTotal;
-                    ctrl.confirmedWalletsCount = appConfig.confirmedWalletsTotal;
-                    ctrl.sweptFunds = appConfig.sweptFundsTotal;
-                    ctrl.sweptWalletsCount = appConfig.sweptWalletsTotal;
+                    try {
+                        appConfig = electron.remote.getGlobal('appConfig');
+                        
+                        ctrl.availableBalance = appConfig.availableBalanceTotal;
+                        ctrl.claimedFunds = appConfig.claimedFundsTotal;
+                        ctrl.claimedWalletsCount = appConfig.claimedWalletsTotal;
+                        ctrl.pendingFunds = appConfig.pendingFundsTotal;
+                        ctrl.pendingWalletsCount = appConfig.pendingWalletsTotal;
+                        ctrl.confirmedFunds = appConfig.confirmedFundsTotal;
+                        ctrl.confirmedWalletsCount = appConfig.confirmedWalletsTotal;
+                        ctrl.sweptFunds = appConfig.sweptFundsTotal;
+                        ctrl.sweptWalletsCount = appConfig.sweptWalletsTotal;
+                    }
+                    catch(err) {
+                        // show an error message that exits the app on close
+                        ipcRenderer.send('showErrorDialog', {text: err, fatal: true});
+                    }
                 }
             });
             

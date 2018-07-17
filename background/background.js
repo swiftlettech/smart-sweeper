@@ -17,6 +17,7 @@
     const smartcashExplorer = "https://smart.ccore.online";
     const rpc = window.nodeRequire('./rpc-client');
     
+    // get the parent dir
     var basepath = __dirname.split(path.sep);
     basepath.pop();
     basepath = basepath.join(path.sep);
@@ -24,10 +25,12 @@
     let apiCallbackCounter, isOnlineFlag;
     let smartcashProg, smartcashPath, smartcash;
     let db = new Store({name: "smart-sweeper"});
+    let reqPerMin
     
     init();
     
     function init() {
+        reqPerMin = parseInt(60 / global.sharedObject.explorerCheckInterval)
         //global.bgApiCallbackInfo = new Map() // keeps track of API callback vars per function call
         
         // load smartcash and the RPC explorer
@@ -163,7 +166,7 @@
                         url: smartcashExplorer + '/api/getblockcount',
                         method: 'GET'
                     }, function (err, resp, body) {
-                        if (resp && resp.body) {
+                        if (resp.body.error === undefined) {
                             var onlineBlockCount = parseInt(resp.body);
 
                             if (localBlockCount == onlineBlockCount);

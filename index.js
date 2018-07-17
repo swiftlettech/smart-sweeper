@@ -78,8 +78,8 @@ module.exports = {
 function appInit() {
     // create global object to be shared amongst renderer processes
     global.sharedObject = {
-        txFee: 0.002,
-        explorerCheckInterval: 1200,
+        txFee: 0.002, // minimum transaction fee
+        explorerCheckInterval: 1.2, // minimum time between block explorer requests
         win: null,
         logger: null,
         isOnline: false,
@@ -192,6 +192,7 @@ function appInit() {
     
     global.sharedObject.logger = winston.loggers.get('logger')
     global.sharedObject.logger.emitErrs = true
+    smartcashapi.init()
     
     //if (isDev)
         //global.sharedObject.logger.add(new transports.Console({format: format.simple()}))
@@ -1006,6 +1007,11 @@ ipcMain.on('editProject', (event, args) => {
     createModal('edit')
 })
 
+// exit the app
+ipcMain.on('exitApp', (event, args) => {
+    app.exit()
+})
+
 // send funds to a project
 ipcMain.on('fundProject', (event, args) => {    
     global.apiCallbackInfo.set('fundProject', {
@@ -1265,8 +1271,10 @@ ipcMain.on('showConfirmationDialog', (event, text) => {
 ipcMain.on('showErrorDialog', (event, content) => {
     var fatal = false
     
-    if (content.fatal)
+    if (content.fatal) {
         fatal = true
+        global.sharedObject.logger.error(content.text)
+    }
     
     if (modal === undefined || modal == null)
         createDialog(event, global.sharedObject.win, 'error', content.text)
