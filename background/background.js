@@ -14,7 +14,7 @@
     const Store = window.nodeRequire('electron-store')
     const ps = window.nodeRequire('ps-node');
     const smartcashapi = window.nodeRequire('./smartcashapi');
-    const smartcashExplorer = "https://smart.ccore.online";
+    const smartcashExplorer = "https://insight.smartcash.cc/api/";
     const rpc = window.nodeRequire('./rpc-client');
     
     // get the parent dir
@@ -25,14 +25,11 @@
     let apiCallbackCounter, isOnlineFlag;
     let smartcashProg, smartcashPath, smartcash;
     let db = new Store({name: "smart-sweeper"});
-    let reqPerMin
+    //global.bgApiCallbackInfo = new Map() // keeps track of API callback vars per function call
     
     init();
     
-    function init() {
-        reqPerMin = parseInt(60 / global.sharedObject.explorerCheckInterval)
-        //global.bgApiCallbackInfo = new Map() // keeps track of API callback vars per function call
-        
+    function init() {        
         // load smartcash and the RPC explorer
         if (is.windows) {
             smartcashProg = "smartcash-qt.exe";
@@ -163,11 +160,11 @@
                 // there is an active internet connection, also get the total block count from the online block explorer
                 if (remote.getGlobal('sharedObject').isOnline) {
                     request({
-                        url: smartcashExplorer + '/api/getblockcount',
+                        url: smartcashExplorer + 'status?q=getInfo',
                         method: 'GET'
-                    }, function (err, resp, body) {
-                        if (resp.body.error === undefined) {
-                            var onlineBlockCount = parseInt(resp.body);
+                    }, function (err, resp, body) {                        
+                        if (resp.body.error === undefined) {                            
+                            var onlineBlockCount = resp.body.blocks;
 
                             if (localBlockCount == onlineBlockCount);
                                 valid++

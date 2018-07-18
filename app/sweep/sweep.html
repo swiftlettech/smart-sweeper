@@ -1,5 +1,7 @@
 <div id="sweepTab" ng-init="init()">
-    <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> "Claimed Addresses", "% Claimed", and "Swept?" will show "n/a" if funds have not been sent to the promotional wallets.</p>
+    <div class="infoBlock" style="margin-bottom:0;">
+        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> "Claimed Addresses", "% Claimed", and "Swept?" will show "n/a" if funds have not been sent to the promotional wallets.</p>
+    </div>
     
     <div id="projectList">
         <h4>Projects</h4>
@@ -35,7 +37,7 @@
                         <table class="innerTable">
                             <tr>
                                 <td class="sweepCol"><input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="$sweepCtrl.disableChecks || project.fundsSwept || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError" ng-enabled="project.fundsSent" /></td>
-                                <td class="nameCol">{{project.name}}</td>
+                                <td class="nameCol">{{project.name}} <span ng-hide="project.sweepTxConfirmed === undefined"><i class="fa fa-fw fa-question" title="Pending" ng-show="!project.sweepTxConfirmed"></i><i class="fa fa-fw fa-check" title="Confirmed" ng-show="project.sweepTxConfirmed"></i></span></td>
                                 <td class="addrAmtCol text-center">{{project.addrAmt | toFixedNum: 8}}</td>
                                 <td class="numAddrCol text-center">{{project.numAddr}}</td>
                                 <td class="claimedAddrCol text-center"><span ng-show="project.fundsSent">{{project.claimedAddr}}</span><span ng-show="!project.fundsSent">n/a</span></td>

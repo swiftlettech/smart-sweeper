@@ -244,7 +244,8 @@ function createBgWindow() {
         center: true,
         //focusable: false,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js')
+            preload: path.join(__dirname, 'preload.js'),
+            devTools: true
         },
         show: false
     }
@@ -264,6 +265,10 @@ function createBgWindow() {
             bgWin.show()
         }, 12000)
     })
+    
+    bgWin.on('show', () => {
+        //bgWin.openDevTools()
+    })
 
     bgWin.on('closed', () => {        
         bgWin = null
@@ -280,7 +285,7 @@ function createWindow() {
         center: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-            //devTools: false
+            devTools: true
         },
         show: false
     }
@@ -522,8 +527,8 @@ let apiCallback = function(resp, functionName, projectInfo) {
             }
             else if (functionName === "getAddressInfo") {
                 if (referrer === "getProjectAddressInfo") {
-                    apiCallbackInfo.balance = parseFloat(resp.msg.balance)
-                    apiCallbackInfo.txs = resp.msg.last_txs
+                    apiCallbackInfo.balance = resp.msg.balance
+                    apiCallbackInfo.txs = resp.msg.transactions
                 }
             }
             else if (functionName === "sendFunds") {
@@ -573,9 +578,12 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     })
 
                     db.set('projects', global.availableProjects)
-                    global.sharedObject.win.webContents.send('projectsReady')
-
-                    global.sharedObject.win.webContents.send('claimedFundsInfo', {claimedFunds: apiCallbackInfo.claimedFunds, claimedWallets: apiCallbackInfo.claimedWallets})
+                    
+                    if (global.sharedObject.win) {
+                        global.sharedObject.win.webContents.send('projectsReady')
+                        global.sharedObject.win.webContents.send('claimedFundsInfo', {claimedFunds: apiCallbackInfo.claimedFunds, claimedWallets: apiCallbackInfo.claimedWallets})
+                    }
+                    
                     global.apiCallbackInfo.delete(referrer)
                 }
                 else if (referrer === "getSweptFundsInfo") {
@@ -599,8 +607,12 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     });
 
                     db.set('projects', global.availableProjects)
-                    global.sharedObject.win.webContents.send('projectsReady')
-                    global.sharedObject.win.webContents.send('sweptFundsInfo', {sweptFunds: totalSweptFunds, sweptWalletsCount: sweptWalletsCount})
+                    
+                    if (global.sharedObject.win) {
+                        global.sharedObject.win.webContents.send('projectsReady')
+                        global.sharedObject.win.webContents.send('sweptFundsInfo', {sweptFunds: totalSweptFunds, sweptWalletsCount: sweptWalletsCount})
+                    }
+                    
                     global.apiCallbackInfo.delete(referrer)
                 }
             }
@@ -628,21 +640,32 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     }
 
                     db.set('projects', global.availableProjects)
-                    global.sharedObject.win.webContents.send('projectsReady')
-                    modal.webContents.send('fundingTxidsChecked', {msgType: 'data', confirmed: global.availableProjects.list[projectInfo.projectIndex].txConfirmed, txInfo: apiCallbackInfo.txInfo, balance: apiCallbackInfo.balance})
+                    
+                    if (global.sharedObject.win) {
+                        global.sharedObject.win.webContents.send('projectsReady')
+                        modal.webContents.send('fundingTxidsChecked', {msgType: 'data', confirmed: global.availableProjects.list[projectInfo.projectIndex].txConfirmed, txInfo: apiCallbackInfo.txInfo, balance: apiCallbackInfo.balance})
+                    }
+                    
                     global.apiCallbackInfo.delete(referrer)
                 }
                 else if ((referrer === "checkProjectBalances") && (apiCallbackCounter == apiCallbackInfo.totalTxs)) {
                     global.appConfig.availableBalanceTotal = apiCallbackInfo.total
                     config.set('config', global.appConfig)
                     db.set('projects', global.availableProjects)
-                    global.sharedObject.win.webContents.send('projectsReady')
-                    global.sharedObject.win.webContents.send('balancesChecked', {availableBalance: apiCallbackInfo.total})
+                    
+                    if (global.sharedObject.win) {
+                        global.sharedObject.win.webContents.send('projectsReady')
+                        global.sharedObject.win.webContents.send('balancesChecked', {availableBalance: apiCallbackInfo.total})
+                    }
+                    
                     global.apiCallbackInfo.delete(referrer)
                 }
                 else if ((referrer === "getProjectTxStatus") && (apiCallbackCounter == apiCallbackInfo.totalProjects)) {
                     db.set('projects', global.availableProjects)
-                    global.sharedObject.win.webContents.send('projectsReady')
+                    
+                    if (global.sharedObject.win)
+                        global.sharedObject.win.webContents.send('projectsReady')
+                    
                     global.apiCallbackInfo.delete(referrer)
                 }
                 else if ((referrer === "getWalletTxStatus") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
@@ -652,12 +675,15 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     global.appConfig.confirmedWalletsTotal = apiCallbackInfo.confirmedWallets
                     config.set('config', global.appConfig)
 
-                    global.sharedObject.win.webContents.send('allTxInfo', {pendingFunds: apiCallbackInfo.pendingFunds, pendingWallets: apiCallbackInfo.pendingWallets, confirmedFunds: apiCallbackInfo.confirmedFunds, confirmedWallets: apiCallbackInfo.confirmedWallets})
+                    if (global.sharedObject.win) {
+                        global.sharedObject.win.webContents.send('allTxInfo', {pendingFunds: apiCallbackInfo.pendingFunds, pendingWallets: apiCallbackInfo.pendingWallets, confirmedFunds: apiCallbackInfo.confirmedFunds, confirmedWallets: apiCallbackInfo.confirmedWallets})
+                    }
+                    
                     global.apiCallbackInfo.delete(referrer)
                 }
             }
             else if (functionName === "getAddressInfo") {
-                if (referrer === "getProjectAddressInfo") {
+                if (referrer === "getProjectAddressInfo" && global.sharedObject.win) {
                     modal.webContents.send('gotAddressInfo', {msgType: 'data', balance: apiCallbackInfo.balance, txs: apiCallbackInfo.txs})
                     global.apiCallbackInfo.delete(referrer)
                 }
@@ -668,7 +694,10 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     global.availableProjects.list[projectInfo.projectIndex].txConfirmed = false
                     global.apiCallbackInfo.delete(referrer)
                     db.set('projects', global.availableProjects)
-                    modal.webContents.send('projectFunded', {validTx: apiCallbackInfo.validTx, msg: apiCallbackInfo.msg})
+                    
+                    if (modal)
+                        modal.webContents.send('projectFunded', {validTx: apiCallbackInfo.validTx, msg: apiCallbackInfo.msg})
+                    
                     global.sharedObject.logger.info('Project "' + global.activeProject.name + '" was funded.')
                     refreshLogFile()
                 }
@@ -678,16 +707,22 @@ let apiCallback = function(resp, functionName, projectInfo) {
 
                     global.availableProjects.list[projectInfo.projectIndex].fundsSent = true
                     db.set('projects', global.availableProjects)
-                    global.sharedObject.win.webContents.send('projectsReady')
-
-                    global.sharedObject.win.webContents.send('promotionalFundsSent', {msgType: 'data', msg: 'Funds were sent to promotional wallets for project "' + projectInfo.projectName + '".'})
+                    
+                    if (global.sharedObject.win) {
+                        global.sharedObject.win.webContents.send('projectsReady')
+                        global.sharedObject.win.webContents.send('promotionalFundsSent', {msgType: 'data', msg: 'Funds were sent to promotional wallets for project "' + projectInfo.projectName + '".'})
+                    }
+                    
                     global.apiCallbackInfo.delete(referrer)
                 }
             }
             else if ((functionName === "sweepFunds") && (apiCallbackCounter == apiCallbackInfo.totalProjects)) {
                 global.sharedObject.logger.info('Funds were swept for project "' + projectInfo.projectName + '".')
                 refreshLogFile()
-                global.sharedObject.win.webContents.send('fundsSwept', {msgType: 'data', msg: 'Funds were swept for "' + projectInfo.projectName + '".'})
+                
+                if (global.sharedObject.win) {
+                    global.sharedObject.win.webContents.send('fundsSwept', {msgType: 'data', msg: 'Funds were swept for "' + projectInfo.projectName + '".'})
+                }
             }
         }
         else if (resp.type === "error") {
@@ -696,7 +731,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
             if (projectInfo.projectName) {
                 global.sharedObject.logger.error(functionName + ': ' + resp.msg + " project " + projectInfo.projectName)
 
-                /*if (referrer === "fundProject") {
+                /*if (referrer === "fundProject" && global.sharedObject.win) {
                     apiCallbackInfo.msg = resp.msg
                     modal.webContents.send('fundingTxidChecked', {msgType: 'error', msg: apiCallbackInfo.msg})
                 }*/
@@ -705,10 +740,10 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     global.sharedObject.blockExplorerError = true
                 }
 
-                if (referrer === "sendPromotionalFunds") {
+                if (referrer === "sendPromotionalFunds" && global.sharedObject.win) {
                     global.sharedObject.win.webContents.send('promotionalFundsSent', {msgType: 'error', msg: 'Promotional funds could not be sent for project "' + projectInfo.projectName + '".'})
                 }
-                else if (referrer === "fundsSwept") {
+                else if (referrer === "fundsSwept" && global.sharedObject.win) {
                     global.sharedObject.win.webContents.send('fundsSwept', {msgType: 'error', msg: 'Funds could not be swept for project "' + projectInfo.projectName + '".'}) 
                 }
             }
@@ -935,7 +970,7 @@ ipcMain.on('checkFundingTxids', (event, args) => {
     
     var index = getDbIndex(args.projectID)  
     args.activeTxs.forEach(function(tx, key) {
-        smartcashapi.checkTransaction({referrer: "checkFundingTxids", projectID: args.projectID, projectName: args.projectName, projectIndex: index, balance: args.balance, address: args.address, txid: tx.txid}, apiCallback)
+        smartcashapi.checkTransaction({referrer: "checkFundingTxids", projectID: args.projectID, projectName: args.projectName, projectIndex: index, balance: args.balance, address: args.address, txid: tx}, apiCallback)
     })
 })
 

@@ -7,7 +7,7 @@ const http = require('http')
 const util = require('util')
 const {watch} = require('melanke-watchjs')
 const Store = require('electron-store')
-const smartcashExplorer = "https://smart.ccore.online"
+const smartcashExplorer = "https://insight.smartcash.cc/api/"
 
 let db = new Store({name: "smart-sweeper"})
 let reqPerMin
@@ -84,7 +84,7 @@ function checkAddress(address) {
 /* Check the balance for a given address. */
 function checkBalance(projectInfo, callback) {
     request({
-        url: smartcashExplorer + '/ext/getaddress/' + projectInfo.address,
+        url: smartcashExplorer + '/addr/' + projectInfo.address,
         method: 'GET',
         json: true
     }, function (err, resp, body) {
@@ -96,7 +96,7 @@ function checkBalance(projectInfo, callback) {
         if (resp.body.error === undefined) {
             var balance
             
-            if (resp.body.balance !== undefined)
+            if (resp.body.transactions.length > 0)
                 balance = resp.body.balance
             else
                 balance = 0
@@ -115,7 +115,7 @@ function checkBalance(projectInfo, callback) {
 
 /* Check the status of a transaction. */
 function checkTransaction(projectInfo, callback) {
-    //console.log('PROJECT INFO: ', projectInfo)
+    console.log('PROJECT INFO: ', projectInfo)
     
     var txArray = []
     
@@ -317,15 +317,15 @@ function generateAddress() {
 /* Get information for a given address. */
 function getAddressInfo(projectInfo, callback) {
     request({
-        url: smartcashExplorer + '/ext/getaddress/' + projectInfo.address,
+        url: smartcashExplorer + '/addr/' + projectInfo.address,
         method: 'GET',
         json: true
     }, function (err, resp, body) {
-        //console.log('checkBalance')
+        //console.log('getAddressInfo')
         //console.log(err)
         //console.log(resp.body)
         
-        if (resp) {
+        if (resp.body.error === undefined) {
             callback({type: 'data', msg: resp.body}, 'getAddressInfo', projectInfo)
         }
         else {
@@ -343,7 +343,7 @@ function sendFunds(projectInfo, callback) {
     var receivers = projectInfo.toAddr
     
     request({
-        url: smartcashExplorer + '/ext/getaddress/' + projectInfo.fromAddr,
+        url: smartcashExplorer + '/addr/' + projectInfo.fromAddr,
         method: 'GET',
         json: true
     }, function (err, resp, body) {
@@ -351,7 +351,7 @@ function sendFunds(projectInfo, callback) {
         //console.log(err)
         //console.log(resp.body)
         
-        if (resp) {
+        if (resp.body.error === undefined) {
             // check to see if there is enough in the balance to cover the amount to send
             if (resp.body.balance >= projectInfo.total) {
                 var txArray = []
@@ -466,11 +466,11 @@ function sweepFunds(projectInfo, callback) {
     projectInfo.referrer = "getaddressbalance"
     project.recvAddrs.forEach(function(address, key) {
         request({
-            url: smartcashExplorer + '/ext/getaddress/' + address.publicKey,
+            url: smartcashExplorer + '/addr/' + address.publicKey,
             method: 'GET',
             json: true
         }, function (err, resp, body) {            
-            if (resp) {
+            if (resp.body.error === undefined) {
                 smartcashCallback({type: 'data', msg: resp}, 'sweepFunds', projectInfo, callback)
             }
             else {

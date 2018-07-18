@@ -62,6 +62,18 @@ a.disabled {
     height:15px;
 }
 
+.infoBlock {
+    margin-bottom: 20px;
+}
+
+.importantInfoBlock {
+    font-weight: bold;
+}
+
+.infoBlock p, .importantInfoBlock p {
+    margin-bottom: 0;
+}
+
 /* from: https://stackoverflow.com/a/35693444/7843806 */
 .modal {
     text-align: center;

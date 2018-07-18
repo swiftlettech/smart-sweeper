@@ -103,12 +103,13 @@
                     }
                     else {
                         //ctrl.balance = args.balance;
-                        ctrl.activeTxs = [];
+                        //ctrl.activeTxs = [];
+                        ctrl.activeTxs = args.txs;
                         
-                        angular.forEach(args.txs, function(tx, key) {
+                        /*angular.forEach(args.txs, function(tx, key) {
                             if (tx.type === "vout")
                                 ctrl.activeTxs.push({txid: tx.addresses});
-                        });
+                        });*/
                         
                         // check the status of each txid
                         if (ctrl.activeTxs.length > 0) {

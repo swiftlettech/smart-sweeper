@@ -1,9 +1,14 @@
 <div id="fund" ng-init="init()">
-    <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Fund is disabled if the project has already been funded.</p>
-    <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Send is disabled if funds have already been sent to the promotional wallets, if the project hasn't been funded, and if the project hasn't been marked as completely funded.</p>
-    <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Print is disabled if funds haven't been sent to the promotional wallets and if the funds have been swept.</p>
+    <div class="infoBlock">
+        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Fund is disabled if the project has already been funded.</p>
+        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Send is disabled if funds have already been sent to the promotional wallets, if the project hasn't been funded, and if the project hasn't been marked as completely funded.</p>
+        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Print is disabled if funds haven't been sent to the promotional wallets and if the funds have been swept.</p>
+        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i><i class="fa fa-fw fa-question" title="Pending"></i> = pending funding transaction(s), <i class="fa fa-fw fa-check" title="Confirmed"></i> = all funding transaction(s) are confirmed</p>
+    </div>
     
-    <p style="margin-top:20px;"><strong><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> SmartSweeper is configured to include a Σ{{$fundCtrl.txFee}} transaction fee when funding the promotional wallets.</strong></p>
+    <div class="importantInfoBlock">
+        <p><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> SmartSweeper is configured to include a Σ{{$fundCtrl.txFee}} transaction fee when funding the promotional wallets.</p>
+    </div>
     
     <div id="projectList">
         <h4>Projects</h4>
@@ -43,7 +48,7 @@
                     
                     <table class="innerTable">
                         <tr>
-                            <td class="nameCol">{{project.name}} <span ng-hide="project.txConfirmed === undefined">(<span ng-show="!project.txConfirmed">pending</span><span ng-show="project.txConfirmed">confirmed</span>)</span></td>
+                            <td class="nameCol">{{project.name}} <span ng-hide="project.txConfirmed === undefined"><i class="fa fa-fw fa-question" title="Pending" ng-show="!project.txConfirmed"></i><i class="fa fa-fw fa-check" title="Confirmed" ng-show="project.txConfirmed"></i></span></td>
                             
                             <td class="numAddrCol text-center">{{project.numAddr}}</td>
                             
