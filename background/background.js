@@ -80,10 +80,11 @@
                     }
                 }, 30000);
                 
-                // check address balances once per minute to avoid block explorer connection issues
+                // check address balances once per minute to try to avoid block explorer connection issues
                 setInterval(() => {
                     ipcRenderer.send('getClaimedFundsInfo');
                     ipcRenderer.send('getWalletTxStatus');
+                    ipcRenderer.send('getSweptTxStatus');
                 }, 60000);
             }
         })
@@ -163,7 +164,7 @@
                         url: smartcashExplorer + 'status?q=getInfo',
                         method: 'GET'
                     }, function (err, resp, body) {                        
-                        if (resp.body.error === undefined) {                            
+                        if (resp && resp.body.error === undefined) {                            
                             var onlineBlockCount = resp.body.blocks;
 
                             if (localBlockCount == onlineBlockCount);

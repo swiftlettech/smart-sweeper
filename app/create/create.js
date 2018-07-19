@@ -112,6 +112,7 @@
         /* Delete a project. */
         ctrl.delete = function(id) {
             ctrl.activeProjectID = id;
+            
             ipcRenderer.send('setReferrer', {referrer: 'deleteProject'});
             ipcRenderer.send('showConfirmationDialog', {title: 'Delete project?', body: 'Are you sure you want to delete this project?'});
             
@@ -125,6 +126,7 @@
 
         /* Load a modal used to edit a project. */
         ctrl.edit = function(id) {
+            ctrl.showAddNewProject = false;
             ctrl.activeProjectID = id;
             ctrl.activeProject = $filter('filter')(ctrl.availableProjects, {id: id}, filterCompare)[0];
 

@@ -2,11 +2,12 @@
     'use strict';
 
     angular.module('SmartSweeper.fundModal', [
+        'ui.bootstrap',
         'SmartSweeperUtils'
     ])
     .controller('FundProjectController', FundProjectController);
 
-    function FundProjectController($scope, $document, greaterThanZeroIntPattern) {
+    function FundProjectController($scope, $document, $interval, greaterThanZeroIntPattern) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         
@@ -42,6 +43,11 @@
             });
             
             ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
+            
+            // check every 30 for the status of the funding transactions
+            $interval(function() {
+                ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
+            }, 30000, false);
         };
 
         /* Close the modal without funding the project. */

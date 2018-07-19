@@ -34,25 +34,22 @@
                 // load the last saved dashboard values from the app config file
                 // if the user has not gone online during the current session
                 if (!args.isOnline && !$mainCtrl.hasBeenOnline) {
-                    var appConfig;
-                    
-                    try {
-                        appConfig = electron.remote.getGlobal('appConfig');
+                    ipcRenderer.send('getSavedAppData');
+                    ipcRenderer.on('savedAppData', (event, args) => {
+                        $scope.$apply(function() {
+                            var savedAppData = args.savedAppData;
                         
-                        ctrl.availableBalance = appConfig.availableBalanceTotal;
-                        ctrl.claimedFunds = appConfig.claimedFundsTotal;
-                        ctrl.claimedWalletsCount = appConfig.claimedWalletsTotal;
-                        ctrl.pendingFunds = appConfig.pendingFundsTotal;
-                        ctrl.pendingWalletsCount = appConfig.pendingWalletsTotal;
-                        ctrl.confirmedFunds = appConfig.confirmedFundsTotal;
-                        ctrl.confirmedWalletsCount = appConfig.confirmedWalletsTotal;
-                        ctrl.sweptFunds = appConfig.sweptFundsTotal;
-                        ctrl.sweptWalletsCount = appConfig.sweptWalletsTotal;
-                    }
-                    catch(err) {
-                        // show an error message that exits the app on close
-                        ipcRenderer.send('showErrorDialog', {text: err, fatal: true});
-                    }
+                            ctrl.availableBalance = savedAppData.availableBalanceTotal;
+                            ctrl.claimedFunds = savedAppData.claimedFundsTotal;
+                            ctrl.claimedWalletsCount = savedAppData.claimedWalletsTotal;
+                            ctrl.pendingFunds = savedAppData.pendingFundsTotal;
+                            ctrl.pendingWalletsCount = savedAppData.pendingWalletsTotal;
+                            ctrl.confirmedFunds = savedAppData.confirmedFundsTotal;
+                            ctrl.confirmedWalletsCount = savedAppData.confirmedWalletsTotal;
+                            ctrl.sweptFunds = savedAppData.sweptFundsTotal;
+                            ctrl.sweptWalletsCount = savedAppData.sweptWalletsTotal;
+                        });
+                    });
                 }
             });
             

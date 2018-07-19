@@ -21,7 +21,7 @@ const userLogsPath = baseLogPath + path.sep + 'user'
 const isDev = require('electron-is-dev')
 require('electron-debug')({showDevTools: true})
 
-let splashScreen, bgWin, modal, modalType, logFile, db, config
+let splashScreen, bgWin, modal, modalType, logFile, db, savedAppData
 
 // create a custom transport to save winston logs into a json database using electron store
 module.exports = {
@@ -137,7 +137,8 @@ function appInit() {
     
     // send a notice to renderer when availableProjects is updated
     watch(global.availableProjects, function(property, action, newValue, oldValue) {
-        global.sharedObject.win.webContents.send('projectsReady')
+        if (global.sharedObject.win)
+            global.sharedObject.win.webContents.send('projectsReady')
     })
     
     global.referrer = ""
@@ -150,32 +151,42 @@ function appInit() {
     // saved in %APPDATA%/smart-sweeper on Win
     // saved in $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper on Linux
     // saved in ~/Library/Application Support/smart-sweeper on Mac
-    db = new Store({name: "smart-sweeper"})
-    global.availableProjects = db.get('projects')
-    if (global.availableProjects === undefined) {
-        db.set('projects', {index: 0, list: []})
+    try {
+        db = new Store({name: "smart-sweeper"})
         global.availableProjects = db.get('projects')
+        if (global.availableProjects === undefined) {
+            db.set('projects', {index: 0, list: []})
+            global.availableProjects = db.get('projects')
+        }
+    }
+    catch(err) {
+        createDialog(null, global.sharedObject.win, "error", err, true)
     }
     
     // load the internal config or create it if it doesn't exist
     // saved in %APPDATA%/smart-sweeper on Win
     // saved in $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper on Linux
     // saved in ~/Library/Application Support/smart-sweeper on Mac
-    config = new Store({name: "smart-sweeper-config"})
-    global.appConfig = config.get('config')
-    if (global.appConfig === undefined) {
-        config.set('config', {
-            availableBalanceTotal: 0,
-            pendingFundsTotal: 0,
-            pendingWalletsTotal: 0,
-            confirmedFundsTotal: 0,
-            confirmedWalletsTotal: 0,
-            claimedFundsTotal: 0,
-            claimedWalletsTotal: 0,
-            sweptFundsTotal: 0,
-            sweptWalletsTotal: 0
-        })
-        global.appConfig = config.get('config')
+    try {
+        savedAppData = new Store({name: "smart-sweeper-data"})
+        global.savedAppData = savedAppData.get('data')
+        if (global.savedAppData === undefined) {
+            savedAppData.set('data', {
+                availableBalanceTotal: 0,
+                pendingFundsTotal: 0,
+                pendingWalletsTotal: 0,
+                confirmedFundsTotal: 0,
+                confirmedWalletsTotal: 0,
+                claimedFundsTotal: 0,
+                claimedWalletsTotal: 0,
+                sweptFundsTotal: 0,
+                sweptWalletsTotal: 0
+            })
+            global.savedAppData = savedAppData.get('data')
+        }
+    }
+    catch(err) {
+        createDialog(null, global.sharedObject.win, "error", err, true)
     }
     
     // setup logging
@@ -184,8 +195,8 @@ function appInit() {
     winston.loggers.add('logger', {
         format: combine(timestamp(), prettyPrint()),
         transports: [
-            new module.exports.JsonDBTransport({ filename: userLogsPath + path.sep + logFile, level: 'info' }),
-            new module.exports.JsonDBTransport({ filename: sysLogsPath + path.sep + logFile, level: 'error' })
+            new module.exports.JsonDBTransport({ filename: path.join(userLogsPath, logFile), level: 'info' }),
+            new module.exports.JsonDBTransport({ filename: path.join(sysLogsPath, logFile), level: 'error' })
         ],
         exitOnError: false
     })
@@ -306,8 +317,10 @@ function createWindow() {
     })
     
     global.sharedObject.win.on('show', () => {
-        //global.sharedObject.win.webContents.openDevTools()
-        global.sharedObject.win.webContents.send('projectsReady')
+        if (global.sharedObject.win) {
+            //global.sharedObject.win.webContents.openDevTools()
+            global.sharedObject.win.webContents.send('projectsReady')
+        }
     })
 
     // Emitted when the window is closed.
@@ -448,20 +461,20 @@ let apiCallback = function(resp, functionName, projectInfo) {
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.apiCallbackInfo.get(referrer)
     
-    if (referrer === "getClaimedFundsInfo") {
-        //console.log('apiCallback referrer: ', referrer)
-        //console.log('apiCallbackInfo: ', apiCallbackInfo)
-        //console.log()
-    }
+    /*if (referrer === "getClaimedFundsInfo") {
+        console.log('apiCallback referrer: ', referrer)
+        console.log('apiCallbackInfo: ', apiCallbackInfo)
+        console.log()
+    }*/
     
     if (apiCallbackInfo !== undefined) {
         if (resp.type === "data") {
-            if (referrer === "getClaimedFundsInfo") {
+            /*if (referrer === "getClaimedFundsInfo") {
                 console.log('projectInfo: ', projectInfo)
                 //console.log('from ' + functionName)
                 console.log(resp)
                 console.log()
-            }
+            }*/
 
             if (functionName === "checkBalance") {
                 if (referrer === "getClaimedFundsInfo") {
@@ -512,6 +525,10 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     else
                         global.availableProjects.list[projectInfo.projectIndex].txConfirmed = false
                 }
+                else if (referrer === "getSweptTxStatus") {
+                    if (resp.msg.confirmations >= 6)
+                        global.availableProjects.list[projectInfo.projectIndex].sweepTxConfirmed = true
+                }
                 else if (referrer === "getWalletTxStatus") {
                     //console.log('resp.msg: ', resp.msg)
 
@@ -544,6 +561,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
             }
             else if (functionName === "sweepFunds") {
                 global.availableProjects.list[projectInfo.projectIndex].sweepTxid = resp.msg
+                global.availableProjects.list[projectInfo.projectIndex].sweepTxConfirmed = false
                 global.availableProjects.list[projectInfo.projectIndex].fundsSwept = true
                 db.set('projects', global.availableProjects)
             }    
@@ -558,9 +576,9 @@ let apiCallback = function(resp, functionName, projectInfo) {
 
                 if ((referrer === "getClaimedFundsInfo") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                     // store the claimed funds and claimed wallets total in a config file
-                    global.appConfig.claimedFundsTotal = apiCallbackInfo.claimedFunds
-                    global.appConfig.claimedWalletsTotal = apiCallbackInfo.claimedWallets
-                    config.set('config', global.appConfig)
+                    global.savedAppData.claimedFundsTotal = apiCallbackInfo.claimedFunds
+                    global.savedAppData.claimedWalletsTotal = apiCallbackInfo.claimedWallets
+                    savedAppData.set('config', global.savedAppData)
 
                     // calculate the number of claimed wallets per project
                     var claimed
@@ -649,8 +667,8 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     global.apiCallbackInfo.delete(referrer)
                 }
                 else if ((referrer === "checkProjectBalances") && (apiCallbackCounter == apiCallbackInfo.totalTxs)) {
-                    global.appConfig.availableBalanceTotal = apiCallbackInfo.total
-                    config.set('config', global.appConfig)
+                    global.savedAppData.availableBalanceTotal = apiCallbackInfo.total
+                    savedAppData.set('config', global.savedAppData)
                     db.set('projects', global.availableProjects)
                     
                     if (global.sharedObject.win) {
@@ -668,12 +686,20 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     
                     global.apiCallbackInfo.delete(referrer)
                 }
+                else if (referrer === "getSweptTxStatus" && (apiCallbackCounter == apiCallbackInfo.totalSweptProjects)) {
+                    db.set('projects', global.availableProjects)
+                    
+                    if (global.sharedObject.win)
+                        global.sharedObject.win.webContents.send('projectsReady')
+                    
+                    global.apiCallbackInfo.delete(referrer)
+                }
                 else if ((referrer === "getWalletTxStatus") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
-                    global.appConfig.pendingFundsTotal = apiCallbackInfo.pendingFunds
-                    global.appConfig.pendingWalletsTotal = apiCallbackInfo.pendingWallets
-                    global.appConfig.confirmedFundsTotal = apiCallbackInfo.confirmedFunds
-                    global.appConfig.confirmedWalletsTotal = apiCallbackInfo.confirmedWallets
-                    config.set('config', global.appConfig)
+                    global.savedAppData.pendingFundsTotal = apiCallbackInfo.pendingFunds
+                    global.savedAppData.pendingWalletsTotal = apiCallbackInfo.pendingWallets
+                    global.savedAppData.confirmedFundsTotal = apiCallbackInfo.confirmedFunds
+                    global.savedAppData.confirmedWalletsTotal = apiCallbackInfo.confirmedWallets
+                    savedAppData.set('config', global.savedAppData)
 
                     if (global.sharedObject.win) {
                         global.sharedObject.win.webContents.send('allTxInfo', {pendingFunds: apiCallbackInfo.pendingFunds, pendingWallets: apiCallbackInfo.pendingWallets, confirmedFunds: apiCallbackInfo.confirmedFunds, confirmedWallets: apiCallbackInfo.confirmedWallets})
@@ -824,9 +850,9 @@ function getNewestLogFile(type) {
     var logPath
     
     if (type === "user")
-        logPath = app.getPath('userData') + path.sep + userLogsPath + path.sep
+        logPath = path.join(app.getPath('userData'), userLogsPath) + path.sep
     else if (type === "system")
-        logPath = app.getPath('userData') + path.sep + sysLogsPath + path.sep
+        logPath = path.join(app.getPath('userData'), sysLogsPath) + path.sep
     
     var files = fs.readdirSync(logPath)
     if (files.length == 0) {
@@ -850,7 +876,7 @@ function getNewestLogFile(type) {
 // load the most recent log file
 function loadLog() {
     var mostRecent = getNewestLogFile('user')
-    logFile = userLogsPath + path.sep + path.parse(mostRecent.file).name
+    logFile = path.join(userLogsPath, path.parse(mostRecent.file).name)
     
     var logDB = new Store({name: logFile})
     return {content: logDB.get('log'), date: mostRecent.lastModified}
@@ -861,6 +887,7 @@ function newProject(event, project) {
     var newProject = project
     newProject.id = global.availableProjects.index + 1
     newProject.originalFunds = 0
+    newProject.autoSweep = false // because auto-sweep hasn't been implemented
     newProject.addressPair = {}
     
     var addressPair = smartcashapi.generateAddress()
@@ -874,16 +901,20 @@ function newProject(event, project) {
     global.sharedObject.logger.info('Project "' + newProject.name + '" was created.')
     refreshLogFile()
     event.sender.send('newProjectAdded')
-    global.sharedObject.win.webContents.send('projectsReady')
+    
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('projectsReady')
 }
 
 // refresh the log currently loaded in the app
 function refreshLogFile() {
-    var stats = fs.statSync(app.getPath('userData') + path.sep + userLogsPath + path.sep + logFile + '.json')
+    var stats = fs.statSync(path.join(app.getPath('userData'), userLogsPath, logFile, '.json'))
     var logDB = new Store({name: getCurrentDate()})
     var log = logDB.get('log')
     global.availableLog = {date: stats.mtime, content: log}
-    global.sharedObject.win.webContents.send('logReady')
+    
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('logReady')
 }
 
 // set the active project based on a project ID
@@ -923,7 +954,7 @@ app.on('ready', () => {
 app.on('window-all-closed', () => {
     // delete the user and system log files if they're empty
     var mostRecent = getNewestLogFile('user')
-    logFile = userLogsPath + path.sep + path.parse(mostRecent.file).name
+    logFile = path.join(userLogsPath, path.parse(mostRecent.file).name)
     var logDB = new Store({name: logFile})
 
     if (logDB.get('log').length == 0) {
@@ -933,7 +964,7 @@ app.on('window-all-closed', () => {
     }
 
     mostRecent = getNewestLogFile('system')
-    logFile = sysLogsPath + path.sep + path.parse(mostRecent.file).name
+    logFile = path.join(sysLogsPath, path.parse(mostRecent.file).name)
     logDB = new Store({name: logFile})
 
     if (logDB.get('log').length == 0) {
@@ -961,6 +992,8 @@ app.on('activate', () => {
 
 // check the txid to get project funding info
 ipcMain.on('checkFundingTxids', (event, args) => {
+    console.log(args)
+    
     global.apiCallbackInfo.set('checkFundingTxids', {
         apiCallbackCounter: 0,
         txCount: args.activeTxs.length,
@@ -968,10 +1001,28 @@ ipcMain.on('checkFundingTxids', (event, args) => {
         balance: 0
     })
     
-    var index = getDbIndex(args.projectID)  
+    var index = getDbIndex(args.projectID)
     args.activeTxs.forEach(function(tx, key) {
         smartcashapi.checkTransaction({referrer: "checkFundingTxids", projectID: args.projectID, projectName: args.projectName, projectIndex: index, balance: args.balance, address: args.address, txid: tx}, apiCallback)
     })
+    
+    /*else {
+        // check one        
+        global.apiCallbackInfo.set('getProjectTxStatus', {
+            apiCallbackCounter: 0,
+            totalProjects: 1
+        })
+        
+        var index = getDbIndex(project.id)
+        var project = global.availableProjects.list[index]
+        var txids
+        
+        project.txid.forEach(function(txid, key) {
+            txids.push(txid)
+        })
+        
+        smartcashapi.checkTransaction({referrer: "getProjectTxStatus", projectName: project.name, projectIndex: index, txid: project.txid}, apiCallback)
+    }*/
 })
 
 // check the funded balances of all projects
@@ -1019,19 +1070,24 @@ ipcMain.on('createRecvAddresses', (event, args) => {
     }
     
     createRecvAddresses(args.project)
-    event.sender.send('addressesCreated')
-    global.sharedObject.win.webContents.send('projectsReady')
+    
+    if (global.sharedObject.win) {
+        event.sender.send('addressesCreated')
+        global.sharedObject.win.webContents.send('projectsReady')
+    }
 })
 
 // delete a project
 ipcMain.on('deleteProject', (event, args) => {
     var index = getDbIndex(args.id)
-    var name = global.availableProjects[index].name
+    var name = global.availableProjects.list[index].name
     global.availableProjects.list.splice(index, 1)
     db.set('projects', global.availableProjects)
     global.sharedObject.logger.info('Project "' + name + '" was deleted.')
     refreshLogFile()
-    global.sharedObject.win.webContents.send('projectsReady')
+    
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('projectsReady')
 })
 
 
@@ -1068,23 +1124,24 @@ ipcMain.on('getProjectAddressInfo', (event, args) => {
     smartcashapi.getAddressInfo({referrer: "getProjectAddressInfo", projectID: args.projectID, projectName: args.projectName, projectIndex: index, address: args.address}, apiCallback);
 })
 
-// get the status of all project funding transactions
+// get the status of one or all project funding transactions
 ipcMain.on('getProjectTxStatus', (event, args) => {
     //console.log('in getProjectTxStatus')
-    var totalProjects = 0
     
+    var totalProjects = 0
+
     global.availableProjects.list.forEach(function(project, projectKey) {
         if (project.projectFunded && !project.txConfirmed)
             totalProjects++
     })
-    
+
     if (totalProjects > 0) {
         global.apiCallbackInfo.set('getProjectTxStatus', {
             apiCallbackCounter: 0,
             totalProjects: totalProjects
         })
-        
-        global.availableProjects.list.forEach(function(project, projectKey) {            
+
+        global.availableProjects.list.forEach(function(project, projectKey) {
             if (project.projectFunded && !project.txConfirmed) {                
                 smartcashapi.checkTransaction({referrer: "getProjectTxStatus", projectName: project.name, projectIndex: projectKey, txid: project.txid}, apiCallback)
             }
@@ -1092,7 +1149,13 @@ ipcMain.on('getProjectTxStatus', (event, args) => {
     }
 })
 
-// 
+// get app data saved by the app (dashboard stats)
+ipcMain.on('getSavedAppData', (event, args) => {    
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('savedAppData', {savedAppData: global.savedAppData})
+})
+
+// get information about funds that have been swept
 ipcMain.on('getSweptFundsInfo', (event, args) => {
     //console.log('in getSweptFundsInfo')
     var totalAddrs = 0
@@ -1123,6 +1186,29 @@ ipcMain.on('getSweptFundsInfo', (event, args) => {
             }
         })
     }
+})
+
+// get pending/confirmed status for all sweep transactions
+ipcMain.on('getSweptTxStatus', (event, args) => {
+    var index
+    var totalSweptProjects = 0
+    
+    global.availableProjects.list.forEach(function(project, projectKey) {
+        if (project.fundsSwept)
+            totalSweptProjects++
+    })
+    
+    global.apiCallbackInfo.set('getSweptTxStatus', {
+        apiCallbackCounter: 0,
+        totalSweptProjects: totalSweptProjects
+    })
+    
+    global.availableProjects.list.forEach(function(project, projectKey) {
+        if (project.fundsSwept) {
+            index = getDbIndex(project.id)
+            smartcashapi.checkTransaction({referrer: "getSweptTxStatus", projectName: project.name, projectIndex: index, txid: project.sweepTxid}, apiCallback)
+        }
+    })
 })
 
 // get pending/confirmed status for all promotional wallet transactions
@@ -1238,7 +1324,9 @@ ipcMain.on('loadLog', (event, args) => {
 ipcMain.on('modalNo', (event, args) => {
     global.activeProject = null
     modal.close()
-    global.sharedObject.win.webContents.send('modalNo')
+    
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('modalNo')
 })
 
 // create a project
@@ -1256,7 +1344,10 @@ ipcMain.on('projectFullyFunded', (event, args) => {
     var index = getDbIndex(global.activeProject.id)
     global.availableProjects.list[index].projectFunded = true
     db.set('projects', global.availableProjects)
-    global.sharedObject.win.webContents.send('projectsReady')
+    
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('projectsReady')
+    
     global.sharedObject.logger.info('Project "' + global.activeProject.name + '" was marked "fully funded".')
     refreshLogFile()
 })
@@ -1347,12 +1438,14 @@ ipcMain.on('showPrintDialog', (event, args) => {
 
 // launching RPC explorer
 ipcMain.on('rpcExplorerLaunch', (event, args) => {
-    global.sharedObject.win.webContents.send('rpcExplorerLaunch', {isOnline: global.sharedObject.isOnline})
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('rpcExplorerLaunch', {isOnline: global.sharedObject.isOnline})
 })
 
 // launching SmartCash core
 ipcMain.on('smartcashLaunch', (event, args) => {
-    global.sharedObject.win.webContents.send('smartcashLaunch', {isOnline: global.sharedObject.isOnline})
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('smartcashLaunch', {isOnline: global.sharedObject.isOnline})
 })
 
 // sweep project funds
@@ -1383,5 +1476,7 @@ ipcMain.on('updateProject', (event, args) => {
     global.sharedObject.logger.info('Project "' + global.activeProject.name + '" was edited.')
     refreshLogFile()
     global.activeProject = null
-    global.sharedObject.win.webContents.send('projectsReady')
+    
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('projectsReady')
 })

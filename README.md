@@ -11,6 +11,15 @@ Description
 Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac OS. It isn't necessary to input your wallet passphrase to use SmartSweeper.
 
 
+Features
+---------------
+* Create projects to organize promotions
+* Send funds to multiple promotional wallets
+* Retrieve promotional funds from wallets that were not redeemed
+* Print paper wallets
+* Access logs
+
+
 Releases
 ---------------
 Releases are forthcoming.
@@ -20,7 +29,7 @@ Requirements
 ---------------
 * [Node.js](http://nodejs.org) - 8.9.0+
 * [npm](http://npmjs.com) - 5.6.0+
-* [SmartCash node client](https://smartcash.cc/wallets/) for Windows, Linux, or Mac OS - 1.2.2+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
+* [SmartCash Node Client](https://smartcash.cc/wallets/) for Windows, Linux, or Mac OS - 1.2.2+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
 
 Run node -v and npm -v from a command prompt to make sure they're in your PATH. Open your SmartCash desktop wallet application to make sure it is up to date before launching SmartSweeper.
 
@@ -50,16 +59,16 @@ rpc.password=rpcpassword
 smartcashPath=C:\Program Files\SmartCash\
 ```
 
-* rpc.host is the IP address that the SmartCash Wallet RPC server is bound to.
-* rpc.port is the port that the SmartCash Wallet RPC server is listening on.
-* rpc.username is the SmartCash Wallet RPC server username.
-* rpc.password is the SmartCash Wallet RPC server password.
-* smartcashPath is the full path to your SmartCash Wallet installation. You must include a trailing slash.
+* rpc.host is the IP address that the SmartCash Node Client RPC server is bound to.
+* rpc.port is the port that the SmartCash node client RPC server is listening on.
+* rpc.username is the SmartCash Node Client RPC server username.
+* rpc.password is the SmartCash Node Client RPC server password.
+* smartcashPath is the full path to your SmartCash Node Client installation. You must include a trailing slash.
 
 
 Your SmartCash wallet must be started with the following arguments:
 ```
--txindex=1 (if SmartCash node client is < v1.2.3)
+-txindex=1 (if SmartCash Node Client is < v1.2.3)
 -server
 -rpcbind=127.0.0.1
 -rpcport=9678
@@ -70,7 +79,7 @@ Your SmartCash wallet must be started with the following arguments:
 If it isn't running, SmartSweeper will start it for you with the above arguments. You can also [edit your wallet's smartcash.conf file](https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file). Please don't do this with your wallet running.
 
 ```
-txindex=1 (if SmartCash node client is < v1.2.3)
+txindex=1 (if SmartCash Node Client is < v1.2.3)
 server=1
 rpcbind=127.0.0.1
 rpcport=9678
@@ -122,4 +131,4 @@ Software | License
 [winston](https://github.com/winstonjs/winston) | MIT
 
 
-[The CryptoCore Explorer API](https://smart.ccore.online) is used to check the current block count and to get info about project addresses.
+[The SmartCash Insight Explorer API](https://insight.smartcash.cc) is used to check the current block count and to get information about project addresses.

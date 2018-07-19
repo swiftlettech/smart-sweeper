@@ -88,12 +88,12 @@ function checkBalance(projectInfo, callback) {
         method: 'GET',
         json: true
     }, function (err, resp, body) {
-        console.log('checkBalance')
-        console.log(projectInfo.address)
+        //console.log('checkBalance')
+        //console.log(projectInfo.address)
         //console.log(err)
-        console.log(resp.body)
+        //console.log(resp.body)
         
-        if (resp.body.error === undefined) {
+        if (resp && resp.body.error === undefined) {
             var balance
             
             if (resp.body.transactions.length > 0)
@@ -115,7 +115,7 @@ function checkBalance(projectInfo, callback) {
 
 /* Check the status of a transaction. */
 function checkTransaction(projectInfo, callback) {
-    console.log('PROJECT INFO: ', projectInfo)
+    //console.log('PROJECT INFO: ', projectInfo)
     
     var txArray = []
     
@@ -325,7 +325,7 @@ function getAddressInfo(projectInfo, callback) {
         //console.log(err)
         //console.log(resp.body)
         
-        if (resp.body.error === undefined) {
+        if (resp && resp.body.error === undefined) {
             callback({type: 'data', msg: resp.body}, 'getAddressInfo', projectInfo)
         }
         else {
@@ -351,7 +351,7 @@ function sendFunds(projectInfo, callback) {
         //console.log(err)
         //console.log(resp.body)
         
-        if (resp.body.error === undefined) {
+        if (resp && resp.body.error === undefined) {
             // check to see if there is enough in the balance to cover the amount to send
             if (resp.body.balance >= projectInfo.total) {
                 var txArray = []
@@ -462,7 +462,7 @@ function sweepFunds(projectInfo, callback) {
     
     //console.log(global.smartcashCallbackInfo)
     
-    // check the balance of each "unclaimed" promotional wallet
+    // check the balance of each "unclaimed" promotional wallet to make sure they're really unclaimed
     projectInfo.referrer = "getaddressbalance"
     project.recvAddrs.forEach(function(address, key) {
         request({
@@ -470,7 +470,7 @@ function sweepFunds(projectInfo, callback) {
             method: 'GET',
             json: true
         }, function (err, resp, body) {            
-            if (resp.body.error === undefined) {
+            if (resp && resp.body.error === undefined) {
                 smartcashCallback({type: 'data', msg: resp}, 'sweepFunds', projectInfo, callback)
             }
             else {
