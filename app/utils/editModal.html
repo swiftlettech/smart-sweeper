@@ -56,6 +56,27 @@
                         <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Not a valid SmartCash address.</span>
                     </div>
                 </div>
+                
+                <div class="form-group">
+                    <label for="expDate" class="control-label">"Use by" date<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <div id="expDateGroup" class="input-group">
+                        <input type="text" name="expDate" class="form-control" ng-model="$editCtrl.expDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$editCtrl.datepickerFormat}}" is-open="$editCtrl.expCalendar.opened" datepicker-options="$editCtrl.datepickerOptions" close-text="Close" ng-change="$editCtrl.checkCalendarDate('expCalendar')" ng-required="true" />
+
+                        <span class="input-group-btn">
+                            <button id="expCalendarBtn" type="button" class="btn btn-default" ng-click="$editCtrl.openCalendar('expCalendar')"><i class="fa fa-fw fa-calendar" title="Calendar"></i></button>
+                        </span>
+                    </div>
+
+                    <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This will be printed on each promotional wallet.</p>
+
+                    <div ng-show="editProjectForm.expDate.$error.required" role="alert">
+                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Required.</span>
+                    </div>
+
+                    <div ng-show="editProjectForm.expDate.$error.invalidDate" role="alert">
+                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> "Use by" date must be in the future.</span>
+                    </div>
+                </div>
 
                 <div class="form-group">
                     <label for="options" class="control-label">Options</label>
@@ -74,10 +95,10 @@
                         </div>
 
                         <div id="sweepDateGroup" class="input-group">
-                            <input type="text" name="sweepDate" class="form-control" ng-model="$editCtrl.calendarDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$editCtrl.datepickerFormat}}" is-open="$editCtrl.calendar.opened" datepicker-options="$editCtrl.datepickerOptions" ng-required="$editCtrl.activeProject.sweep" close-text="Close" ng-disabled="!$editCtrl.activeProject.sweep" />
+                            <input type="text" name="sweepDate" class="form-control" ng-model="$editCtrl.sweepDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$editCtrl.datepickerFormat}}" is-open="$editCtrl.sweepCalendar.opened" datepicker-options="$editCtrl.datepickerOptions" ng-required="$editCtrl.activeProject.sweep" close-text="Close" ng-change="$editCtrl.checkCalendarDate('sweepCalendar')" ng-disabled="!$editCtrl.activeProject.sweep" />
 
                             <span class="input-group-btn">
-                                <button id="calendarBtn" type="button" class="btn btn-default" ng-disabled="!$editCtrl.activeProject.sweep" ng-click="$editCtrl.openCalendar()"><i class="fa fa-fw fa-calendar" title="Calendar"></i></button>
+                                <button class="calendarBtn" type="button" class="btn btn-default" ng-disabled="!$editCtrl.activeProject.sweep" ng-click="$editCtrl.openCalendar('sweepCalendar')"><i class="fa fa-fw fa-calendar" title="Calendar"></i></button>
                             </span>
                         </div>
                     </div>

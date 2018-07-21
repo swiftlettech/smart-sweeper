@@ -31,12 +31,14 @@ module.exports = {
             
             if (options.level === "error") {
                 this.logDBSystem = new Store({name: options.filename})
+                //console.log(this.logDBSystem)
                 
                 if (this.logDBSystem.get('log') === undefined)
                     this.logDBSystem.set('log', [])
             }
             else {
                 this.logDBUser = new Store({name: options.filename})
+                //console.log(this.logDBUser)
                 
                 if (this.logDBUser.get('log') === undefined)
                     this.logDBUser.set('log', [])
@@ -273,7 +275,7 @@ function createBgWindow() {
     bgWin.on("ready-to-show", () => {
         setTimeout(function() {
             closeSplashScreen()
-            bgWin.show()
+            //bgWin.show()
         }, 12000)
     })
     
@@ -876,9 +878,10 @@ function getNewestLogFile(type) {
 // load the most recent log file
 function loadLog() {
     var mostRecent = getNewestLogFile('user')
-    logFile = path.join(userLogsPath, path.parse(mostRecent.file).name)
+    var mostRecentFile
+    mostRecentFile = path.join(userLogsPath, path.parse(mostRecent.file).name)
     
-    var logDB = new Store({name: logFile})
+    var logDB = new Store({name: mostRecentFile})
     return {content: logDB.get('log'), date: mostRecent.lastModified}
 }
 
@@ -908,13 +911,19 @@ function newProject(event, project) {
 
 // refresh the log currently loaded in the app
 function refreshLogFile() {
-    var stats = fs.statSync(path.join(app.getPath('userData'), userLogsPath, logFile, '.json'))
-    var logDB = new Store({name: getCurrentDate()})
-    var log = logDB.get('log')
-    global.availableLog = {date: stats.mtime, content: log}
-    
-    if (global.sharedObject.win)
-        global.sharedObject.win.webContents.send('logReady')
+    try {
+        var stats = fs.statSync(path.join(app.getPath('userData'), userLogsPath, logFile+'.json'))
+        
+        var logDB = new Store({name: getCurrentDate()})
+        var log = logDB.get('log')
+        global.availableLog = {date: stats.mtime, content: log}
+
+        if (global.sharedObject.win)
+            global.sharedObject.win.webContents.send('logReady')
+    }
+    catch(err) {
+        console.log(err)
+    }
 }
 
 // set the active project based on a project ID
@@ -954,21 +963,22 @@ app.on('ready', () => {
 app.on('window-all-closed', () => {
     // delete the user and system log files if they're empty
     var mostRecent = getNewestLogFile('user')
-    logFile = path.join(userLogsPath, path.parse(mostRecent.file).name)
-    var logDB = new Store({name: logFile})
+    var exitLogFile
+    exitLogFile = path.join(userLogsPath, path.parse(mostRecent.file).name)
+    var logDB = new Store({name: exitLogFile})
 
     if (logDB.get('log').length == 0) {
-        fs.unlink(app.getPath('userData') + path.sep + logFile + '.json', (err) => {
+        fs.unlink(app.getPath('userData') + path.sep + logFexitLogFileile + '.json', (err) => {
             if (err) throw err;
         })
     }
 
     mostRecent = getNewestLogFile('system')
-    logFile = path.join(sysLogsPath, path.parse(mostRecent.file).name)
-    logDB = new Store({name: logFile})
+    exitLogFile = path.join(sysLogsPath, path.parse(mostRecent.file).name)
+    logDB = new Store({name: exitLogFile})
 
     if (logDB.get('log').length == 0) {
-        fs.unlink(app.getPath('userData') + path.sep + logFile + '.json', (err) => {
+        fs.unlink(app.getPath('userData') + path.sep + exitLogFile + '.json', (err) => {
             if (err) throw err;
         })
     }
@@ -1349,6 +1359,11 @@ ipcMain.on('projectFullyFunded', (event, args) => {
         global.sharedObject.win.webContents.send('projectsReady')
     
     global.sharedObject.logger.info('Project "' + global.activeProject.name + '" was marked "fully funded".')
+    refreshLogFile()
+})
+
+// manually refresh the current log file
+ipcMain.on('refreshLog', (event, args) => {
     refreshLogFile()
 })
 

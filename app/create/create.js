@@ -13,6 +13,7 @@
         $scope.init = function() {
             $mainCtrl.nameSortFlag = 1;
             $mainCtrl.totalFundsSortFlag = 1;
+            $mainCtrl.expDateSortFlag = 1;
             $mainCtrl.sweepDateSortFlag = 1;
 
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;            
@@ -29,7 +30,10 @@
                 fundsSent: false
             };
             
-            ctrl.calendar = {
+            ctrl.expCalendar = {
+                opened: false
+            };
+            ctrl.sweepCalendar = {
                 opened: false
             };
             ctrl.datepickerOptions = {
@@ -60,11 +64,23 @@
         });
         
         /* Is the calendar date in the future? */
-        ctrl.checkCalendarDate = function() {
-            if (ctrl.newProject.sweepDate > ctrl.today)
-                $scope.addNewProjectForm.sweepDate.$setValidity('invalidDate', true);
+        ctrl.checkCalendarDate = function(type) {
+            var input;
+            var value;
+            
+            if (type === "expCalendar") {
+                input = $scope.addNewProjectForm.expDate;
+                value = ctrl.newProject.expDate;
+            }
+            else if (type === "sweepCalendar") {
+                input = $scope.addNewProjectForm.sweepDate;
+                value = ctrl.newProject.sweepDate;
+            }
+            
+            if (value > ctrl.today)
+                input.$setValidity('invalidDate', true);
             else
-                $scope.addNewProjectForm.sweepDate.$setValidity('invalidDate', false);
+                input.$setValidity('invalidDate', false);
         };
         
         /* Create sender addresses for a project. */
@@ -152,8 +168,11 @@
         };
         
         /* Open the calendar popup. */
-        ctrl.openCalendar = function() {
-            ctrl.calendar.opened = true;
+        ctrl.openCalendar = function(type) {
+            if (type === "expCalendar")
+                ctrl.expCalendar.opened = true;
+            else if (type == "sweepCalendar")
+                ctrl.sweepCalendar.opened = true;
         };
         
         /* Called when the "create project" button is clicked. */
@@ -167,7 +186,7 @@
         };
 
         /* Sort the project list. */
-        ctrl.sort = function(type, reverse) {
+        ctrl.sort = function(type, reverse = false) {
             ctrl.sortOptions.property = type;
             ctrl.sortOptions.reverse = reverse;
         };

@@ -34,7 +34,7 @@ function init() {
             port: config.rpc.port,
             user: config.rpc.username,
             pass: config.rpc.password,
-            timeout: 15000
+            timeout: 20000
         })
     }
     catch(err) {

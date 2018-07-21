@@ -17,7 +17,8 @@
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
             
             ctrl.activeProject = electron.remote.getGlobal('activeProject');
-            ctrl.activeProject.sweepDate !== "" ? ctrl.calendarDate = new Date(ctrl.activeProject.sweepDate) : ctrl.calendarDate = "";
+            ctrl.expDate = new Date(ctrl.activeProject.expDate);
+            ctrl.activeProject.sweepDate !== "" ? ctrl.sweepDate = new Date(ctrl.activeProject.sweepDate) : ctrl.sweepDate = "";
             
             if (ctrl.activeProject.recvAddrs !== undefined && ctrl.activeProject.recvAddrs.length > 0)
                 ctrl.hasRecvAddrs = true;
@@ -28,6 +29,12 @@
             console.log("activeProject");
             console.log(ctrl.activeProject);
             
+            ctrl.expCalendar = {
+                opened: false
+            };
+            ctrl.sweepCalendar = {
+                opened: false
+            };
             ctrl.datepickerOptions = {
                 showWeeks: false
             };
@@ -40,11 +47,23 @@
         };
         
         /* Is the calendar date in the future? */
-        ctrl.checkCalendarDate = function() {
-            if (ctrl.newProject.sweepDate > ctrl.today)
-                $scope.addNewProjectForm.sweepDate.$setValidity('invalidDate', true);
+        ctrl.checkCalendarDate = function(type) {
+            var input;
+            var value;
+            
+            if (type === "expCalendar") {
+                input = $scope.editProjectForm.expDate;
+                value = ctrl.expDate;
+            }
+            else if (type === "sweepCalendar") {
+                input = $scope.editProjectForm.sweepDate;
+                value = ctrl.sweepDate;
+            }
+            
+            if (value > ctrl.today)
+                input.$setValidity('invalidDate', true);
             else
-                $scope.addNewProjectForm.sweepDate.$setValidity('invalidDate', false);
+                input.$setValidity('invalidDate', false);
         };
         
         /* Create sender addresses for a project. */
@@ -79,6 +98,14 @@
                 ipcRenderer.send('setReferrer', {referrer: 'createAddressesEdit'});
                 ipcRenderer.send('showConfirmationDialog', {title: 'Create receiver addresses?', body: 'Are you sure you want to create receiver addresses for this project?'});
             }
+        };
+        
+        /* Open the calendar popup. */
+        ctrl.openCalendar = function(type) {
+            if (type === "expCalendar")
+                ctrl.expCalendar.opened = true;
+            else if (type == "sweepCalendar")
+                ctrl.sweepCalendar.opened = true;
         };
         
         /* Update the project. */

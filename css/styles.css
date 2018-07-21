@@ -222,7 +222,11 @@ button, .btn, .form-control, .input-group-addon {
 }
 
 #projectList .expCol {
-    width: 160px;
+    width: 130px;
+}
+
+#projectList .autoSweepCol {
+    width: 150px;
 }
 
 #projectList .editCol, #projectList .deleteCol, #projectList .fundCol, #projectList .sendCol, #projectList .sweepCol {
@@ -254,7 +258,7 @@ button, .btn, .form-control, .input-group-addon {
     width: 15%;
 }
 
-#addNewProjectForm #sweepDateGroup {
+#addNewProjectForm #expDateGroup, #addNewProjectForm #sweepDateGroup {
     width: 45%;
 }
 
@@ -284,15 +288,15 @@ button, .btn, .form-control, .input-group-addon {
     width: 25%;
 }
 
-#editProjectForm  #sweepDateGroup {
+#editProjectForm #expDateGroup, #editProjectForm  #sweepDateGroup {
     width: 35%;
 }
 
-#editProjectForm #calendarBtn {
+#editProjectForm #expCalendarBtn, #editProjectForm #sweepCalendarBtn {
     cursor: pointer;
 }
 
-#editProjectForm #calendarBtn:hover {
+#editProjectForm #expCalendarBtn:hover, #editProjectForm #sweepCalendarBtn:hover {
     color: inherit;
 }
 

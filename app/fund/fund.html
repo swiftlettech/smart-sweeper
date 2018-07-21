@@ -17,25 +17,30 @@
             <tr>
                 <td class="nameCol">
                     <strong>Name</strong>
-                    <i class="fa fa-fw fa-sort-alpha-asc" title="Sort A to Z" ng-show="$mainCtrl.nameSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('name', false)"></i>
+                    <i class="fa fa-fw fa-sort-alpha-asc" title="Sort A to Z" ng-show="$mainCtrl.nameSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('name')"></i>
                     <i class="fa fa-fw fa-sort-alpha-desc" title="Sort Z to A" ng-show="$mainCtrl.nameSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('name', true)"></i>
                 </td>
                 <td class="numAddrCol text-center"><strong>Total Addresses</strong></td>
                 <td class="totalFundsCol text-center">
                     <strong>Total SMART</strong>
-                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.totalFundsSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('totalFunds', false)"></i>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.totalFundsSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('totalFunds')"></i>
                     <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.totalFundsSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('totalFunds', true)"></i>
                 </td>
                 <td class="addrAmtCol text-center">
                     <strong>SMART per Address</strong>
-                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.addrAmtSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('addrAmt', false)"></i>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.addrAmtSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('addrAmt')"></i>
                     <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.addrAmtSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('addrAmt', true)"></i>
                 </td>
                 <td class="expCol text-center">
-                    <strong>Auto Sweep Date</strong>
-                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.sweepDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('sweepDate', false)"></i>
-                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.sweepDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('sweepDate', true)"></i>
+                    <strong>Use By Date</strong>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.expDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('expDate')"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.expDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('expDate', true)"></i>
                 </td>
+                <!--<td class="autoSweepCol text-center">
+                    <strong>Auto Sweep Date</strong>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.sweepDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('sweepDate')"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.sweepDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('sweepDate', true)"></i>
+                </td>-->
                 <td class="fundCol text-center"><strong>Fund</strong></td>
                 <td class="sendCol text-center"><strong>Send</strong></td>
                 <td class="printCol text-center"><strong>Print Wallets</strong></td>
@@ -56,7 +61,9 @@
                             
                             <td class="addrAmtCol text-center">{{project.addrAmt || 0 | toFixedNum: 8}}</td>
                             
-                            <td class="expCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>
+                            <td class="expCol text-center">{{project.expDate | date: 'mediumDate'}}</td>
+                            
+                            <!--<td class="autoSweepCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>-->
                             
                             <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-click="$fundCtrl.fundProject(project)" ng-disabled="project.projectFunded || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw sigma">Σ</i></button></td>
                             

@@ -11,9 +11,9 @@
         var ctrl = this;
 
         $scope.init = function() {
-            $mainCtrl.setPageHeight();
-            var logboxHeight = parseInt($document.find('#page-wrapper').css('height')) - $document.find('#log button').outerHeight(true) - 75;
-            $document.find('#log textarea').css('height', logboxHeight + 'px');
+            //var logboxHeight = parseInt($document.find('#page-wrapper').css('height')) - $('#log textarea').offset().top;
+            //$document.find('#log textarea').css('height', logboxHeight + 'px');
+            // - $document.find('#log button').outerHeight(true) - 75
             
             ipcRenderer.send('loadLog');
             ipcRenderer.on('logReady', (event, arg) => {
@@ -23,7 +23,7 @@
                     if (ctrl.mostRecentLog != null) {
                         ctrl.logDate = $filter('date')(ctrl.mostRecentLog.date, 'longDate');
                         
-                        if (ctrl.mostRecentLog.content.length > 0) {
+                        if (ctrl.mostRecentLog.content) {
                             ctrl.logContent = "";
                             
                             angular.forEach(ctrl.mostRecentLog.content, function(item, key) {
@@ -33,10 +33,16 @@
                     }
                 });
             });
+            
+            $mainCtrl.setPageHeight();
         };
         
         ctrl.openLogFolder = function() {
             ipcRenderer.send('openLogFolder');
+        };
+        
+        ctrl.refreshLog = function() {
+            ipcRenderer.send('refreshLog');
         };
     }
 })();

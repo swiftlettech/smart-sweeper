@@ -103,7 +103,7 @@ The log files are also in JSON format and can be viewed with a general log viewe
 
 KNOWN ISSUES
 ---------------
-* electron-store error: "EPERM operation not permitted" randomly occurs on Windows when reading a config file. SmartSweeper will exit when it does.
+* electron-store error: "EPERM operation not permitted" sometimes occurs on Windows when reading a config file. SmartSweeper will exit when it does.
 
 
 Other software used

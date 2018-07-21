@@ -128,21 +128,31 @@
             if (ctrl.blockExplorerError)
                 statusMsgs++;
             
+            //console.log(ctrl.activePage)
+            
             if ((ctrl.activePage === "dashboard" && statusMsgs > 2) ||
-                ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && ((electron.remote.getGlobal('availableProjects').list.length > 4 && statusMsgs > 0) || (electron.remote.getGlobal('availableProjects').list.length > 5))))
+                ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && (electron.remote.getGlobal('availableProjects').list.length > 4 && statusMsgs > 0)))
             {
                 //console.log('this page should scroll');
                 $document.find('#page-wrapper').css('height', '');
-                return;
             }
+            else {
+                //console.log('test')
 
-            if (window.innerWidth >= 700 && window.innerHeight >= 600) {
-                //console.log('this page should not scroll');
-                $document.find('#page-wrapper').css({
-                    height: function() {
-                        return window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
-                    }
-                });
+                if (window.innerWidth >= 700 && window.innerHeight >= 600) {
+                    //console.log('this page should not scroll');
+                    $document.find('#page-wrapper').css({
+                        height: function() {
+                            return window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
+                        }
+                    });
+                }
+                
+                if (ctrl.activePage === "logs") {
+                    var buttonHeight = 22 + parseInt($document.find('#log button').css('margin-bottom'));                    
+                    var logboxHeight = $document.find('#page-wrapper').height() - $document.find('#statusMsgs').height() - buttonHeight - $document.find('#log h5').outerHeight(true) - 30;
+                    $document.find('#log textarea').css('height', logboxHeight + 'px');
+                }
             }
         };
         
@@ -279,6 +289,7 @@
             ctrl.totalFundsSortFlag = -1;
             ctrl.addrAmtSortFlag = -1;
             ctrl.percentClaimedSortFlag = -1;
+            ctrl.expDateSortFlag = -1;
             ctrl.sweepDateSortFlag = -1;
         }
 
@@ -290,7 +301,7 @@
             if (reverse)
                 reverseFlag = -1;
             else
-               reverseFlag = 1; 
+                reverseFlag = 1; 
 
             resetSortFlags();
 
@@ -302,6 +313,8 @@
                 ctrl.addrAmtSortFlag = reverseFlag;
             else if (property === "percentClaimed")
                 ctrl.percentClaimedSortFlag = reverseFlag;
+            else if (property === "expDate")
+                ctrl.expDateSortFlag = reverseFlag;
             else if (property === "sweepDate")
                 ctrl.sweepDateSortFlag = reverseFlag;
         };
