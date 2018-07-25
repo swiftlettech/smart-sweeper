@@ -26,6 +26,7 @@
                 autoSweep: false,
                 sweepDate: '',
                 fundsSwept: false,
+                allClaimed: false,
                 projectFunded: false,
                 fundsSent: false
             };

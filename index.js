@@ -594,6 +594,8 @@ let apiCallback = function(resp, functionName, projectInfo) {
                             })
 
                             project.claimedAddr = claimed
+                            if (project.claimedAddr == project.recvAddrs.length)
+                                project.allClaimed = true
                         }
                     })
 
@@ -890,7 +892,6 @@ function newProject(event, project) {
     var newProject = project
     newProject.id = global.availableProjects.index + 1
     newProject.originalFunds = 0
-    newProject.autoSweep = false // because auto-sweep hasn't been implemented
     newProject.addressPair = {}
     
     var addressPair = smartcashapi.generateAddress()
@@ -963,12 +964,11 @@ app.on('ready', () => {
 app.on('window-all-closed', () => {
     // delete the user and system log files if they're empty
     var mostRecent = getNewestLogFile('user')
-    var exitLogFile
-    exitLogFile = path.join(userLogsPath, path.parse(mostRecent.file).name)
+    var exitLogFile = path.join(userLogsPath, path.parse(mostRecent.file).name)
     var logDB = new Store({name: exitLogFile})
 
     if (logDB.get('log').length == 0) {
-        fs.unlink(app.getPath('userData') + path.sep + logFexitLogFileile + '.json', (err) => {
+        fs.unlink(path.join(app.getPath('userData'), exitLogFile + '.json'), (err) => {
             if (err) throw err;
         })
     }
@@ -978,7 +978,7 @@ app.on('window-all-closed', () => {
     logDB = new Store({name: exitLogFile})
 
     if (logDB.get('log').length == 0) {
-        fs.unlink(app.getPath('userData') + path.sep + exitLogFile + '.json', (err) => {
+        fs.unlink(path.join(app.getPath('userData'), exitLogFile + '.json'), (err) => {
             if (err) throw err;
         })
     }
@@ -1346,7 +1346,7 @@ ipcMain.on('newProject', (event, args) => {
 
 // open the log folder
 ipcMain.on('openLogFolder', (event, args) => {
-    shell.showItemInFolder(app.getPath('userData') + path.sep + logFile + '.json')
+    shell.showItemInFolder(path.join(app.getPath('userData'), userLogsPath, logFile + '.json'))
 })
 
 // user confirmation that the project has been fully funded

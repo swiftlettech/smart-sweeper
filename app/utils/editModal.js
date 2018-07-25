@@ -18,7 +18,8 @@
             
             ctrl.activeProject = electron.remote.getGlobal('activeProject');
             ctrl.expDate = new Date(ctrl.activeProject.expDate);
-            ctrl.activeProject.sweepDate !== "" ? ctrl.sweepDate = new Date(ctrl.activeProject.sweepDate) : ctrl.sweepDate = "";
+            //ctrl.sweepDate = new Date(ctrl.activeProject.sweepDate);
+            ctrl.sweepDate = ""; // auto-sweep hasn't been implemented, use an empty string to prevent a form validation error
             
             if (ctrl.activeProject.recvAddrs !== undefined && ctrl.activeProject.recvAddrs.length > 0)
                 ctrl.hasRecvAddrs = true;
@@ -48,6 +49,7 @@
         
         /* Is the calendar date in the future? */
         ctrl.checkCalendarDate = function(type) {
+            var today = new Date();
             var input;
             var value;
             
@@ -60,7 +62,7 @@
                 value = ctrl.sweepDate;
             }
             
-            if (value > ctrl.today)
+            if (value > today)
                 input.$setValidity('invalidDate', true);
             else
                 input.$setValidity('invalidDate', false);
@@ -112,6 +114,8 @@
         ctrl.update = function(form) {
             ctrl.activeProject.addrAmt = parseInt(ctrl.activeProject.addrAmt);
             ctrl.activeProject.numAddr = parseInt(ctrl.activeProject.numAddr);
+            ctrl.activeProject.expDate = ctrl.expDate;
+            ctrl.activeProject.sweepDate = ctrl.sweepDate;
             
             ipcRenderer.send('updateProject', {activeProject: ctrl.activeProject});
             ipcRenderer.on('projectUpdated', (event, arg) => {

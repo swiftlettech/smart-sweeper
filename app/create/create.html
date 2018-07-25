@@ -102,7 +102,7 @@
 
     <div id="projectList">
         <div class="infoBlock">
-            <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> A project can't be deleted unless its balance is zero and there are no outstanding funds.</p>
+            <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> A project can't be deleted if it has been funded and there are still funds in any promotional wallets.</p>
         </div>
         
         <h4>Projects</h4>
@@ -142,15 +142,19 @@
                             <td class="totalFundsCol text-center">{{project.originalFunds | toFixedNum: 8}}</td>
                             <td class="numAddrCol text-center">{{project.numAddr}}</td>
                             <td class="addrCol text-center"><i class="fa fa-fw fa-check" aria-hidden="false" title="yes" ng-show="project | hasAddresses"></i></td>
-                            <td class="expCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>
+                            <td class="expCol text-center"><span ng-show="project.expDate">{{project.expDate | date: 'mediumDate'}}</span><span ng-show="!project.expDate">n/a</span></td>
+                            <!--<td class="autoSweepCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>-->
                             <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$createCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
-                            <td class="deleteCol text-center"><button class="btn btn-link" title="Delete project" ng-click="$createCtrl.delete(project.id)" ng-disable="project.originalFunds > 0"><i class="fa fa-fw fa-trash"></i></button></td>
+                            <td class="deleteCol text-center"><button class="btn btn-link" title="Delete project" ng-click="$createCtrl.delete(project.id)" ng-disable="project.projectFunded && (!project.allClaimed || !project.fundsSwept)"><i class="fa fa-fw fa-trash"></i></button></td>
                         </tr>
                         <tr>
                             <td colspan="7" class="addrCol">
                                 <strong>Project Address:</strong> {{project.addressPair.publicKey}}<br />
                                 <strong>Private Key:</strong> <button class="btn btn-link" title="Show/hide private key" ng-click="$mainCtrl.showPK(project.id)"><i class="fa fa-fw fa-eye" aria-hidden="false" title="Show private key" ng-show="!project.showPrivateKey"></i> <i class="fa fa-fw fa-eye-slash" aria-hidden="false" title="Hide private key" ng-show="project.showPrivateKey"></i></button> 
-                                {{project.addressPair.privateKey | hidePrivateKey: project.showPrivateKey}}
+                                {{project.addressPair.privateKey | hidePrivateKey: project.showPrivateKey}}<br />
+                                project.projectFunded: {{project.projectFunded}}<br />
+                                !project.allClaimed: {{!project.allClaimed}}<br />
+                                !project.fundsSwept: {{!project.fundsSwept}}<br />
                             </td>
                         </tr>
                     </table>

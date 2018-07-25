@@ -131,7 +131,7 @@
             //console.log(ctrl.activePage)
             
             if ((ctrl.activePage === "dashboard" && statusMsgs > 2) ||
-                ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && (electron.remote.getGlobal('availableProjects').list.length > 4 && statusMsgs > 0)))
+                ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && (electron.remote.getGlobal('availableProjects').list.length > 4)))
             {
                 //console.log('this page should scroll');
                 $document.find('#page-wrapper').css('height', '');
