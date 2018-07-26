@@ -22,7 +22,10 @@
 
                 <div class="form-group">
                     <label for="numAddr" class="control-label">Number of addresses to create<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
-                    <input name="numAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.numAddr" ng-pattern="$editCtrl.greaterThanZeroIntPattern" ng-change="$editCtrl.updateAddrAmt()" ng-disabled="$editCtrl.hasRecvAddrs" required />
+                    <input name="numAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.numAddr" ng-pattern="$editCtrl.greaterThanZeroIntPattern" ng-change="$editCtrl.updateAddrAmt()" ng-disabled="$editCtrl.activeProject.recvAddrs.length > 0 || $editCtrl.addressesCreated" required />
+                    
+                    $editCtrl.activeProject.recvAddrs.length: {{$editCtrl.activeProject.recvAddrs.length}}<br />
+                    $editCtrl.addressesCreated: {{$editCtrl.addressesCreated}}<br />
 
                     <div ng-show="editProjectForm.numAddr.$error.pattern" role="alert">
                         <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
@@ -31,7 +34,7 @@
 
                 <div class="form-group">
                     <label for="addrAmt" class="control-label">SMART per address</label>
-                    <p>{{$editCtrl.activeProject.addrAmt}}</p>
+                    <p>{{$editCtrl.activeProject.addrAmt | toFixedNum: 8}}</p>
                 </div>
 
                 <div class="form-group">
@@ -67,7 +70,7 @@
                         </span>
                     </div>
 
-                    <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This will be printed on each promotional wallet.</p>
+                    <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This will be listed on each promotional wallet.</p>
 
                     <div ng-show="editProjectForm.expDate.$error.required" role="alert">
                         <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Required.</span>

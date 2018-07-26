@@ -18,12 +18,7 @@
             clipboardjs.on('success', function(event) {
                 // select the text on clicking the copy button
                 $('#projectAddress').selectText();
-                
-                //$document.find('.copy-tooltip').addClass('tooltipped tooltipped-e tooltipped-no-delay');
             });
-            /*$document.find('.copy-btn').on('mouseleave', function(event) {
-                $document.find('.copy-tooltip').removeClass('tooltipped tooltipped-e tooltipped-no-delay');
-            });*/
             
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
             ctrl.originalFunds = 0;
@@ -55,10 +50,9 @@
             ipcRenderer.send('modalNo');
         };
         
-        ctrl.copyAddress = function() {
-            //console.log(document.getElementById('projectAddress').innerHtml);
+        /*ctrl.copyAddress = function() {
             document.execCommand("copy", false, $document.find('#projectAddress').html());
-        };
+        };*/
         
         /* Send funding information back to the main process. */
         ctrl.fundInfo = function(form) {
@@ -101,7 +95,7 @@
         ctrl.projectTxStatus = function() {
             ipcRenderer.send('getProjectAddressInfo', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, address: ctrl.activeProject.addressPair.publicKey});
             
-            ipcRenderer.on('gotAddressInfo', (event, args) => {
+            ipcRenderer.on('gotAddressInfo', (event, args) => {                
                 $scope.$apply(function() {                    
                     ctrl.msgType = args.msgType;
                     if (ctrl.msgType === "error") {
@@ -111,6 +105,8 @@
                         //ctrl.balance = args.balance;
                         //ctrl.activeTxs = [];
                         ctrl.activeTxs = args.txs;
+                        
+                        console.log(ctrl.activeTxs)
                         
                         /*angular.forEach(args.txs, function(tx, key) {
                             if (tx.type === "vout")
@@ -126,6 +122,7 @@
             });
             
             ipcRenderer.on('fundingTxidsChecked', (event, args) => {
+                ipcRenderer.removeAllListeners('fundingTxidsChecked');
                 $scope.$apply(function() {
                     ctrl.activeProject.txConfirmed = args.confirmed;
                     ctrl.currentBalance = args.balance;

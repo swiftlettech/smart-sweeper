@@ -106,7 +106,7 @@
         ctrl.setActivePage = function(page) {
             ctrl.activePage = page;
             console.log('active page: ' + ctrl.activePage);
-            eventCleanup();
+            ctrl.eventCleanup();
 
             if (ctrl.activePage !== 'dashboard')
                 $document.find('#page-wrapper').css('background-image', 'none');
@@ -169,7 +169,7 @@
         }
 
         /* Clean up all page-related ipcRenderer events if they're not system events or global app events. */
-        function eventCleanup() {
+        ctrl.eventCleanup = function() {
             var events = ipcRenderer._events;
 
             angular.forEach(events, function(event, key) {

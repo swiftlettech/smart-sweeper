@@ -463,20 +463,20 @@ let apiCallback = function(resp, functionName, projectInfo) {
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.apiCallbackInfo.get(referrer)
     
-    /*if (referrer === "getClaimedFundsInfo") {
+    if (referrer === "sweepFunds") {
         console.log('apiCallback referrer: ', referrer)
         console.log('apiCallbackInfo: ', apiCallbackInfo)
         console.log()
-    }*/
+    }
     
     if (apiCallbackInfo !== undefined) {
         if (resp.type === "data") {
-            /*if (referrer === "getClaimedFundsInfo") {
+            if (referrer === "sweepFunds") {
                 console.log('projectInfo: ', projectInfo)
                 //console.log('from ' + functionName)
                 console.log(resp)
                 console.log()
-            }*/
+            }
 
             if (functionName === "checkBalance") {
                 if (referrer === "getClaimedFundsInfo") {
@@ -643,8 +643,6 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     var confirmedCounter = 0
                     var txids = []
 
-                    console.log('apiCallbackInfo.txInfo: ', apiCallbackInfo.txInfo)
-
                     apiCallbackInfo.txInfo.forEach(function(tx, key) {
                         txids.push(tx)
 
@@ -808,6 +806,9 @@ function createRecvAddresses(project) {
     }
     project.claimedAddr = 0
     
+    if (project.projectFunded)
+        project.addrAmt = (project.originalFunds - global.sharedObject.txFee) / project.numAddr
+    
     var index = getDbIndex(project.id)
     global.availableProjects.list[index] = project
     global.activeProject = project
@@ -968,7 +969,7 @@ app.on('window-all-closed', () => {
     var logDB = new Store({name: exitLogFile})
 
     if (logDB.get('log').length == 0) {
-        fs.unlink(path.join(app.getPath('userData'), exitLogFile + '.json'), (err) => {
+        fs.unlink(path.join(app.getPath('userData'), exitLogFile+'.json'), (err) => {
             if (err) throw err;
         })
     }
@@ -978,7 +979,7 @@ app.on('window-all-closed', () => {
     logDB = new Store({name: exitLogFile})
 
     if (logDB.get('log').length == 0) {
-        fs.unlink(path.join(app.getPath('userData'), exitLogFile + '.json'), (err) => {
+        fs.unlink(path.join(app.getPath('userData'), exitLogFile+'.json'), (err) => {
             if (err) throw err;
         })
     }
@@ -1015,24 +1016,6 @@ ipcMain.on('checkFundingTxids', (event, args) => {
     args.activeTxs.forEach(function(tx, key) {
         smartcashapi.checkTransaction({referrer: "checkFundingTxids", projectID: args.projectID, projectName: args.projectName, projectIndex: index, balance: args.balance, address: args.address, txid: tx}, apiCallback)
     })
-    
-    /*else {
-        // check one        
-        global.apiCallbackInfo.set('getProjectTxStatus', {
-            apiCallbackCounter: 0,
-            totalProjects: 1
-        })
-        
-        var index = getDbIndex(project.id)
-        var project = global.availableProjects.list[index]
-        var txids
-        
-        project.txid.forEach(function(txid, key) {
-            txids.push(txid)
-        })
-        
-        smartcashapi.checkTransaction({referrer: "getProjectTxStatus", projectName: project.name, projectIndex: index, txid: project.txid}, apiCallback)
-    }*/
 })
 
 // check the funded balances of all projects

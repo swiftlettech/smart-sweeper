@@ -21,11 +21,6 @@
             //ctrl.sweepDate = new Date(ctrl.activeProject.sweepDate);
             ctrl.sweepDate = ""; // auto-sweep hasn't been implemented, use an empty string to prevent a form validation error
             
-            if (ctrl.activeProject.recvAddrs !== undefined && ctrl.activeProject.recvAddrs.length > 0)
-                ctrl.hasRecvAddrs = true;
-            else
-                ctrl.hasRecvAddrs = false;
-            
             ctrl.updateAddrAmt();
             console.log("activeProject");
             console.log(ctrl.activeProject);
@@ -92,6 +87,7 @@
                     ipcRenderer.on('addressesCreated', (event, arg) => {
                         form.$submitted = true;
                         ipcRenderer.send('showInfoDialog', {title: 'Receiver addresses', body: 'Addresses were created successfully.'});
+                        ctrl.addressesCreated = true;
                     });
                 }
             });
@@ -112,7 +108,6 @@
         
         /* Update the project. */
         ctrl.update = function(form) {
-            ctrl.activeProject.addrAmt = parseInt(ctrl.activeProject.addrAmt);
             ctrl.activeProject.numAddr = parseInt(ctrl.activeProject.numAddr);
             ctrl.activeProject.expDate = ctrl.expDate;
             ctrl.activeProject.sweepDate = ctrl.sweepDate;
@@ -129,7 +124,7 @@
         /* Calculate the amount of SMART to send to each receiving address. */
         ctrl.updateAddrAmt = function() {
             if (ctrl.activeProject.originalFunds > 0)
-                ctrl.activeProject.addrAmt = (ctrl.activeProject.originalFunds / ctrl.activeProject.numAddr).toFixed(8);
+                ctrl.activeProject.addrAmt = (ctrl.activeProject.originalFunds - electron.remote.getGlobal('sharedObject').txFee) / ctrl.activeProject.numAddr;
             else
                 ctrl.activeProject.addrAmt = 0;
         };
