@@ -85,9 +85,11 @@
                     // create the addresses and add them to the project
                     ipcRenderer.send('createRecvAddresses', {project: ctrl.activeProject, newProjectFlag: false});
                     ipcRenderer.on('addressesCreated', (event, arg) => {
-                        form.$submitted = true;
-                        ipcRenderer.send('showInfoDialog', {title: 'Receiver addresses', body: 'Addresses were created successfully.'});
-                        ctrl.addressesCreated = true;
+                        $scope.$apply(function() {
+                            form.$submitted = true;
+                            ipcRenderer.send('showInfoDialog', {title: 'Receiver addresses', body: 'Addresses were created successfully.'});
+                            ctrl.addressesCreated = true;
+                        });
                     });
                 }
             });
@@ -114,10 +116,12 @@
             
             ipcRenderer.send('updateProject', {activeProject: ctrl.activeProject});
             ipcRenderer.on('projectUpdated', (event, arg) => {
-                ctrl.activeProject = null;
-                form.$setPristine();
-                form.$setUntouched();
-                form.$submitted = false;
+                $scope.$apply(function() {
+                    ctrl.activeProject = null;
+                    form.$setPristine();
+                    form.$setUntouched();
+                    form.$submitted = false;
+                });
             });
         };
         

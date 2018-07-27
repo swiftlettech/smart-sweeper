@@ -273,7 +273,10 @@
     /* Update various info. */
     function updateData() {
         // dashboard info
-        ipcRenderer.send('checkProjectBalances');
+        ipcRenderer.send('checkAvailProjectBalances');
+        
+        // update a project's currentFunds property
+        //ipcRenderer.send('checkProjectBalances');
 
         // update a project's txConfirmed flag
         ipcRenderer.send('getAllTxStatus');

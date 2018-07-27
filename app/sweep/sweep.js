@@ -99,11 +99,13 @@
             
             ipcRenderer.send('sweepFunds', {projectIDs: projectIDs});
             ipcRenderer.on('fundsSwept', (event, args) => {
-                ctrl.disableChecks = false;
-                for (var i=0; i<ctrl.showSpinner.length; i++) {
-                    ctrl.showSpinner[i] = false;
-                }
-                $mainCtrl.setModalMsg(args.msgType, args.msg);
+                $scope.$apply(function() {
+                    ctrl.disableChecks = false;
+                    for (var i=0; i<ctrl.showSpinner.length; i++) {
+                        ctrl.showSpinner[i] = false;
+                    }
+                    $mainCtrl.setModalMsg(args.msgType, args.msg);
+                });
             });
         };
     }

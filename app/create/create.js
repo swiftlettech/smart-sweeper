@@ -104,14 +104,16 @@
                     // create the addresses and add them to the project
                     ipcRenderer.send('createRecvAddresses', {project: ctrl.newProject, newProjectFlag: true});
                     ipcRenderer.on('addressesCreated', (event, arg) => {
-                        console.log('addressesCreated');
-                        ctrl.newProject = {};
-                        form.$setPristine();
-                        form.$setUntouched();
-                        form.$submitted = false;
-                        ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-                        
-                        ipcRenderer.send('showInfoDialog', {title: 'Receiver addresses', body: 'Addresses were created successfully.'});
+                        $scope.$apply(function() {
+                            console.log('addressesCreated');
+                            ctrl.newProject = {};
+                            form.$setPristine();
+                            form.$setUntouched();
+                            form.$submitted = false;
+                            ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                            
+                            ipcRenderer.send('showInfoDialog', {title: 'Receiver addresses', body: 'Addresses were created successfully.'});
+                        });
                     });
                 }
             });
@@ -160,11 +162,13 @@
             
             ipcRenderer.send('newProject', {newProject: ctrl.newProject});
             ipcRenderer.on('newProjectAdded', (event, arg) => {
-                console.log('newProjectAdded');
-                ctrl.newProject = {};
-                form.$setPristine();
-                form.$setUntouched();
-                form.$submitted = false;
+                $scope.$apply(function() {
+                    console.log('newProjectAdded');
+                    ctrl.newProject = {};
+                    form.$setPristine();
+                    form.$setUntouched();
+                    form.$submitted = false;
+                });
             });
         };
         

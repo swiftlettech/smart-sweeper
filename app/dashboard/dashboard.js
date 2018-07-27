@@ -70,12 +70,14 @@
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
             
             ipcRenderer.on('rpcConnected', (event, args) => {
-                ctrl.projectCount = ctrl.availableProjects.length;
-                
-                availableFunds();
-                txInfo();
-                claimedFunds();
-                sweptFunds();
+                $scope.$apply(function() {
+                    ctrl.projectCount = ctrl.availableProjects.length;
+
+                    availableFunds();
+                    txInfo();
+                    claimedFunds();
+                    sweptFunds();
+                });
             });
             
             $mainCtrl.setPageHeight();
@@ -135,7 +137,7 @@
         
         /* The total project funds that have yet to be sent to another wallet (all projects). */
         function availableFunds() {            
-            ipcRenderer.send('checkProjectBalances');
+            ipcRenderer.send('checkAvailProjectBalances');
         }
         
         /* Funds that have been transferred from a promotional wallet to a different wallet (all projects). */

@@ -102,7 +102,7 @@
 
     <div id="projectList">
         <div class="infoBlock">
-            <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> A project can't be deleted if it has been funded and there are still funds in any promotional wallets.</p>
+            <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> A project can't be deleted if it has been funded and there are still funds in any promo wallets.</p>
         </div>
         
         <h4>Projects</h4>
@@ -151,10 +151,11 @@
                             <td colspan="7" class="addrCol">
                                 <strong>Project Address:</strong> {{project.addressPair.publicKey}}<br />
                                 <strong>Private Key:</strong> <button class="btn btn-link" title="Show/hide private key" ng-click="$mainCtrl.showPK(project.id)"><i class="fa fa-fw fa-eye" aria-hidden="false" title="Show private key" ng-show="!project.showPrivateKey"></i> <i class="fa fa-fw fa-eye-slash" aria-hidden="false" title="Hide private key" ng-show="project.showPrivateKey"></i></button> 
-                                {{project.addressPair.privateKey | hidePrivateKey: project.showPrivateKey}}<br />
+                                {{project.addressPair.privateKey | hidePrivateKey: project.showPrivateKey}}<!--<br /><br />
                                 project.projectFunded: {{project.projectFunded}}<br />
-                                !project.allClaimed: {{!project.allClaimed}}<br />
-                                !project.fundsSwept: {{!project.fundsSwept}}<br />
+                                project.fundsSent: {{project.fundsSent}}<br />
+                                project.allClaimed: {{project.allClaimed}}<br />
+                                project.fundsSwept: {{project.fundsSwept}}-->
                             </td>
                         </tr>
                     </table>

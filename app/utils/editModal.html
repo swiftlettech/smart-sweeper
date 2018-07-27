@@ -22,10 +22,7 @@
 
                 <div class="form-group">
                     <label for="numAddr" class="control-label">Number of addresses to create<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
-                    <input name="numAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.numAddr" ng-pattern="$editCtrl.greaterThanZeroIntPattern" ng-change="$editCtrl.updateAddrAmt()" ng-disabled="$editCtrl.activeProject.recvAddrs.length > 0 || $editCtrl.addressesCreated" required />
-                    
-                    $editCtrl.activeProject.recvAddrs.length: {{$editCtrl.activeProject.recvAddrs.length}}<br />
-                    $editCtrl.addressesCreated: {{$editCtrl.addressesCreated}}<br />
+                    <input name="numAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.numAddr" ng-pattern="$editCtrl.greaterThanZeroIntPattern" ng-change="$editCtrl.updateAddrAmt()" ng-disabled="$editCtrl.addressesCreated || $editCtrl.activeProject.recvAddrs.length > 0" required />
 
                     <div ng-show="editProjectForm.numAddr.$error.pattern" role="alert">
                         <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
