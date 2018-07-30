@@ -1374,14 +1374,14 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
     // calculate and save the amount per address
     var totalAmtToSend = args.originalFunds-global.sharedObject.txFee
     var amtPerWallet = totalAmtToSend / args.wallets.length
-    console.log('amtToSend: ', amtToSend)
+    console.log('amtPerWallet: ', amtPerWallet)
     
     console.log('args.originalFunds: ', args.originalFunds)
     console.log('global.sharedObject.txFee: ', global.sharedObject.txFee)
     console.log('args.wallets.length: ', args.wallets.length)
     
     var index = getDbIndex(args.projectID)
-    global.availableProjects.list[index].addrAmt = amtToSend
+    global.availableProjects.list[index].addrAmt = amtPerWallet
     db.set('projects', global.availableProjects)
     
     var toAddr = []
