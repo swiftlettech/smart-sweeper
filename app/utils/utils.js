@@ -5,6 +5,21 @@
     const smartcashapi = window.nodeRequire('./smartcashapi');
 
     angular.module('SmartSweeperUtils')
+    .directive('addrValidation', function() {
+        /* Checks to see if a SmartCash address is valid. */
+        return {
+            require: 'ngModel',
+            link: function(scope, element, attrs, ngModel) {
+                ngModel.$validators.addrvalidation = function(modelValue, viewValue) {
+                    var value = modelValue || viewValue;                    
+                    if (ngModel.$isEmpty(value))
+                        return false;
+                    
+                    return smartcashapi.checkAddress(value);
+                }
+            }
+        };
+    })
     .directive('calcNumber', function() {
         /* Convert to a number to be used in a calculation.
            based on https://docs.angularjs.org/api/ng/directive/select#binding-select-to-a-non-string-value-via-ngmodel-parsing-formatting */
@@ -44,17 +59,48 @@
             }
         };
     })
-    .directive('addrValidation', function() {
-        /* Checks to see if a SmartCash address is valid. */
+    .directive('enableDeleteBtn', function() {        
+        /* Enables project delete button if certain requirements have been met. */
         return {
-            require: 'ngModel',
-            link: function(scope, element, attrs, ngModel) {
-                ngModel.$validators.addrvalidation = function(modelValue, viewValue) {
-                    var value = modelValue || viewValue;                    
-                    if (ngModel.$isEmpty(value))
-                        return false;
-                    
-                    return smartcashapi.checkAddress(value);
+            link: function(scope, element, attrs) {
+                var project = JSON.parse(attrs.enableDeleteBtn);
+                
+                /*
+                    conditions (one is true):
+                        (1) The project hasn't been funded.
+                            (project.txid.length == 0)
+                        (2) The project was funded but the balance is now zero (funds were withdrawn from outside the app).
+                            (project.txid.length > 0 && project.zeroBalance)
+                        (3) Funds have been sent to the promo wallets and all of them have been claimed.
+                            (project.fundsSent && project.allClaimed)
+                        (4) Funds have been sent to the promo wallets and the project has been swept.
+                            (project.fundsSent && project.fundsSwept)
+                */
+                var enableCond = false;
+                
+                if (project.txid === undefined || project.txid.length == 0) {
+                    // enable delete button if the project hasn't been funded
+                    enableCond = true;
+                }
+                else {
+                    // the project has been funded
+                    if (project.zeroBalance) {
+                        // the project now has a zero balance
+                        enableCond = true;
+                    }
+                    else if (project.allClaimed) {
+                        // all of the promo wallets have been claimed
+                        enableCond = true;
+                    }
+                    else if (project.fundsSwept) {
+                        // the project was swept
+                        enableCond = true;
+                    }
+                }
+                
+                if (enableCond) {
+                    attrs.disabled = false;
+                    attrs.ngDisabled = "false";
                 }
             }
         };

@@ -8,7 +8,7 @@ SmartSweeper is still in the development stage so it is unstable and missing fun
 
 Description
 ---------------
-Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac OS. It isn't necessary to input your wallet passphrase to use SmartSweeper.
+Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow easy retrieval of gift funds. Runs only on Windows at the moment. It isn't necessary to input your wallet passphrase to use SmartSweeper.
 
 
 Features
@@ -29,7 +29,7 @@ Requirements
 ---------------
 * [Node.js](http://nodejs.org) - 8.9.0+
 * [npm](http://npmjs.com) - 5.6.0+
-* [SmartCash Node Client](https://smartcash.cc/wallets/) for Windows, Linux, or Mac OS - 1.2.2+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
+* [SmartCash Node Client](https://smartcash.cc/wallets/) for Windows - 1.2.2+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
 
 Run node -v and npm -v from a command prompt to make sure they're in your PATH. Open your SmartCash desktop wallet application to make sure it is up to date before launching SmartSweeper.
 
@@ -95,8 +95,6 @@ User files
 The database (smart-sweeper.json), the app config file (smart-sweeper-config.json) and the log files are saved in the following folders:
 
 * **Windows**: %APPDATA%/SmartSweeper
-* **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/SmartSweeper
-* **Mac**: ~/Library/Application Support/SmartSweeper
 
 The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). **It is recommended that you back up smart-sweeper.json to a safe place.**
 

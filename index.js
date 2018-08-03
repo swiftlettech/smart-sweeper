@@ -275,7 +275,7 @@ function createBgWindow() {
     bgWin.on("ready-to-show", () => {
         setTimeout(function() {
             closeSplashScreen()
-            //bgWin.show()
+            bgWin.show()
         }, 12000)
     })
     
@@ -483,6 +483,10 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 
                 if (referrer === "checkProjectBalances") {
                     global.availableProjects.list[projectInfo.projectIndex].currentFunds = resp.msg
+                    
+                    if (resp.msg == 0)
+                        global.availableProjects.list[projectInfo.projectIndex].zeroBalance = true
+                        
                     db.set('projects', global.availableProjects)
                 }
                 else if (referrer === "getClaimedFundsInfo") {
@@ -723,6 +727,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
             else if (functionName === "sendFunds") {
                 if ((referrer === "fundProject")) {
                     global.availableProjects.list[projectInfo.projectIndex].projectFunded = true
+                    global.availableProjects.list[projectInfo.projectIndex].zeroBalance = false
                     global.availableProjects.list[projectInfo.projectIndex].txConfirmed = false
                     global.apiCallbackInfo.delete(referrer)
                     db.set('projects', global.availableProjects)
@@ -1048,7 +1053,7 @@ ipcMain.on('checkFundingTxids', (event, args) => {
     })
 })
 
-// check the balances of all projects using checkbalance
+// check the balances of all projects using checkBalance
 ipcMain.on('checkProjectBalances', (event, args) => {
     if (global.availableProjects === undefined)
         global.availableProjects = db.get('projects')
@@ -1355,6 +1360,7 @@ ipcMain.on('openLogFolder', (event, args) => {
 ipcMain.on('projectFullyFunded', (event, args) => {
     var index = getDbIndex(global.activeProject.id)
     global.availableProjects.list[index].projectFunded = true
+    global.availableProjects.list[index].zeroBalance = false
     db.set('projects', global.availableProjects)
     
     if (global.sharedObject.win)
@@ -1478,8 +1484,13 @@ ipcMain.on('sweepFunds', (event, args) => {
     
     args.projectIDs.forEach(function(projectID, projectKey) {
         index = getDbIndex(projectID)
-        project = global.availableProjects.list[index]        
-        smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: project.id, project: project}, apiCallback)
+        project = global.availableProjects.list[index]
+        
+        console.log()
+        console.log('sweepFunds')
+        console.log(project)
+        
+        //smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: project.id, project: project}, apiCallback)
     })
 })
 

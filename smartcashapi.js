@@ -359,9 +359,9 @@ function sendFunds(projectInfo, callback) {
                 var transactions = []
                 var outputs = {}
                 
-                resp.body.last_txs.forEach(function(tx, n) {
-                    if (tx.type === "vout")
-                        txArray.push(tx.addresses)
+                resp.body.transactions.forEach(function(tx, n) {
+                    //if (tx.type === "vout")
+                        txArray.push(tx)
                 })
                 
                 txArray.forEach(function(txid, txIndex) {
