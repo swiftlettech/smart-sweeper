@@ -5,21 +5,33 @@ NOTE
 ---------------
 SmartSweeper is still in the development stage so it is unstable and missing functionality. DO NOT attempt to create transactions with this app.
 
+
 Description
 ---------------
-Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow easy retrieval of gift funds. Runs on Windows, Linux, and Mac OS. It isn't necessary to input your wallet passphrase to use SmartSweeper.
+Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow easy retrieval of gift funds. Runs only on Windows at the moment. It isn't necessary to input your wallet passphrase to use SmartSweeper.
+
+
+Features
+---------------
+* Create projects to organize promotions
+* Send funds to multiple promotional wallets
+* Retrieve promotional funds from wallets that were not redeemed
+* Print paper wallets
+* Access logs
+
 
 Releases
 ---------------
 Releases are forthcoming. Please see the [dev branch](https://github.com/swiftlettech/smart-sweeper/tree/dev).
 
+
 Requirements
 ---------------
 * [Node.js](http://nodejs.org) - 8.9.0+
 * [npm](http://npmjs.com) - 5.6.0+
-* [SmartCash wallet](https://smartcash.cc/wallets/) for Windows, Linux, or Mac OS - 1.1.1+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
+* [SmartCash Node Client](https://smartcash.cc/wallets/) for Windows - 1.2.2+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
 
-Run node -v and npm -v from a command prompt to make sure they're in your PATH. Open your wallet to make sure that it is up to date before launching SmartSweeper.
+Run node -v and npm -v from a command prompt to make sure they're in your PATH. Open your SmartCash desktop wallet application to make sure it is up to date before launching SmartSweeper.
 
 
 Installation
@@ -47,16 +59,16 @@ rpc.password=rpcpassword
 smartcashPath=C:\Program Files\SmartCash\
 ```
 
-* rpc.host is the IP address that the SmartCash Wallet RPC server is bound to.
-* rpc.port is the port that the SmartCash Wallet RPC server is listening on.
-* rpc.username is the SmartCash Wallet RPC server username.
-* rpc.password is the SmartCash Wallet RPC server password.
-* smartcashPath is the full path to your SmartCash Wallet installation. You must include a trailing slash.
+* rpc.host is the IP address that the SmartCash Node Client RPC server is bound to.
+* rpc.port is the port that the SmartCash node client RPC server is listening on.
+* rpc.username is the SmartCash Node Client RPC server username.
+* rpc.password is the SmartCash Node Client RPC server password.
+* smartcashPath is the full path to your SmartCash Node Client installation. You must include a trailing slash.
 
 
 Your SmartCash wallet must be started with the following arguments:
 ```
--txindex=1
+-txindex=1 (if SmartCash Node Client is < v1.2.3)
 -server
 -rpcbind=127.0.0.1
 -rpcport=9678
@@ -67,7 +79,7 @@ Your SmartCash wallet must be started with the following arguments:
 If it isn't running, SmartSweeper will start it for you with the above arguments. You can also [edit your wallet's smartcash.conf file](https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file). Please don't do this with your wallet running.
 
 ```
-txindex=1
+txindex=1 (if SmartCash Node Client is < v1.2.3)
 server=1
 rpcbind=127.0.0.1
 rpcport=9678
@@ -83,16 +95,23 @@ User files
 The database (smart-sweeper.json), the app config file (smart-sweeper-config.json) and the log files are saved in the following folders:
 
 * **Windows**: %APPDATA%/SmartSweeper
-* **Linux**: $XDG_CONFIG_HOME/smart-sweeper or ~/.config/SmartSweeper
-* **Mac**: ~/Library/Application Support/SmartSweeper
 
-The log files are also in JSON format and can be read with a general log viewer such as [glogg](https://github.com/nickbnf/glogg).
+The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). **It is recommended that you back up smart-sweeper.json to a safe place.**
+
+
+KNOWN ISSUES
+---------------
+* electron-store error: "EPERM operation not permitted" sometimes occurs on Windows when reading a config file. SmartSweeper will exit when it does.
 
 
 Other software used
 -------------------
 Software | License
 -------- | --------
+[AngularJS](http://angularjs.org) | MIT
+[AngularUI Bootstrap](https://github.com/angular-ui/bootstrap) | MIT
+[Bootstrap](https://getbootstrap.com/docs/3.3/) | MIT
+[clipboard.js](https://clipboardjs.com) | MIT
 [devtron](https://github.com/electron/devtron) | MIT
 [electron](https://github.com/electron/electron) | MIT
 [electron-debug](https://github.com/sindresorhus/electron-debug) | MIT
@@ -104,8 +123,10 @@ Software | License
 [melanke-watchjs](https://github.com/melanke/Watch.JS) | MIT
 [node-smartcash](https://github.com/miyakoj/node-smartcash) | MIT
 [ps-node](https://github.com/neekey/ps) | MIT
+[request](https://github.com/request/request) | Apache-2.0
 [smartcashjs-lib](https://github.com/SmartCash/SmartCashjs-lib) | MIT
 [SmartCash Paper Wallet Generator](https://github.com/SmartCash/PaperWalletGenerator) | ?
 [winston](https://github.com/winstonjs/winston) | MIT
 
-[The SmartExplorer API](http://explorer3.smartcash.cc) is used to check the current block count and to get info about project addresses.
+
+[The SmartCash Insight Explorer API](https://insight.smartcash.cc) is used to check the current block count and to get information about project addresses.
