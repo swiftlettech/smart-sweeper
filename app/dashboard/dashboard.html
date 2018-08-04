@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-sm-6 col-md-4">
             <div class="panel panel-default">
-                <div class="panel-heading">Available Balance (<span ng-bind="$dashboardCtrl.projectCount"></span> <span ng-show="$dashboardCtrl.projectCount == 1">project</span><span ng-show="$dashboardCtrl.projectCount != 1">projects</span>)</div>
+                <div class="panel-heading">Available Balance (<span ng-bind="$dashboardCtrl.projectCount"></span> <span ng-show="$dashboardCtrl.projectCount == 1">project</span><span ng-show="$dashboardCtrl.projectCount != 1">projects</span>) <div class="spinner" ng-show="$dashboardCtrl.showSpinner"></div></div>
                 <div class="panel-body">
                     <span ng-bind="$dashboardCtrl.availableBalance | toFixedNum: 8"></span>
                 </div>

@@ -108,11 +108,8 @@ function statusCheck(callback) {
         params: []
     }
     
-    sendCmd(cmd, function(err, resp) {
-        if (!err)
-            callback(resp)
-        else
-            callback(err)
+    sendCmd(cmd, function(err, resp) {        
+        callback({msg: resp, err: err})
     })
 }
 

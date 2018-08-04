@@ -64,6 +64,8 @@
         return {
             link: function(scope, element, attrs) {
                 var project = JSON.parse(attrs.enableDeleteBtn);
+                //console.log(project.name)
+                //console.log(project)
                 
                 /*
                     conditions (one is true):
@@ -88,12 +90,12 @@
                         // the project now has a zero balance
                         enableCond = true;
                     }
-                    else if (project.allClaimed) {
-                        // all of the promo wallets have been claimed
+                    else if (project.fundsSent && project.allClaimed) {
+                        // funds have been sent to the promo wallets and all of them have been claimed
                         enableCond = true;
                     }
-                    else if (project.fundsSwept) {
-                        // the project was swept
+                    else if (project.fundsSent && project.fundsSwept) {
+                        // funds have been sent to the promo wallets and the project was swept
                         enableCond = true;
                     }
                 }

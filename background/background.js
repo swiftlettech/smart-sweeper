@@ -98,13 +98,14 @@
             
             if (functionName === "rpcCheck") {
                 remote.getGlobal('sharedObject').rpcConnected = true;
+                remote.getGlobal('sharedObject').rpcError = false;
 
                 // check to see if the local copy of the blockchain is current
                 checkBlockchain();
                 ipcRenderer.send('getProjectTxStatus');
             }
             else if (functionName === "checkBlockchain") {
-                remote.getGlobal('sharedObject').blockExplorerError = false
+                remote.getGlobal('sharedObject').blockExplorerError = false;
                 
                 // automatically sweep funds if necessary if the blockchain is up-to-date
                 //if (resp.msg) {
@@ -115,8 +116,13 @@
         else if (resp.type === "error") {
             remote.getGlobal('sharedObject').logger.error(functionName + ': ' + resp.msg);
 
-            if (functionName === "rpcCheck")
+            if (functionName === "rpcCheck") {
                 remote.getGlobal('sharedObject').rpcError = true;
+                remote.getGlobal('sharedObject').rpcConnected = false;
+            }
+            else if (functionName === "checkBlockchain") {
+                remote.getGlobal('sharedObject').blockExplorerError = true;
+            }
         }
         
         apiCallbackCounter++        
@@ -219,11 +225,10 @@
     /* Check to see if the RPC client can communicate with SmartCash. */
     function rpcCheck() {
         rpc.statusCheck(function(resp) {
-            if (!resp)
+            if (resp.err)
                 apiCallback({type: 'error'}, 'rpcCheck');
-            else {
+            else
                 apiCallback({type: 'data'}, 'rpcCheck');
-            }
         });
     }
     

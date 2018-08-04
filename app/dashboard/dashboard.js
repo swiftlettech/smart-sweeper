@@ -98,7 +98,10 @@
         });
         
         ipcRenderer.on('balancesChecked', (event, args) => {
-            ctrl.availableBalance = $filter('toFixedNum')(args.availableBalance, 8);
+            $scope.$apply(function() {
+                ctrl.showSpinner = false;
+                ctrl.availableBalance = $filter('toFixedNum')(args.availableBalance, 8);
+            });
         });
         
         ipcRenderer.on('claimedFundsInfo', (event, args) => {
@@ -136,7 +139,8 @@
         });
         
         /* The total project funds that have yet to be sent to another wallet (all projects). */
-        function availableFunds() {            
+        function availableFunds() {
+            ctrl.showSpinner = true;
             ipcRenderer.send('checkAvailProjectBalances');
         }
         
