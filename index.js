@@ -372,7 +372,7 @@ function createModal(type, text) {
     else if (type === "fund") {
         title = "Fund Project"
         parent = global.sharedObject.win
-        width = Math.ceil(winBounds.width - (winBounds.width*0.45))
+        width = Math.ceil(winBounds.width - (winBounds.width*0.35))
         height = Math.ceil(winBounds.height - (winBounds.height*0.15))
         pathname = path.join(__dirname, 'app', 'fund', 'fundModal.html')
         resizable = true
@@ -471,12 +471,12 @@ let apiCallback = function(resp, functionName, projectInfo) {
     
     if (apiCallbackInfo !== undefined) {
         if (resp.type === "data") {
-            /*if (referrer === "checkAvailProjectBalances") {
+            if (referrer === "checkAvailProjectBalances") {
                 console.log('projectInfo: ', projectInfo)
                 //console.log('from ' + functionName)
                 console.log(resp.msg)
                 console.log()
-            }*/
+            }
 
             if (functionName === "checkBalance") {
                 global.sharedObject.blockExplorerError = false
@@ -511,11 +511,11 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     resp.msg.vout.forEach(function(tx, key) {
                         if (tx.scriptPubKey.addresses.includes(projectInfo.address)) {
                             if (resp.msg.confirmations >= 6) {
-                                obj[projectInfo.txid] = true
+                                obj[projectInfo.txid] = {confirmed: true, confirmations: resp.msg.confirmations}
                                 apiCallbackInfo.balance += tx.value
                             }
                             else
-                                obj[projectInfo.txid] = false
+                                obj[projectInfo.txid] = {confirmed: false, confirmations: resp.msg.confirmations}
 
                             apiCallbackInfo.txInfo.push(obj)
                         }
@@ -1014,6 +1014,7 @@ app.on('activate', () => {
 
 // check the available funded balances of all projects using transactions
 ipcMain.on('checkAvailProjectBalances', (event, args) => {
+    console.log('checkAvailProjectBalances: ')
     var totalTxs = 0
     
     if (global.availableProjects === undefined)
@@ -1036,6 +1037,9 @@ ipcMain.on('checkAvailProjectBalances', (event, args) => {
                 smartcashapi.checkTransaction({referrer: "checkAvailProjectBalances", projectName: project.name, projectIndex: projectKey, fundsSent: project.fundsSent, address: project.addressPair.publicKey, txid: project.txid}, apiCallback)
             }
         })
+    }
+    else {
+        global.sharedObject.win.webContents.send('balancesChecked', {availableBalance: 0})
     }
 })
 

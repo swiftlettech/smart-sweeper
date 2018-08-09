@@ -261,7 +261,7 @@
 
         smartcash.unref();
         smartcash.on('error', (err) => {
-            console.log('tried to open the wallet and failed');
+            console.log('tried to open the node client and failed');
             console.log(err);
             remote.getGlobal('sharedObject').logger.error('appInit - start Smartcash core: ' + err);
             remote.getGlobal('sharedObject').coreError = true;

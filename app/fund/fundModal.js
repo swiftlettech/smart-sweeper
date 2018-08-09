@@ -104,9 +104,9 @@
                     else {
                         //ctrl.balance = args.balance;
                         //ctrl.activeTxs = [];
-                        ctrl.activeTxs = args.txs;
+                        var activeTxs = args.txs;
                         
-                        console.log(ctrl.activeTxs)
+                        console.log(activeTxs)
                         
                         /*angular.forEach(args.txs, function(tx, key) {
                             if (tx.type === "vout")
@@ -114,8 +114,8 @@
                         });*/
                         
                         // check the status of each txid
-                        if (ctrl.activeTxs.length > 0) {
-                            ipcRenderer.send('checkFundingTxids', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, address: ctrl.activeProject.addressPair.publicKey, activeTxs: ctrl.activeTxs});
+                        if (activeTxs.length > 0) {
+                            ipcRenderer.send('checkFundingTxids', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, address: ctrl.activeProject.addressPair.publicKey, activeTxs: activeTxs});
                         }
                     }
                 });
@@ -127,13 +127,19 @@
                     ctrl.activeProject.txConfirmed = args.confirmed;
                     ctrl.currentBalance = args.balance;
                     ctrl.activeTxs = [];
+                    var txid;
                     
-                    angular.forEach(args.txInfo, function(confirmed, key) {
+                    angular.forEach(args.txInfo, function(tx, key) {
+                        txid = Object.keys(tx)[0];
+                        
                         ctrl.activeTxs.push({
-                            txid: Object.keys(confirmed)[0],
-                            confirmed: Object.values(confirmed)[0]
+                            txid: txid,
+                            confirmed: tx[txid].confirmed,
+                            confirmations: tx[txid].confirmations
                         });
                     });
+                    
+                    console.log(ctrl.activeTxs)
                 });
             });
         };

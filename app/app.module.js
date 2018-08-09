@@ -115,6 +115,11 @@
         };
 
         ctrl.setPageHeight = function() {
+            var projectInfoHeight = 96; // pixels per project info area
+            var projectSpaceRatio = (projectInfoHeight * electron.remote.getGlobal('availableProjects').list.length) / screen.height;
+            var spaceRatioMax = electron.remote.getGlobal('availableProjects').list.length * 0.1;
+            console.log('projectSpaceRatio: ', projectSpaceRatio);
+            
             var statusMsgs = 0;
             
             if (!ctrl.isOnline)
@@ -133,10 +138,14 @@
             if ((ctrl.activePage === "dashboard" && statusMsgs > 2) ||
                 ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && (electron.remote.getGlobal('availableProjects').list.length > 4)))
             {
+                //projectSpaceRatio <= spaceRatioMax
+                //electron.remote.getGlobal('availableProjects').list.length > 4
+                // the page should scroll
                 //console.log('this page should scroll');
                 $document.find('#page-wrapper').css('height', '');
             }
             else {
+                // the page shouldn't scroll
                 //console.log('test')
 
                 if (window.innerWidth >= 700 && window.innerHeight >= 600) {

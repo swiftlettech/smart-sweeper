@@ -133,7 +133,7 @@
             ctrl.activeProjectID = id;
             
             ipcRenderer.send('setReferrer', {referrer: 'deleteProject'});
-            ipcRenderer.send('showConfirmationDialog', {title: 'Delete project?', body: 'Are you sure you want to delete this project?'});
+            ipcRenderer.send('showConfirmationDialog', {title: 'Delete project?', body: 'Are you sure you want to delete this project? All keys will be deleted and the process is irreversible.'});
             
             ipcRenderer.on('dialogYes', (event, arg) => {
                 if (electron.remote.getGlobal('referrer') !== "deleteProject")
@@ -184,7 +184,7 @@
         ctrl.showAddForm = function() {
             ctrl.showAddNewProject = !ctrl.showAddNewProject;
             
-            if (ctrl.showAddNewProject && ctrl.availableProjects.length > 2)
+            if (ctrl.showAddNewProject)
                 $document.find('#page-wrapper').css('height', '');
             else
                 $mainCtrl.setPageHeight();

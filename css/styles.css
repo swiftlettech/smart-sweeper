@@ -59,7 +59,8 @@ a.disabled {
 .spinner {
     background: transparent url('../images/spinner.gif') center center no-repeat; /* from: https://icons8.com */
     background-size: 15px 15px;
-    height:15px;
+    width: 20px;
+    height: 20px;
 }
 
 .infoBlock {
