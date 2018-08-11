@@ -165,6 +165,8 @@
                 $scope.$apply(function() {
                     console.log('newProjectAdded');
                     ctrl.newProject = {};
+                    ctrl.newProject.qrCode = true;
+                    ctrl.newProject.walletIns = true;
                     form.$setPristine();
                     form.$setUntouched();
                     form.$submitted = false;

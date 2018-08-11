@@ -96,7 +96,9 @@ The database (smart-sweeper.json), the app config file (smart-sweeper-config.jso
 
 * **Windows**: %APPDATA%/SmartSweeper
 
-The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). **It is recommended that you back up smart-sweeper.json to a safe place.**
+**It is recommended that you back up smart-sweeper.json to a safe place.**
+
+The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). The user logs record user actions while the system logs record errors (and may include transaction ids and public keys).
 
 
 KNOWN ISSUES

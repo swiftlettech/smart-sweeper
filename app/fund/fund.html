@@ -53,7 +53,12 @@
                     
                     <table class="innerTable">
                         <tr>
-                            <td class="nameCol">{{project.name}} <span ng-hide="project.txConfirmed === undefined"><i class="fa fa-fw fa-question" title="Pending" ng-show="!project.txConfirmed"></i><i class="fa fa-fw fa-check" title="Confirmed" ng-show="project.txConfirmed"></i></span></td>
+                            <td class="nameCol">{{project.name}} 
+                                <span ng-hide="project.txConfirmed === undefined">
+                                    <i class="fa fa-fw fa-question" title="Pending" ng-show="!project.txConfirmed"></i>
+                                    <i class="fa fa-fw fa-check" title="Confirmed" ng-show="project.txConfirmed"></i>
+                                </span>
+                            </td>
                             
                             <td class="numAddrCol text-center">{{project.numAddr}}</td>
                             

@@ -53,18 +53,6 @@
                 }
             });
             
-            /*ipcRenderer.on('projectsReady', (event, args) => {
-                $scope.$apply(function() {
-                    angular.forEach(electron.remote.getGlobal('availableProjects').list, function(project, key) {
-                        project.showPrivateKey = false;
-                    });
-                    
-                    ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-                    ctrl.projectCount = ctrl.availableProjects.length;
-                    console.log(ctrl.availableProjects);
-                });
-            });*/
-            
             // load all projects
             if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
