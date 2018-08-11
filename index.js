@@ -793,6 +793,11 @@ let apiCallback = function(resp, functionName, projectInfo) {
         }
         else if (resp.type === "error") {
             console.log('error msg: ', resp.msg)
+            
+            // transaction's not in the blockchain yet
+            if (functionName === "checkTransaction" && resp.msg === "Invalid transaction id.") {
+                return
+            }
 
             if (projectInfo.projectName) {
                 global.sharedObject.logger.error(functionName + ': ' + resp.msg + " project " + projectInfo.projectName)

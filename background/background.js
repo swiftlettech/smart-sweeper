@@ -226,7 +226,7 @@
     function rpcCheck() {
         rpc.statusCheck(function(resp) {
             if (resp.err)
-                apiCallback({type: 'error'}, 'rpcCheck');
+                apiCallback({type: 'error', msg: resp.err}, 'rpcCheck');
             else
                 apiCallback({type: 'data'}, 'rpcCheck');
         });
