@@ -21,7 +21,7 @@
             if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
             
-            $mainCtrl.setPageHeight();          
+            //$mainCtrl.setPageHeight();          
         };
         
         // reload projects when there have been changes
@@ -29,7 +29,7 @@
             $scope.$apply(function() {
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                 // display the project list as 10 per page?
-                $mainCtrl.setPageHeight();
+                //$mainCtrl.setPageHeight();
             });
         });
         

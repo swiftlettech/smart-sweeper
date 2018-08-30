@@ -6822,6 +6822,7 @@ input[type=checkbox] { position: relative; z-index: 20; }
 #paperarea .keyarea.art { display: block; height: auto; border: 0; font-family: Ubuntu, Arial; padding: 0; margin: 0; }
 #paperarea .artwallet .papersvg { width: 819px; height: 250px; border: 0; margin: 0; padding: 0; left: 0; }
 /*width: 577px; height: 310px;*/
+#paperarea .artwallet .wallet_instr { width: 137px; height: 142px; top: 37px; left: 15px; z-index: 100; margin: 0; float: none; position: absolute;}
 #paperarea .artwallet .qrcode_public { top: 70px; left: 22px; z-index: 100; margin: 0; float: none; display: none; position: absolute; background-color: #FFFFFF; padding: 5px 5px 2px 5px;}
 /*top: 52px; left: 17px;*/
 #paperarea .artwallet .qrcode_private { top: 43px; left: 635px; z-index: 100; margin: 0; float: none; display: none; position: absolute; background-color: #FFFFFF; padding: 5px 5px 2px 5px; }
@@ -6837,7 +6838,7 @@ input[type=checkbox] { position: relative; z-index: 20; }
 		transform-origin:top left;         transform:rotate(-90deg);
 } 
 /*top: 240px; left: 139px;*/
-#paperarea .artwallet .btcprivwif  
+/*#paperarea .artwallet .btcprivwif  
 {
 	position: absolute; top: 300px; left: 412px; z-index: 100; font-size: 9px; background-color: transparent;
 	font-weight:bold; color: #000000; margin: 0;  
@@ -6846,8 +6847,12 @@ input[type=checkbox] { position: relative; z-index: 20; }
 		-ms-transform-origin:top left;     -ms-transform:rotate(-90deg);
 		-o-transform-origin:top left;      -o-transform:rotate(-90deg);
 		transform-origin:top left;         transform:rotate(-90deg);
-}
+}*/
 /*top: 257px; left: 346px;*/
+#paperarea .artwallet .btcprivwif  
+{
+	position: absolute; top: 222px; left: 419px; z-index: 100; font-size: 11px; background-color: #FFF; padding: 5px; font-weight:bold; color: #000000; margin: 0;
+}
 #paperarea .artwallet .btcencryptedkey
 {
 	position: absolute; top: 174px; left: 332px; z-index: 100; font-size: 8px; background-color: transparent;
@@ -6858,9 +6863,9 @@ input[type=checkbox] { position: relative; z-index: 20; }
 		-o-transform-origin:top left;      -o-transform:rotate(-90deg);
 		transform-origin:top left;         transform:rotate(-90deg);
 }
-#paperarea .artwallet .wallet_amt {
-    position: absolute; top: 275px; left: 300px; z-index: 100; font-size: 15px; background-color: transparent;
-	font-weight:bold; color: #000000; margin: 0;
+#paperarea .artwallet .wallet_meta {
+	position: absolute; top: 110px; left: 470px; z-index: 100; background-color: #FFF;
+	font-size: 14px; color: #000000; margin: 0;  padding: 5px;
 }
 /*top: 230px; left: 250px;*/
 #bulkarea .body { padding: 5px 0 0 0; }
@@ -7876,6 +7881,7 @@ ninja.foreachSerialized = function (collection, whatToDo, onComplete) {
 	};
 })(ninja.wallets, ninja.qrCode);
 	</script>
+	<script type="text/javascript" src="../../js/moment-2.22.2.js"></script>
 	<script type="text/javascript">
 ninja.wallets.paperwallet = {
     isOpen: function () {
@@ -7976,7 +7982,7 @@ ninja.wallets.paperwallet = {
 			ninja.wallets.paperwallet.remaining--;
 			setTimeout(ninja.wallets.paperwallet.batch, 0);
 		}
-        else {
+        else {		
 			// all the wallets have been generated so prompt the user to print them
             ipcRenderer.send('showPrintDialog');
         }
@@ -8072,11 +8078,13 @@ ninja.wallets.paperwallet = {
 							"<div class='artwallet' id='artwallet" + i + "'>" +
 		//"<iframe src='bitcoin-wallet-01.svg' id='papersvg" + i + "' class='papersvg' ></iframe>" +
 								"<img id='papersvg" + i + "' class='papersvg' src='" + image + "' />" +
-								"<div id='qrcode_public" + i + "' class='qrcode_public'></div>" +
+								//"<div id='qrcode_public" + i + "' class='qrcode_public'></div>" +
+							"<div id='wallet_instr" + i + "' class='wallet_instr'></div>" +
 								"<div id='qrcode_private" + i + "' class='qrcode_private'></div>" +
-								"<div class='btcaddress' id='btcaddress" + i + "'></div>" +
+					"<div class='btcaddress' id='btcaddress" + i + "' style='display:none;'></div>" +
 								"<div class='" + keyelement + "' id='" + keyelement + i + "'></div>" +
-                                "<div class='wallet_amt' id='wallet_amt" + i + "'></div>" +
+								
+								"<div id='wallet_meta" + i + "' class='wallet_meta'><div id='wallet_amt" + i + "'  class='wallet_amt'></div> <div id='exp_date" + i + "' class='exp_date'></div></div>" +
 							"</div>";
 		return walletHtml;
 	},
@@ -8086,11 +8094,17 @@ ninja.wallets.paperwallet = {
             var keyValuePair = {};
             keyValuePair["qrcode_public" + idPostFix] = bitcoinAddress;
             keyValuePair["qrcode_private" + idPostFix] = privateKey;
-            ninja.qrCode.showQrCode(keyValuePair, 2.5);
+            ninja.qrCode.showQrCode(keyValuePair, 3.75); //2.5
         }        
         
+		var walletInstructions = "wallet instructions";
+		document.getElementById("wallet_instr" + idPostFix).innerHTML = walletInstructions;
+		
 		document.getElementById("btcaddress" + idPostFix).innerHTML = bitcoinAddress;
-        document.getElementById("wallet_amt" + idPostFix).innerHTML = ninja.wallets.paperwallet.project.addrAmt;
+        document.getElementById("wallet_amt" + idPostFix).innerHTML = "<strong>Amount:</strong> " +ninja.wallets.paperwallet.project.addrAmt;
+		
+		var convertedDate = moment(ninja.wallets.paperwallet.project.expDate).format("MMM DD, YYYY");
+		document.getElementById("exp_date" + idPostFix).innerHTML = "<strong>Use By:</strong> " + convertedDate;
 
 		if (ninja.wallets.paperwallet.encrypt) {
 			var half = privateKey.length / 2;
@@ -8216,7 +8230,7 @@ if (ninja.getQueryString()["showseedpool"] == "true" || ninja.getQueryString()["
             ninja.seeder.seedingOver();
             
             ninja.tab.select(document.getElementById('paperwallet'));
-            ninja.wallets.paperwallet.build(project.recvAddrs.length, 3, true);
+            ninja.wallets.paperwallet.build(project.recvAddrs.length, 4, true);
 			
 			// show the print dialog when ctrl+p is pressed
 			document.addEventListener("keydown", function(event) {				
@@ -8224,8 +8238,6 @@ if (ninja.getQueryString()["showseedpool"] == "true" || ninja.getQueryString()["
 					ipcRenderer.send('showPrintDialog');
 			});
         });
-
-        //TODO: add wallet instructions
     </script>
 </body>
 </html>

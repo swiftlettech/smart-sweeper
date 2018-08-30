@@ -9,6 +9,8 @@
 body {
     margin-top: 100px;
     background-color: #222;
+    background-image: url('../images/background.png');
+    background-repeat: repeat-y;
 }
 
 @media(min-width:768px) {

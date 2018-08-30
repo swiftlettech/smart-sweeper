@@ -5,6 +5,7 @@ rpc-explorer\node_modules
 PaperWalletGenerator-3.3.0
 startbootstrap-sb-admin-3.3.7
 SmartSweeper-win32-x64
+debug
 
 #files
 *.tgz
@@ -15,3 +16,7 @@ SmartSweeper-win32-x64
 /app/utils/js-nat-multisort.js
 /smart-sweeper.json
 .env
+clipboard.js-master.zip
+PaperWalletGenerator-3.3.0.zip
+SmartSweeper-win32-x64.zip
+startbootstrap-sb-admin-3.3.7.zip

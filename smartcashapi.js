@@ -176,14 +176,14 @@ function checkTransaction(projectInfo, callback) {
                     if (projectInfo.referrer !== "getProjectTxStatus") {
                         if (resp.confirmations !== undefined)
                             callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
-                        else
-                            callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
+                        /*else
+                            callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)*/
                     }
                     else {
                         if (resp.confirmations !== undefined)
                             if (resp.confirmations >= 6) global.smartcashCallbackInfo.get(projectInfo.referrer).confirmedTxFlag++
-                        else
-                            callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)
+                        /*else
+                            callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)*/
 
                         if (global.smartcashCallbackInfo.get(projectInfo.referrer).txCounter == txArray.length) {
                             callback({type: 'data', msg: global.smartcashCallbackInfo.get(projectInfo.referrer).confirmedTxFlag}, 'checkTransaction', projectInfo)

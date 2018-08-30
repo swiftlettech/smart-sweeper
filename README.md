@@ -123,6 +123,7 @@ Software | License
 [elemon](https://github.com/manidlou/elemon) | MIT
 [exp-config](https://github.com/ExpressenAB/exp-config) | MIT
 [melanke-watchjs](https://github.com/melanke/Watch.JS) | MIT
+[Moment.js](https://github.com/moment/moment) | MIT
 [node-smartcash](https://github.com/miyakoj/node-smartcash) | MIT
 [ps-node](https://github.com/neekey/ps) | MIT
 [request](https://github.com/request/request) | Apache-2.0

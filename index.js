@@ -78,7 +78,10 @@ module.exports = {
 
 // init various things before the main window loads
 function appInit() {
-    // create global object to be shared amongst renderer processes
+    // global task status object to be used in the renderer
+    global.taskStatus = new Map();
+    
+    // global object to be shared amongst renderer processes
     global.sharedObject = {
         txFee: 0.002, // minimum transaction fee
         explorerCheckInterval: 1.2, // minimum time between block explorer requests

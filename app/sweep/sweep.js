@@ -35,7 +35,7 @@
                 }
             }
             
-            $mainCtrl.setPageHeight();
+            //$mainCtrl.setPageHeight();
         };
         
         // reload projects when there have been changes
@@ -46,7 +46,7 @@
                 console.log(ctrl.availableProjects);
                 // display the project list as 10 per page?
 
-                $mainCtrl.setPageHeight();
+                //$mainCtrl.setPageHeight();
             });
         });
         

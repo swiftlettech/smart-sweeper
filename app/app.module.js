@@ -24,9 +24,9 @@
         $scope.init = function() {
             //$document.find('#appAlert, .formAlert').addClass('hide');
 
-            $(window).on("resize", function(event) {
+            /*$(window).on("resize", function(event) {
                 ctrl.setPageHeight();
-            });
+            });*/
             
             isOnline().then(online => {
                 ctrl.isOnline = online;
@@ -35,7 +35,7 @@
                     
                 if (ctrl.isOnline) {
                     $scope.hasBeenOnline = true;
-                    ctrl.setPageHeight();
+                    //ctrl.setPageHeight();
                 }
             })
 
@@ -53,8 +53,8 @@
                 if (ctrl.isOnline !== undefined)
                     ctrl.isOnline = args.isOnline;
 
-                if (ctrl.isOnline)
-                    ctrl.setPageHeight();
+                //if (ctrl.isOnline)
+                    //ctrl.setPageHeight();
             });
         });
 
@@ -62,7 +62,7 @@
             $scope.$apply(function() {
                 if (args.coreRunning !== undefined) {
                     ctrl.coreRunning = args.coreRunning;
-                    ctrl.setPageHeight();
+                    //ctrl.setPageHeight();
                 }
                 else if (args.coreError !== undefined) {
                     ctrl.coreError = args.coreError;
@@ -74,7 +74,7 @@
             $scope.$apply(function() {
                 if (args.rpcConnected !== undefined) {
                     ctrl.rpcConnected = args.rpcConnected;
-                    ctrl.setPageHeight();
+                    //ctrl.setPageHeight();
                 }
                 else if (args.rpcError !== undefined) {
                     ctrl.rpcError = args.rpcError;
@@ -86,7 +86,7 @@
             $scope.$apply(function() {
                 if (args.coreSynced !== undefined) {
                     ctrl.coreSynced = args.coreSynced;
-                    ctrl.setPageHeight();
+                    //ctrl.setPageHeight();
                 }
                 else if (args.coreSyncError !== undefined) {
                     ctrl.coreSyncError = args.coreSyncError;
@@ -98,7 +98,7 @@
             $scope.$apply(function() {
                 if (args.blockExplorerError !== undefined) {
                     ctrl.blockExplorerError = args.blockExplorerError;
-                    ctrl.setPageHeight();
+                    //ctrl.setPageHeight();
                 }
             });
         });
@@ -116,9 +116,9 @@
 
         ctrl.setPageHeight = function() {
             var projectInfoHeight = 96; // pixels per project info area
-            var projectSpaceRatio = (projectInfoHeight * electron.remote.getGlobal('availableProjects').list.length) / screen.height;
+            /*var projectSpaceRatio = (projectInfoHeight * electron.remote.getGlobal('availableProjects').list.length) / screen.height;
             var spaceRatioMax = electron.remote.getGlobal('availableProjects').list.length * 0.1;
-            console.log('projectSpaceRatio: ', projectSpaceRatio);
+            console.log('projectSpaceRatio: ', projectSpaceRatio);*/
             
             var statusMsgs = 0;
             

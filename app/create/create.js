@@ -49,7 +49,7 @@
             if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
             
-            $mainCtrl.setPageHeight();
+            //$mainCtrl.setPageHeight();
         };
         
         // reload projects when there have been changes
@@ -60,7 +60,7 @@
 
                 // display the project list as 10 per page?
 
-                $mainCtrl.setPageHeight();
+                //$mainCtrl.setPageHeight();
             });
         });
         
@@ -188,8 +188,8 @@
             
             if (ctrl.showAddNewProject)
                 $document.find('#page-wrapper').css('height', '');
-            else
-                $mainCtrl.setPageHeight();
+            //else
+                //$mainCtrl.setPageHeight();
         };
 
         /* Sort the project list. */

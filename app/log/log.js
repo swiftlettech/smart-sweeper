@@ -30,7 +30,18 @@
                 });
             });
             
-            $mainCtrl.setPageHeight();
+            // set the height of the logbox            
+            // windowHeight - status messages - open button            
+            var buttonHeight = $document.find('#openLogFolder').outerHeight(true);
+            var logboxHeight = window.innerHeight - (parseInt($document.find('body').css('margin')) * 2) - $document.find('#statusMsgs').height() - $document.find('#logHeader').outerHeight(true);
+            
+            /*console.log(buttonHeight)
+            console.log($document.find('#statusMsgs').outerHeight(true))
+            console.log($document.find('#logHeader').outerHeight(true))*/
+            
+            $document.find('#log textarea').css('height', (window.innerHeight - window.innerHeight * 0.55) + 'px');
+            
+            //$mainCtrl.setPageHeight();
         };
         
         ctrl.openLogFolder = function() {

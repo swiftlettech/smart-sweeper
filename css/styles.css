@@ -1,6 +1,8 @@
 /* General */
 body {
-    margin: 20px 0;
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-top: 20px solid #222;
 }
 
 a,
