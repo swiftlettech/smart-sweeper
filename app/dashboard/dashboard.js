@@ -3,7 +3,7 @@
     
     angular.module('SmartSweeper.dashboard', []).controller('DashboardController', DashboardController);
 
-    function DashboardController($scope, $document, $filter, filterCompare) {
+    function DashboardController($scope, $document, $interval, $filter, filterCompare) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         var $mainCtrl = $scope.$parent.$mainCtrl;
@@ -130,6 +130,18 @@
         function availableFunds() {
             ctrl.showSpinner = true;
             ipcRenderer.send('checkAvailProjectBalances');
+            
+            // status checking
+            var taskStatusCheck = $interval(function() {
+                ipcRenderer.send('taskStatusCheck', 'checkAvailProjectBalances');
+            }, 5000);
+            
+            ipcRenderer.on('taskStatusCheckDone', (event, args) => {
+                if (args.function === "checkAvailProjectBalances" && (args.status == true || args.error == true))
+                    $interval.cancel(taskStatusCheck);
+                else
+                    ctrl.showSpinner = true;
+            });
         }
         
         /* Funds that have been transferred from a promotional wallet to a different wallet (all projects). */

@@ -25,7 +25,7 @@ let splashScreen, bgWin, modal, modalType, logFile, db, savedAppData
 
 // create a custom transport to save winston logs into a json database using electron store
 module.exports = {
-    JsonDBTransport: class JsonDBTransport extends Transport {    
+    JsonDBTransport: class JsonDBTransport extends Transport {
         constructor(options) {
             super(options)
             
@@ -689,6 +689,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     global.apiCallbackInfo.delete(referrer)
                 }
                 else if ((referrer === "checkAvailProjectBalances") && (apiCallbackCounter == apiCallbackInfo.totalTxs)) {
+                    global.taskStatus.set('checkAvailProjectBalances', {status: true, error: false})
                     global.savedAppData.availableBalanceTotal = apiCallbackInfo.total
                     savedAppData.set('config', global.savedAppData)
                     db.set('projects', global.availableProjects)
@@ -766,7 +767,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     global.apiCallbackInfo.delete(referrer)
                 }
             }
-            else if ((functionName === "sweepFunds") && (apiCallbackCounter == apiCallbackInfo.totalProjects)) {
+            else if ((functionName === "sweepFunds") && (apiCallbackCounter == apiCallbackInfo.totalProjects)) {                
                 var projectNames = ""
                 apiCallbackInfo.projectNames.forEach(function(name, index) {
                     if (apiCallbackInfo.totalProjects == 1)
@@ -785,6 +786,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     }
                 })
                 
+                global.taskStatus.set('sweepFunds', {status: true, error: false})                
                 
                 global.sharedObject.logger.info('Funds were swept for project(s) "' + projectNames + '".')
                 refreshLogFile()
@@ -809,6 +811,12 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     apiCallbackInfo.msg = resp.msg
                     modal.webContents.send('fundingTxidChecked', {msgType: 'error', msg: apiCallbackInfo.msg})
                 }*/
+                
+                if ((referrer === "checkAvailProjectBalances") || (referrer === "sweepFunds")) {
+                    var obj = global.taskStatus.get(referrer)
+                    obj.error = true
+                    global.taskStatus.set(referrer, obj)
+                }
 
                 if (functionName === "checkBalance") {
                     global.sharedObject.blockExplorerError = true
@@ -830,14 +838,6 @@ let apiCallback = function(resp, functionName, projectInfo) {
 
 // automatically sweep project funds if sweep date has expired - NOT USED
 function autoSweepFunds() {
-    /*global.availableProjects.list.forEach(function(project, projectKey) {
-        project.recvAddrs.forEach(function(address, addrKey) {
-            
-        })
-    })
-    
-    global.sharedObject.logger.info('Funds were automatically swept for project "' + global.activeProject.name + '".')
-    refreshLogFile()*/
 }
 
 // create the receiver addresses for a project
@@ -1049,6 +1049,8 @@ app.on('activate', () => {
 
 // check the available funded balances of all projects using transactions
 ipcMain.on('checkAvailProjectBalances', (event, args) => {
+    global.taskStatus.set('checkAvailProjectBalances', {status: false, error: false})
+    
     //console.log('checkAvailProjectBalances: ')
     var totalTxs = 0
     
@@ -1531,7 +1533,8 @@ ipcMain.on('smartcashLaunch', (event, args) => {
 })
 
 // sweep project funds
-ipcMain.on('sweepFunds', (event, args) => {    
+ipcMain.on('sweepFunds', (event, args) => {
+    global.taskStatus.set('sweepFunds', {status: false, error: false})
     global.apiCallbackInfo.set('sweepFunds', {
         apiCallbackCounter: 0,
         totalProjects: args.projectIDs.length,
@@ -1548,8 +1551,15 @@ ipcMain.on('sweepFunds', (event, args) => {
         project = global.availableProjects.list[index]
         global.apiCallbackInfo.get('sweepFunds').projectNames.push(project.name)
         
-        //smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: project.id, project: project}, apiCallback)
+        //smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: projectID, project: project}, apiCallback)
     })
+})
+
+// return the current status of long-running tasks
+ipcMain.on('taskStatusCheck', (event, args) => {
+    var status = global.taskStatus.get(args).status
+    var error = global.taskStatus.get(args).error
+    global.sharedObject.win.webContents.send('taskStatusCheckDone', {function: args, status: status, error: error})
 })
 
 // update a project edited in the modal

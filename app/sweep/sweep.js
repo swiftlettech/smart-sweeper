@@ -3,7 +3,7 @@
 
     angular.module('SmartSweeper.sweep', []).controller('SweepController', SweepController);
 
-    function SweepController($scope, $document, $filter, filterCompare) {
+    function SweepController($scope, $document, $interval, $filter, filterCompare) {
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         var $mainCtrl = $scope.$parent.$mainCtrl;
@@ -91,15 +91,38 @@
                 }
             });
             
-            // reset form and disable checkboxes while sweeping
+            // disable checkboxes while sweeping
             ctrl.disableChecks = true;
-            $scope.sweepForm.$setPristine();
-            $scope.sweepForm.$setUntouched();
-            ctrl.projectsToSweep = [];
             
             ipcRenderer.send('sweepFunds', {projectIDs: projectIDs});
+            
+            // status checking
+            /*var taskStatusCheck = $interval(function() {
+                console.log('checking task status');
+                ipcRenderer.send('taskStatusCheck', 'sweepFunds');
+            }, 5000);
+            
+            ipcRenderer.on('taskStatusCheckDone', (event, args) => {
+                console.log(args);
+                if (args.function === "sweepFunds" && (args.status == true || args.error == true)) {
+                    $interval.cancel(taskStatusCheck);
+                }
+                else {
+                    angular.forEach(ctrl.projectsToSweep, function(checkedProject, key) {
+                        if (checkedProject) {
+                            ctrl.showSpinner[parseInt(key)] = true;
+                        }
+                    });
+                }
+            });*/
+            
             ipcRenderer.on('fundsSwept', (event, args) => {
                 $scope.$apply(function() {
+                    // reset form
+                    $scope.sweepForm.$setPristine();
+                    $scope.sweepForm.$setUntouched();
+                    ctrl.projectsToSweep = [];
+                    
                     ctrl.disableChecks = false;
                     for (var i=0; i<ctrl.showSpinner.length; i++) {
                         ctrl.showSpinner[i] = false;
