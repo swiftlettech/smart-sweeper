@@ -168,10 +168,11 @@ function checkTransaction(projectInfo, callback) {
             //console.log('txCounter: ', global.smartcashCallbackInfo.get(projectInfo.referrer).txCounter);
             //console.log('txArray.length: ', txArray.length);
 
-            if (err) {
+            /*if (err) {
+                // ignore the unknown transaction error for promotional wallet txids because it's probably not in the blockchain yet
                 callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
-            }
-            else {
+            }*/
+            if (!err) {
                 if (projectInfo.referrer !== "getWalletTxStatus") {
                     if (projectInfo.referrer !== "getProjectTxStatus") {
                         if (resp.confirmations !== undefined)
@@ -180,8 +181,10 @@ function checkTransaction(projectInfo, callback) {
                             callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)*/
                     }
                     else {
-                        if (resp.confirmations !== undefined)
-                            if (resp.confirmations >= 6) global.smartcashCallbackInfo.get(projectInfo.referrer).confirmedTxFlag++
+                        if (resp.confirmations !== undefined) {
+                            if (resp.confirmations >= 6)
+                                global.smartcashCallbackInfo.get(projectInfo.referrer).confirmedTxFlag++
+                        }
                         /*else
                             callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)*/
 
@@ -192,7 +195,6 @@ function checkTransaction(projectInfo, callback) {
                     }
                 }
                 else {
-                    // ignore the unknown transaction error for promotional wallet txids because it's probably not in the blockchain yet
                     if (resp.confirmations !== undefined)
                         callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
                 }

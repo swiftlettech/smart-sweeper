@@ -13,7 +13,7 @@
 		<link type="text/css" rel="stylesheet" href="../../css/styles.css" />
     </head>
     
-    <body ng-controller="FundProjectController as $fundCtrl" style="margin:20px 0;" ng-init="init()">
+    <body class="modalBody" ng-controller="FundProjectController as $fundCtrl" ng-init="init()">
         <div id="page-wrapper" style="padding:15px;">
             <p style="display:none;">You can fund a project by using this form or by using your wallet and inputting the txid (recommended).</p>
             <p class="fundInstr">Send funds to this address: <span id="projectAddress">{{$fundCtrl.activeProject.addressPair.publicKey}}</span> <button class="btn btn-link copy-btn" title="Copy project address to clipboard" data-clipboard-text="{{$fundCtrl.activeProject.addressPair.publicKey}}"><i class="fa fa-fw fa-clone"></i> <span class="copy-tooltip" aria-label="Copied!"></span></button></p>

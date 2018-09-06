@@ -112,7 +112,7 @@
                             form.$submitted = false;
                             ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                             
-                            ipcRenderer.send('showInfoDialog', {title: 'Receiver addresses', body: 'Addresses were created successfully.'});
+                            ipcRenderer.send('showInfoDialog', {title: 'Promotional Wallets', body: 'Wallets were created successfully.'});
                         });
                     });
                 }
@@ -124,22 +124,22 @@
                 ctrl.newProject.recvAddrs = [];
                 
                 ipcRenderer.send('setReferrer', {referrer: 'createAddresses'});
-                ipcRenderer.send('showConfirmationDialog', {title: 'Create receiver addresses?', body: 'Are you sure you want to create receiver addresses for this project?'});
+                ipcRenderer.send('showConfirmationDialog', {title: 'Create promotional wallets?', body: 'Are you sure you want to create promotional wallets for this project?'});
             }
         };
 
         /* Delete a project. */
-        ctrl.delete = function(id) {
-            ctrl.activeProjectID = id;
+        ctrl.delete = function(project) {
+            ctrl.activeProjectID = project.id;
             
             ipcRenderer.send('setReferrer', {referrer: 'deleteProject'});
-            ipcRenderer.send('showConfirmationDialog', {title: 'Delete project?', body: 'Are you sure you want to delete this project? All keys will be deleted and the process is irreversible.'});
+            ipcRenderer.send('showConfirmationDialog', {title: 'Delete project?', body: 'Are you sure you want to delete project "' + project.name + '"? All keys will be deleted and the process is irreversible.'});
             
             ipcRenderer.on('dialogYes', (event, arg) => {
                 if (electron.remote.getGlobal('referrer') !== "deleteProject")
                     return;
                 
-                ipcRenderer.send('deleteProject', {id: id});
+                ipcRenderer.send('deleteProject', {id: project.id});
             });
         };
 

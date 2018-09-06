@@ -102,6 +102,7 @@
 
                 // check to see if the local copy of the blockchain is current
                 checkBlockchain();
+                // get the transaction status of all projects
                 ipcRenderer.send('getProjectTxStatus');
             }
             else if (functionName === "checkBlockchain") {
@@ -282,8 +283,5 @@
         
         // update a project's currentFunds property
         //ipcRenderer.send('checkProjectBalances');
-
-        // update a project's txConfirmed flag
-        ipcRenderer.send('getAllTxStatus');
     }
 })();

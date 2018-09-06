@@ -23,10 +23,6 @@
 
         $scope.init = function() {
             //$document.find('#appAlert, .formAlert').addClass('hide');
-
-            /*$(window).on("resize", function(event) {
-                ctrl.setPageHeight();
-            });*/
             
             isOnline().then(online => {
                 ctrl.isOnline = online;
@@ -35,7 +31,6 @@
                     
                 if (ctrl.isOnline) {
                     $scope.hasBeenOnline = true;
-                    //ctrl.setPageHeight();
                 }
             })
 
@@ -52,9 +47,6 @@
             $scope.$apply(function() {
                 if (ctrl.isOnline !== undefined)
                     ctrl.isOnline = args.isOnline;
-
-                //if (ctrl.isOnline)
-                    //ctrl.setPageHeight();
             });
         });
 
@@ -62,7 +54,6 @@
             $scope.$apply(function() {
                 if (args.coreRunning !== undefined) {
                     ctrl.coreRunning = args.coreRunning;
-                    //ctrl.setPageHeight();
                 }
                 else if (args.coreError !== undefined) {
                     ctrl.coreError = args.coreError;
@@ -74,7 +65,6 @@
             $scope.$apply(function() {
                 if (args.rpcConnected !== undefined) {
                     ctrl.rpcConnected = args.rpcConnected;
-                    //ctrl.setPageHeight();
                 }
                 else if (args.rpcError !== undefined) {
                     ctrl.rpcError = args.rpcError;
@@ -86,7 +76,6 @@
             $scope.$apply(function() {
                 if (args.coreSynced !== undefined) {
                     ctrl.coreSynced = args.coreSynced;
-                    //ctrl.setPageHeight();
                 }
                 else if (args.coreSyncError !== undefined) {
                     ctrl.coreSyncError = args.coreSyncError;
@@ -231,6 +220,11 @@
             });
         };
         
+        /* Set API task data to be reloaded in the event the user browses away from a page. */
+        ctrl.setTaskStatusData = function(data) {
+            ctrl.taskStatusData = data;
+        };
+        
         /* Show/hide a project's private key. */
         ctrl.showPK = function(projectID) {
             var index = ctrl.getDbIndex(projectID);
@@ -240,7 +234,7 @@
 
         /*
          * Natural Sort Angular sort comparator - Version 0.8.1 - Released under MIT license
-         * Original Author: Jim Palmer (based on chunking idea from Dave Koelle)
+         * Original Author: Jim Palmer
          * Slightly modified (to sort objects) by Miyako Jones
          */
         ctrl.naturalSort = function(a, b) {        

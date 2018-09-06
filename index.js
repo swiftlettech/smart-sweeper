@@ -553,6 +553,8 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 }
                 else if (referrer === "getWalletTxStatus") {
                     //console.log('resp.msg: ', resp.msg)
+                    
+                    global.availableProjects.list[projectInfo.projectIndex].recvAddrs[projectInfo.addrIndex].confirmations = resp.msg.confirmations
 
                     if (resp.msg.confirmations < 6) {
                         apiCallbackInfo.pendingFunds += projectInfo.addrAmt
@@ -580,6 +582,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     global.availableProjects.list[projectInfo.projectIndex].recvAddrs.forEach(function(address, key) {
                         address.sentTxid = resp.msg
                         address.txConfirmed = false
+                        address.confirmations = 0
                     });
                 }
             }
@@ -669,10 +672,11 @@ let apiCallback = function(resp, functionName, projectInfo) {
                         if (Object.values(tx)[0])
                            confirmedCounter++
                     })
+                    
+                    global.availableProjects.list[projectInfo.projectIndex].txid = txids
 
                     if (confirmedCounter == apiCallbackInfo.txInfo.length) {
                         global.availableProjects.list[projectInfo.projectIndex].originalFunds = apiCallbackInfo.balance
-                        global.availableProjects.list[projectInfo.projectIndex].txid = txids
                         global.availableProjects.list[projectInfo.projectIndex].txConfirmed = true
                     }
                     else {
@@ -683,7 +687,13 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     
                     if (global.sharedObject.win) {
                         global.sharedObject.win.webContents.send('projectsReady')
-                        modal.webContents.send('fundingTxidsChecked', {msgType: 'data', confirmed: global.availableProjects.list[projectInfo.projectIndex].txConfirmed, txInfo: apiCallbackInfo.txInfo, balance: apiCallbackInfo.balance})
+                        
+                        if (modal) {
+                            modal.webContents.send('fundingTxidsChecked', {msgType: 'data', confirmed: global.availableProjects.list[projectInfo.projectIndex].txConfirmed, txInfo: apiCallbackInfo.txInfo, balance: apiCallbackInfo.balance})
+                        }
+                        else {
+                            global.sharedObject.win.webContents.send('projectsReady')
+                        }
                     }
                     
                     global.apiCallbackInfo.delete(referrer)
@@ -1082,7 +1092,7 @@ ipcMain.on('checkAvailProjectBalances', (event, args) => {
 
 // check the txid to get project funding info
 ipcMain.on('checkFundingTxids', (event, args) => {
-    console.log(args)
+    //console.log(args)
     
     global.apiCallbackInfo.set('checkFundingTxids', {
         apiCallbackCounter: 0,

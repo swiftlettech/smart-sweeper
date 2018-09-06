@@ -37,13 +37,29 @@
                 return height + 'px';
             });
             
-            ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
-            
+            ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);            
             // check every 30 for the status of the funding transactions
             $interval(function() {
                 ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
             }, 30000, false);
+            
+            // reload projects when there have been changes
+            ipcRenderer.on('projectsReady', (event, args) => {            
+                $scope.$apply(function() {
+                    getActiveProjectInfo();
+                });
+            });
         };
+        
+        function getActiveProjectInfo() {
+            ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                    
+            var activeProjectID = ctrl.activeProject.id;
+            ctrl.availableProjects.forEach(function(project, index) {
+                if (project.id == activeProjectID)
+                    ctrl.activeProject = project;
+            })
+        }
 
         /* Close the modal without funding the project. */
         ctrl.cancel = function() {
@@ -102,21 +118,35 @@
                         ctrl.msg = args.msg;
                     }
                     else {
-                        //ctrl.balance = args.balance;
-                        //ctrl.activeTxs = [];
-                        var activeTxs = args.txs;
+                        getActiveProjectInfo();
                         
+                        ctrl.balance = args.balance;
+                        ctrl.activeTxs = [];
+                        //var activeTxs = args.txs;
+                        var activeTxs = ctrl.activeProject.txid;
                         console.log(activeTxs)
+                        
+                        angular.forEach(activeTxs, function(tx, key) {
+                            var txid = Object.keys(tx)[0];
+                            
+                            ctrl.activeTxs.push({
+                                txid: Object.keys(tx)[0],
+                                confirmations: tx[txid].confirmations,
+                                confirmed: tx[txid].confirmed
+                            });
+                        });
+                        
+                        console.log(ctrl.activeTxs);
                         
                         /*angular.forEach(args.txs, function(tx, key) {
                             if (tx.type === "vout")
                                 ctrl.activeTxs.push({txid: tx.addresses});
-                        });*/
+                        });
                         
                         // check the status of each txid
                         if (activeTxs.length > 0) {
                             ipcRenderer.send('checkFundingTxids', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, address: ctrl.activeProject.addressPair.publicKey, activeTxs: activeTxs});
-                        }
+                        }*/
                     }
                 });
             });

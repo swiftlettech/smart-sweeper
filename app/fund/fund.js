@@ -18,10 +18,24 @@
             ctrl.txFee = electron.remote.getGlobal('sharedObject').txFee;
             
             // load all projects
-            if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
+            if (angular.isArray(electron.remote.getGlobal('availableProjects').list)) {
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-            
-            //$mainCtrl.setPageHeight();          
+                
+                var activeTxs;
+                angular.forEach(ctrl.availableProjects, function(project, projectKey) {
+                    activeTxs = [];
+                    
+                    console.log(project);
+                    
+                    if (project.txid !== undefined) {
+                        project.txid.forEach(function(address, txidKey) {
+                            activeTxs.push(Object.keys(address)[0]);
+                        });
+
+                        ipcRenderer.send('checkFundingTxids', {projectID: project.id, projectName: project.name, address: project.addressPair.publicKey, activeTxs: activeTxs});
+                    }
+                });
+            }
         };
         
         // reload projects when there have been changes
@@ -29,7 +43,6 @@
             $scope.$apply(function() {
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                 // display the project list as 10 per page?
-                //$mainCtrl.setPageHeight();
             });
         });
         

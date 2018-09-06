@@ -5,6 +5,13 @@ body {
     border-top: 20px solid #222;
 }
 
+body.modalBody {
+    margin: 20px 0;
+    background-color: #FFF;
+    background-image: none;
+    border-top: none;
+}
+
 a,
 a:hover,
 a:focus {

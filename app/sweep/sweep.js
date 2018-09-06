@@ -35,7 +35,36 @@
                 }
             }
             
-            //$mainCtrl.setPageHeight();
+            // reload status spinners if a sweep is already in progress
+            if ($mainCtrl.taskStatusData) {
+                angular.forEach($mainCtrl.taskStatusData, function(checkedProject, key) {
+                    if (checkedProject)
+                        ctrl.showSpinner[parseInt(key)] = true;
+                });
+            }
+            
+            ipcRenderer.on('taskStatusCheckDone', (event, args) => {
+                console.log(args);
+                if (args.function === "sweepFunds" && (args.status == true || args.error == true)) {
+                    $interval.cancel(taskStatusCheck);
+                }
+            });
+            
+            ipcRenderer.on('fundsSwept', (event, args) => {
+                $scope.$apply(function() {
+                    // reset form
+                    $scope.sweepForm.$setPristine();
+                    $scope.sweepForm.$setUntouched();
+                    ctrl.projectsToSweep = [];
+                    
+                    ctrl.disableChecks = false;
+                    for (var i=0; i<ctrl.showSpinner.length; i++) {
+                        ctrl.showSpinner[i] = false;
+                    }
+                    $mainCtrl.setTaskStatusData(null);
+                    $mainCtrl.setModalMsg(args.msgType, args.msg);
+                });
+            });
         };
         
         // reload projects when there have been changes
@@ -45,24 +74,8 @@
                 //ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
                 console.log(ctrl.availableProjects);
                 // display the project list as 10 per page?
-
-                //$mainCtrl.setPageHeight();
             });
         });
-        
-        /* Funds that have been transferred from a promotional wallet to a different wallet (per project). */
-        /*function claimedFunds(projectID, index) {
-            ipcRenderer.send('getClaimedFundsInfo', {projectID: projectID, type: 'receivers'});
-            ipcRenderer.on('claimedFundsInfo', (event, args) => {
-                $scope.$apply(function() {
-                    var project = ctrl.availableProjectsCopy[index];
-                    
-                    project.claimedAddrTotal = args.claimedWallets;
-                    project.percentClaimed = args.claimedWallets / project.recvAddrs.length;
-                    if (Number.isNaN(project.percentClaimed)) { project.percentClaimed = 0; }
-                });
-            });
-        }*/
         
         /* Update the total number of projects selected. */
         ctrl.checkboxChanged = function() {
@@ -94,42 +107,14 @@
             // disable checkboxes while sweeping
             ctrl.disableChecks = true;
             
+            $mainCtrl.setTaskStatusData(ctrl.projectsToSweep);
             ipcRenderer.send('sweepFunds', {projectIDs: projectIDs});
             
             // status checking
-            /*var taskStatusCheck = $interval(function() {
+            var taskStatusCheck = $interval(function() {
                 console.log('checking task status');
                 ipcRenderer.send('taskStatusCheck', 'sweepFunds');
             }, 5000);
-            
-            ipcRenderer.on('taskStatusCheckDone', (event, args) => {
-                console.log(args);
-                if (args.function === "sweepFunds" && (args.status == true || args.error == true)) {
-                    $interval.cancel(taskStatusCheck);
-                }
-                else {
-                    angular.forEach(ctrl.projectsToSweep, function(checkedProject, key) {
-                        if (checkedProject) {
-                            ctrl.showSpinner[parseInt(key)] = true;
-                        }
-                    });
-                }
-            });*/
-            
-            ipcRenderer.on('fundsSwept', (event, args) => {
-                $scope.$apply(function() {
-                    // reset form
-                    $scope.sweepForm.$setPristine();
-                    $scope.sweepForm.$setUntouched();
-                    ctrl.projectsToSweep = [];
-                    
-                    ctrl.disableChecks = false;
-                    for (var i=0; i<ctrl.showSpinner.length; i++) {
-                        ctrl.showSpinner[i] = false;
-                    }
-                    $mainCtrl.setModalMsg(args.msgType, args.msg);
-                });
-            });
         };
     }
 })();

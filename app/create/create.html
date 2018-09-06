@@ -145,7 +145,7 @@
                             <td class="expCol text-center"><span ng-show="project.expDate">{{project.expDate | date: 'mediumDate'}}</span><span ng-show="!project.expDate">n/a</span></td>
                             <!--<td class="autoSweepCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>-->
                             <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$createCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
-                            <td class="deleteCol text-center"><button class="btn btn-link" title="Delete project" ng-click="$createCtrl.delete(project.id)" ng-disabled="true" enable-delete-btn="{{project}}"><i class="fa fa-fw fa-trash"></i></button></td>
+                            <td class="deleteCol text-center"><button class="btn btn-link" title="Delete project" ng-click="$createCtrl.delete(project)" ng-disabled="true" enable-delete-btn="{{project}}"><i class="fa fa-fw fa-trash"></i></button></td>
                         </tr>
                         <tr>
                             <td colspan="7" class="addrCol">
