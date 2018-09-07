@@ -37,11 +37,11 @@
                 return height + 'px';
             });
             
-            ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);            
+            //ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);            
             // check every 30 for the status of the funding transactions
-            $interval(function() {
+            /*$interval(function() {
                 ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
-            }, 30000, false);
+            }, 30000, false);*/
             
             // reload projects when there have been changes
             ipcRenderer.on('projectsReady', (event, args) => {            
@@ -111,7 +111,9 @@
         ctrl.projectTxStatus = function() {
             ipcRenderer.send('getProjectAddressInfo', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, address: ctrl.activeProject.addressPair.publicKey});
             
-            ipcRenderer.on('gotAddressInfo', (event, args) => {                
+            ipcRenderer.on('gotAddressInfo', (event, args) => {
+                console.log(args);
+                
                 $scope.$apply(function() {                    
                     ctrl.msgType = args.msgType;
                     if (ctrl.msgType === "error") {

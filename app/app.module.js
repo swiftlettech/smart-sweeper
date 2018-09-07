@@ -18,6 +18,7 @@
         const electron = window.nodeRequire('electron');
         const {ipcRenderer} = electron;
         const isOnline = window.nodeRequire('is-online');
+        const unhandled = window.nodeRequire('electron-unhandled');
 
         var ctrl = this;
 
@@ -41,6 +42,15 @@
             ctrl.sortOptions = {property: 'name', reverse: false};
             
             //ctrl.setModalMsg('data', 'test');
+            
+            // catch unhandled exceptions
+            unhandled({
+                logger: function(err) {
+                    console.log(err.name);
+                    electron.remote.getGlobal('sharedObject').exceptionLogger.error(err.stack);
+                },
+                showDialog: true
+            });
         };
         
         ipcRenderer.on('onlineCheckAPP', (event, args) => {

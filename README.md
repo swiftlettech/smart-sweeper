@@ -119,6 +119,7 @@ Software | License
 [electron-debug](https://github.com/sindresorhus/electron-debug) | MIT
 [electron-is-dev](https://github.com/sindresorhus/electron-is-dev) | MIT
 [electron-store](https://github.com/sindresorhus/electron-store) | MIT
+[electron-unhandled](https://github.com/sindresorhus/electron-unhandled) | MIT
 [electron-util](https://github.com/sindresorhus/electron-util) | MIT
 [elemon](https://github.com/manidlou/elemon) | MIT
 [exp-config](https://github.com/ExpressenAB/exp-config) | MIT

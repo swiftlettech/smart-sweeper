@@ -11,7 +11,8 @@
     const request = window.nodeRequire('request');
     const {is} = window.nodeRequire('electron-util');
     const isOnline = window.nodeRequire('is-online');
-    const Store = window.nodeRequire('electron-store')
+    const unhandled = window.nodeRequire('electron-unhandled');
+    const Store = window.nodeRequire('electron-store');
     const ps = window.nodeRequire('ps-node');
     const smartcashapi = window.nodeRequire('./smartcashapi');
     const smartcashExplorer = "https://insight.smartcash.cc/api/";
@@ -29,7 +30,16 @@
     
     init();
     
-    function init() {        
+    function init() {
+        // catch unhandled exceptions
+        unhandled({
+            logger: function(err) {
+                console.log(err.name);
+                electron.remote.getGlobal('sharedObject').exceptionLogger.error(err.stack);
+            },
+            showDialog: true
+        });
+        
         // load smartcash and the RPC explorer
         if (is.windows) {
             smartcashProg = "smartcash-qt.exe";
@@ -96,6 +106,8 @@
             console.log('from ' + functionName);
             console.log(resp);
             
+            remote.getGlobal('sharedObject').sysLogger.info(functionName + ': ' + resp.msg);
+            
             if (functionName === "rpcCheck") {
                 remote.getGlobal('sharedObject').rpcConnected = true;
                 remote.getGlobal('sharedObject').rpcError = false;
@@ -115,7 +127,7 @@
             }
         }
         else if (resp.type === "error") {
-            remote.getGlobal('sharedObject').logger.error(functionName + ': ' + resp.msg);
+            remote.getGlobal('sharedObject').sysLogger.error(functionName + ': ' + resp.msg);
 
             if (functionName === "rpcCheck") {
                 remote.getGlobal('sharedObject').rpcError = true;
@@ -149,6 +161,9 @@
         
         // check the local blockchain regardless of internet connection status
         rpc.sendCmd(cmd, function(err, resp) {
+            //console.log('checkBlockchain local')
+            //console.log(resp)
+            
             if (err) {
                 apiCallback({type: 'error', msg: resp}, 'checkBlockchain');
             }
@@ -170,7 +185,10 @@
                     request({
                         url: smartcashExplorer + 'status?q=getInfo',
                         method: 'GET'
-                    }, function (err, resp, body) {                        
+                    }, function (err, resp, body) {
+                        //console.log('checkBlockchain remote')
+                        //console.log(resp.body)
+                        
                         if (resp && resp.body.error === undefined) {                            
                             var onlineBlockCount = resp.body.blocks;
 
@@ -225,11 +243,11 @@
     
     /* Check to see if the RPC client can communicate with SmartCash. */
     function rpcCheck() {
-        rpc.statusCheck(function(resp) {
+        rpc.rpcCheck(function(resp) {            
             if (resp.err)
-                apiCallback({type: 'error', msg: resp.err}, 'rpcCheck');
+                apiCallback({type: 'error', msg: resp.msg}, 'rpcCheck');
             else
-                apiCallback({type: 'data'}, 'rpcCheck');
+                apiCallback({type: 'data', msg: true}, 'rpcCheck');
         });
     }
     
@@ -257,14 +275,14 @@
         smartcash = cp.spawn(config.smartcashPath + smartcashProg, ['-txindex=1', '-server', '-rpcbind='+config.rpc.host, '-rpcport='+config.rpc.port, '-rpcuser='+config.rpc.username, '-rpcpassword='+config.rpc.password], {
             detached: true,
             stdio: 'ignore',
-            windowsHide: true
+            windowsHide: false
         });
 
         smartcash.unref();
         smartcash.on('error', (err) => {
             console.log('tried to open the node client and failed');
             console.log(err);
-            remote.getGlobal('sharedObject').logger.error('appInit - start Smartcash core: ' + err);
+            remote.getGlobal('sharedObject').sysLogger.error('appInit - start Smartcash core: ' + err);
             remote.getGlobal('sharedObject').coreError = true;
         });
         

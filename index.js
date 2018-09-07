@@ -5,6 +5,7 @@ const path = require('path')
 const url = require('url')
 const fs = require('fs')
 const util = require('util')
+const unhandled = require('electron-unhandled')
 
 const winston = require('winston')
 const Transport = require('winston-transport')
@@ -29,17 +30,26 @@ module.exports = {
         constructor(options) {
             super(options)
             
-            if (options.level === "error") {
-                this.logDBSystem = new Store({name: options.filename})
-                //console.log(this.logDBSystem)
+            if (options.label === "exception") {
+                // exceptions log
+                this.logDBExceptions = new Store({name: options.filename})
                 
+                if (this.logDBExceptions.get('log') === undefined)
+                    this.logDBExceptions.set('log', [])
+            }
+            else if (options.label === "system") {
+                // system log
+                 this.logDBSystem = new Store({name: options.filename})
+                //console.log(this.logDBSystem)
+
                 if (this.logDBSystem.get('log') === undefined)
                     this.logDBSystem.set('log', [])
             }
-            else {
+            else if (options.label === "user") {
+                // user log
                 this.logDBUser = new Store({name: options.filename})
                 //console.log(this.logDBUser)
-                
+
                 if (this.logDBUser.get('log') === undefined)
                     this.logDBUser.set('log', [])
             }
@@ -54,14 +64,14 @@ module.exports = {
             
             var logDB
             
-            //console.log('info')
             //console.log(info)
-            //console.log('self')
             //console.log(self)
             
-            if (info.level === "error")
+            if (self.logDBSystem !== undefined)
                 logDB = self.logDBSystem
-            else
+            else if (self.logDBExceptions !== undefined)
+                logDB = self.logDBExceptions
+            else if (self.logDBUser !== undefined)
                 logDB = self.logDBUser
             
             if (logDB !== undefined) {
@@ -108,7 +118,14 @@ function appInit() {
         if (global.sharedObject.win) {
             if (property === "isOnline") {
                 global.sharedObject.win.webContents.send('onlineCheckAPP', {isOnline: global.sharedObject.isOnline})
-                global.sharedObject.win.webContents.send('isOnline')
+                
+                if (global.sharedObject.isOnline) {
+                    global.sharedObject.win.webContents.send('isOnline')
+                    global.sharedObject.sysLogger.info('Is online')
+                }
+                else {
+                    global.sharedObject.sysLogger.info('Not online')
+                }
             }
             else if (property === "coreRunning") {
                 global.sharedObject.win.webContents.send('coreCheckAPP', {coreRunning: global.sharedObject.coreRunning})
@@ -158,17 +175,48 @@ function appInit() {
     // setup logging
     logFile = getCurrentDate()
     
-    winston.loggers.add('logger', {
+    // system logger for info and error
+    winston.loggers.add('sysLogger', {
         format: combine(timestamp(), prettyPrint()),
         transports: [
-            new module.exports.JsonDBTransport({ filename: path.join(userLogsPath, logFile), level: 'info' }),
-            new module.exports.JsonDBTransport({ filename: path.join(sysLogsPath, logFile), level: 'error' })
+            new module.exports.JsonDBTransport({filename: path.join(sysLogsPath, logFile), level: 'info', label: 'system'})
         ],
         exitOnError: false
     })
     
+    // unhandled exception logger
+    winston.loggers.add('exceptionLogger', {
+        format: combine(timestamp(), prettyPrint()),
+        transports: [
+            new module.exports.JsonDBTransport({filename: path.join(sysLogsPath, logFile+'_exceptions'), level: 'error', label: 'exception'})
+        ],
+        exitOnError: false
+    })
+    
+    // user action logger
+    winston.loggers.add('logger', {
+        format: combine(timestamp(), prettyPrint()),
+        transports: [
+            new module.exports.JsonDBTransport({filename: path.join(userLogsPath, logFile), level: 'info', label: 'user'})
+        ],
+        exitOnError: false
+    })
+    
+    global.sharedObject.sysLogger = winston.loggers.get('sysLogger')
+    global.sharedObject.sysLogger.emitErrs = true
+    global.sharedObject.exceptionLogger = winston.loggers.get('exceptionLogger')
+    global.sharedObject.exceptionLogger.emitErrs = true
     global.sharedObject.logger = winston.loggers.get('logger')
     global.sharedObject.logger.emitErrs = true
+    
+    // catch unhandled exceptions
+    unhandled({
+        logger: function(err) {
+            console.log(err.name)
+            global.sharedObject.exceptionLogger.error(err.stack)
+        },
+        showDialog: true
+    })
     smartcashapi.init()
     
     //if (isDev)
@@ -180,16 +228,11 @@ function appInit() {
 // saved in $XDG_CONFIG_HOME/smart-sweeper or ~/.config/smart-sweeper on Linux
 // saved in ~/Library/Application Support/smart-sweeper on Mac
 function loadProjects() {
-    try {
-        db = new Store({name: "smart-sweeper"})
+    db = new Store({name: "smart-sweeper"})
+    global.availableProjects = db.get('projects')
+    if (global.availableProjects === undefined) {
+        db.set('projects', {index: 0, list: []})
         global.availableProjects = db.get('projects')
-        if (global.availableProjects === undefined) {
-            db.set('projects', {index: 0, list: []})
-            global.availableProjects = db.get('projects')
-        }
-    }
-    catch(err) {
-        createDialog(null, global.sharedObject.win, "error", err, true)
     }
 }
 
@@ -219,6 +262,14 @@ function loadInternalData() {
     catch(err) {
         createDialog(null, global.sharedObject.win, "error", err, true)
     }
+}
+
+function setupGlobalErrorHander(theWindow) {
+    theWindow.addEventListener('error', function (e) {
+        var error = e.error
+        console.log(error)
+        //createDialog(null, global.sharedObject.win, "error", err, true)
+    });
 }
 
 // some code from: https://github.com/trodi/electron-splashscreen
@@ -481,6 +532,11 @@ let apiCallback = function(resp, functionName, projectInfo) {
     
     if (apiCallbackInfo !== undefined) {
         if (resp.type === "data") {
+            if (projectInfo.projectName)
+                global.sharedObject.sysLogger.info(referrer + ' - ' + functionName + ', project: ' + projectInfo.projectName)
+            else
+                global.sharedObject.sysLogger.info(referrer + ' - ' + functionName)
+            
             /*if (referrer === "checkAvailProjectBalances") {
                 console.log('projectInfo: ', projectInfo)
                 //console.log('from ' + functionName)
@@ -524,8 +580,9 @@ let apiCallback = function(resp, functionName, projectInfo) {
                                 obj[projectInfo.txid] = {confirmed: true, confirmations: resp.msg.confirmations}
                                 apiCallbackInfo.balance += tx.value
                             }
-                            else
+                            else {
                                 obj[projectInfo.txid] = {confirmed: false, confirmations: resp.msg.confirmations}
+                            }
 
                             apiCallbackInfo.txInfo.push(obj)
                         }
@@ -743,8 +800,35 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 }
             }
             else if (functionName === "getAddressInfo") {
-                if (referrer === "getProjectAddressInfo" && global.sharedObject.win) {
-                    modal.webContents.send('gotAddressInfo', {msgType: 'data', balance: apiCallbackInfo.balance, txs: apiCallbackInfo.txs})
+                if (referrer === "getProjectAddressInfo") {
+                    var existingTxids = []
+                    
+                    if (global.availableProjects.list[projectInfo.projectIndex].txid === undefined) {
+                        global.availableProjects.list[projectInfo.projectIndex].txid = []
+                    }
+                    else {
+                        // create an array of existing txids
+                        global.availableProjects.list[projectInfo.projectIndex].txid.forEach(function(txid, key) {
+                            existingTxids.push(txid)
+                        })
+                    }
+                    
+                    var obj = {}
+                    
+                    apiCallbackInfo.txs.forEach(function(tx, key) {
+                        if (!existingTxids.includes(tx)) {
+                            obj[tx] = {confirmed: false, confirmations: 0}
+                            global.availableProjects.list[projectInfo.projectIndex].txid.push(obj)
+                        }
+                    })
+                    
+                    console.log(global.availableProjects.list[projectInfo.projectIndex].txid)
+                    //db.set('projects', global.availableProjects)
+                    
+                    if (global.sharedObject.win) {
+                        modal.webContents.send('gotAddressInfo', {msgType: 'data', balance: apiCallbackInfo.balance, txs: apiCallbackInfo.txs})
+                    }
+                    
                     global.apiCallbackInfo.delete(referrer)
                 }
             }
@@ -815,7 +899,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
             }
 
             if (projectInfo.projectName) {
-                global.sharedObject.logger.error(functionName + ': ' + resp.msg + " project " + projectInfo.projectName)
+                global.sharedObject.sysLogger.error(referrer + ' - ' + functionName + ': ' + resp.msg + ', project: ' + projectInfo.projectName)
 
                 /*if (referrer === "fundProject" && global.sharedObject.win) {
                     apiCallbackInfo.msg = resp.msg
@@ -840,7 +924,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 }
             }
             else {
-                global.sharedObject.logger.error(referrer + ', ' + functionName + ': ' + resp.msg)
+                global.sharedObject.sysLogger.error(referrer + ' - ' + functionName + ': ' + resp.msg)
             }
         }
     }
@@ -907,7 +991,7 @@ function getDbIndex(projectID) {
 }
 
 // find the newest user log or system log file
-function getNewestLogFile(type) {
+function getNewestLogFile(type, subtype = "") {
     var logPath
     
     if (type === "user")
@@ -925,10 +1009,20 @@ function getNewestLogFile(type) {
     var stats = fs.statSync(logPath + files[0])
     var mostRecent = {file: files[0], lastModified: stats.mtime}
     
+    var subtypeFile = ""
     files.forEach(function(file, index) {
-        stats = fs.statSync(logPath + file)        
-        if (stats.mtime > mostRecent.lastModified)
-            mostRecent = {file: file, lastModified: stats.mtime}
+        if (subtype === "" && file.indexOf('_') == -1)
+            subtypeFile = file
+        else if (file.indexOf(subtype) != -1)
+            subtypeFile = file
+        
+        if (subtypeFile !== "") {
+            stats = fs.statSync(logPath + subtypeFile)        
+            if (stats.mtime > mostRecent.lastModified)
+                mostRecent = {file: subtypeFile, lastModified: stats.mtime}
+            
+            subtypeFile = ""
+        }
     })
     
     return mostRecent
@@ -1032,6 +1126,16 @@ app.on('window-all-closed', () => {
     }
 
     mostRecent = getNewestLogFile('system')
+    exitLogFile = path.join(sysLogsPath, path.parse(mostRecent.file).name)
+    logDB = new Store({name: exitLogFile})
+
+    if (logDB.get('log').length == 0) {
+        fs.unlink(path.join(app.getPath('userData'), exitLogFile+'.json'), (err) => {
+            if (err) throw err;
+        })
+    }
+    
+    mostRecent = getNewestLogFile('system', 'exceptions')
     exitLogFile = path.join(sysLogsPath, path.parse(mostRecent.file).name)
     logDB = new Store({name: exitLogFile})
 
@@ -1493,7 +1597,7 @@ ipcMain.on('showErrorDialog', (event, content) => {
     
     if (content.fatal) {
         fatal = true
-        global.sharedObject.logger.error(content.text)
+        global.sharedObject.sysLogger.error(content.text)
     }
     
     if (modal === undefined || modal == null)

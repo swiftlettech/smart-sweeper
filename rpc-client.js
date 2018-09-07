@@ -102,7 +102,7 @@ function sendCmd(cmd, callback) {
 }
 
 // checks to see whether or not the client can communicate with the core
-function statusCheck(callback) {
+function rpcCheck(callback) {
     var cmd = {
         method: 'getblockcount',
         params: []
@@ -115,5 +115,5 @@ function statusCheck(callback) {
 
 module.exports = {
     sendCmd: sendCmd,
-    statusCheck: statusCheck
+    rpcCheck: rpcCheck
 }

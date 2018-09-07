@@ -61,10 +61,10 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
         }
         
         if (projectInfo.projectName) {
-            global.sharedObject.logger.error(functionName + ': ' + resp.msg + " project " + projectInfo.projectName)
+            global.sharedObject.sysLogger.error(functionName + ': ' + resp.msg + " project " + projectInfo.projectName)
         }
         else {
-            global.sharedObject.logger.error(functionName + ': ' + resp.msg)
+            global.sharedObject.sysLogger.error(functionName + ': ' + resp.msg)
         }
     }
 }

@@ -25,8 +25,6 @@
                 angular.forEach(ctrl.availableProjects, function(project, projectKey) {
                     activeTxs = [];
                     
-                    console.log(project);
-                    
                     if (project.txid !== undefined) {
                         project.txid.forEach(function(address, txidKey) {
                             activeTxs.push(Object.keys(address)[0]);
