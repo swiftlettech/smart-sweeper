@@ -30,7 +30,7 @@
                             activeTxs.push(Object.keys(address)[0]);
                         });
 
-                        ipcRenderer.send('checkFundingTxids', {projectID: project.id, projectName: project.name, address: project.addressPair.publicKey, activeTxs: activeTxs});
+                        //ipcRenderer.send('checkFundingTxids', {projectID: project.id, projectName: project.name, address: project.addressPair.publicKey, activeTxs: activeTxs});
                     }
                 });
             }
@@ -71,8 +71,6 @@
             ipcRenderer.on('dialogYes', (event, arg) => {
                 if (electron.remote.getGlobal('referrer') !== "sendPromotionalFunds")
                     return;
-                
-                console.log('in dialogYes')
                 
                 ipcRenderer.send('sendPromotionalFunds', {projectID: project.id, originalFunds: project.originalFunds, fromAddr: project.addressPair.publicKey, fromPK: project.addressPair.privateKey, wallets: project.recvAddrs});
             });

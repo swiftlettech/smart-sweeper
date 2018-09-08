@@ -23,9 +23,9 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
     var apiCallbackInfo = global.smartcashCallbackInfo.get(referrer+projectInfo.projectID)
     //console.log('smartcashCallback referrer: ', referrer)
     //console.log('apiCallbackInfo ID: ', referrer+projectInfo.projectID)
-    //console.log('apiCallbackInfo: ', apiCallbackInfo)
-    //console.log('resp: ', resp.msg.body)
-    //console.log()
+    console.log('apiCallbackInfo: ', apiCallbackInfo)
+    console.log('resp: ', resp.msg.body)
+    console.log()
     
     if (resp.type === "data") {
         if (functionName === "sweepFunds") {
@@ -49,7 +49,7 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
             if ((referrer === "getaddressbalance") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                 global.availableProjects.list[projectInfo.projectIndex] = apiCallbackInfo.project // update project info
                 db.set('projects', global.availableProjects)
-                doSweep(projectInfo, callback)
+                //doSweep(projectInfo, callback)
             }
         }
     }
@@ -331,8 +331,8 @@ function getAddressInfo(projectInfo, callback) {
             callback({type: 'data', msg: resp.body}, 'getAddressInfo', projectInfo)
         }
         else {
-            console.log('getAddressInfo')
-            console.log(err)
+            //console.log('getAddressInfo')
+            //console.log(err)
             
             if (err)
                 callback({type: 'error', msg: err.code}, 'getAddressInfo', projectInfo)

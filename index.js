@@ -115,49 +115,83 @@ function appInit() {
         //console.log(newValue)
         //console.log()
         
+        var infoMsg = false
+        var errorMsg = false
+        var msg = ""
+        
         if (global.sharedObject.win) {
             if (property === "isOnline") {
                 global.sharedObject.win.webContents.send('onlineCheckAPP', {isOnline: global.sharedObject.isOnline})
                 
                 if (global.sharedObject.isOnline) {
                     global.sharedObject.win.webContents.send('isOnline')
-                    global.sharedObject.sysLogger.info('Is online')
+                    
+                    infoMsg = true
+                    msg = "Is online"
                 }
                 else {
-                    global.sharedObject.sysLogger.info('Not online')
+                    errorMsg = true
+                    msg = "Not online"
                 }
             }
             else if (property === "coreRunning") {
                 global.sharedObject.win.webContents.send('coreCheckAPP', {coreRunning: global.sharedObject.coreRunning})
                 global.sharedObject.win.webContents.send('coreRunning')
+                
+                infoMsg = true
+                msg = "Node client is running"
             }
             else if (property === "coreError") {
                 global.sharedObject.win.webContents.send('coreCheckAPP', {coreError: global.sharedObject.coreError})
                 global.sharedObject.win.webContents.send('coreError')
+                
+                errorMsg = true
+                msg = "Node client not running"
             }
             else if (property === "rpcConnected") {
                 global.sharedObject.win.webContents.send('rpcCheckAPP', {rpcConnected: global.sharedObject.rpcConnected})
                 global.sharedObject.win.webContents.send('rpcConnected')
+                
+                infoMsg = true
+                msg = "RPC connection made"
             }
             else if (property === "rpcError") {
                 global.sharedObject.win.webContents.send('rpcCheckAPP', {rpcError: global.sharedObject.rpcError})
                 global.sharedObject.win.webContents.send('rpcError')
+                
+                errorMsg = true
+                msg = "RPC connection error"
+                
             }
             else if (property === "coreSynced") {
                 global.sharedObject.win.webContents.send('coreSyncCheckAPP', {coreSynced: global.sharedObject.coreSynced})
                 global.sharedObject.win.webContents.send('coreSynced')
+                
+                infoMsg = true
+                msg = "Node client synced"
             }
             else if (property === "coreSyncError") {
                 global.sharedObject.win.webContents.send('coreSyncCheckAPP', {coreSyncError: global.sharedObject.coreSyncError})
                 global.sharedObject.win.webContents.send('coreSyncError')
+                
+                errorMsg = true
+                msg = "Node client sync error"
             }
             else if (property === "blockExplorerError") {
                 global.sharedObject.win.webContents.send('blockExplorerErrorAPP', {blockExplorerError: global.sharedObject.blockExplorerError})
+                
+                errorMsg = true
+                msg = "Block explorer error"
             }
+            
+            if (infoMsg)
+                global.sharedObject.sysLogger.info(msg)
+            else if (errorMsg)
+                global.sharedObject.sysLogger.error(msg)
         }
     }, 0, true)
     
-    // send a notice to renderer when availableProjects is updated
+    // send a notice to renderers when availableProjects is updated
     watch(global.availableProjects, function(property, action, newValue, oldValue) {
         if (global.sharedObject.win)
             global.sharedObject.win.webContents.send('projectsReady')
@@ -212,8 +246,11 @@ function appInit() {
     // catch unhandled exceptions
     unhandled({
         logger: function(err) {
-            console.log(err.name)
             global.sharedObject.exceptionLogger.error(err.stack)
+            
+            // the "EPERM operation not permitted error" is fatal (https://github.com/sindresorhus/electron-store/issues/31)
+            if (err.message.indexOf('EPERM') != -1)
+                createDialog(null, global.sharedObject.win, "error", "SmartSweeper has encountered a fatal error. The app will now close.", true)
         },
         showDialog: true
     })
@@ -262,14 +299,6 @@ function loadInternalData() {
     catch(err) {
         createDialog(null, global.sharedObject.win, "error", err, true)
     }
-}
-
-function setupGlobalErrorHander(theWindow) {
-    theWindow.addEventListener('error', function (e) {
-        var error = e.error
-        console.log(error)
-        //createDialog(null, global.sharedObject.win, "error", err, true)
-    });
 }
 
 // some code from: https://github.com/trodi/electron-splashscreen
@@ -324,7 +353,7 @@ function createBgWindow() {
         show: false
     }
 
-    // Create the browser window.
+    // Create the browser window.`
     bgWin = new BrowserWindow(windowConfig)
     bgWin.loadURL(url.format({
         pathname: path.join(__dirname, 'background', 'background.html'),
@@ -336,7 +365,7 @@ function createBgWindow() {
     bgWin.on("ready-to-show", () => {
         setTimeout(function() {
             closeSplashScreen()
-            bgWin.show()
+            //bgWin.show()
         }, 12000)
     })
     
@@ -537,7 +566,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
             else
                 global.sharedObject.sysLogger.info(referrer + ' - ' + functionName)
             
-            /*if (referrer === "checkAvailProjectBalances") {
+            /*if (referrer === "checkFundingTxids") {
                 console.log('projectInfo: ', projectInfo)
                 //console.log('from ' + functionName)
                 console.log(resp.msg)
@@ -556,7 +585,9 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     db.set('projects', global.availableProjects)
                 }
                 else if (referrer === "getClaimedFundsInfo") {
-                    if (global.availableProjects.list[projectInfo.projectIndex].recvAddrs[projectInfo.addrIndex].txConfirmed == true && resp.msg == 0 && !global.availableProjects.list[projectInfo.projectIndex].fundsSwept) {
+                    if ((global.availableProjects.list[projectInfo.projectIndex].recvAddrs[projectInfo.addrIndex].txConfirmed == true) &&
+                        !global.availableProjects.list[projectInfo.projectIndex].recvAddrs[projectInfo.addrIndex].swept && 
+                        (resp.msg == 0)) {
                         global.availableProjects.list[projectInfo.projectIndex].recvAddrs[projectInfo.addrIndex].claimed = true
                         apiCallbackInfo.claimedFunds += projectInfo.addrAmt
                         apiCallbackInfo.claimedWallets++
@@ -804,26 +835,25 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     var existingTxids = []
                     
                     if (global.availableProjects.list[projectInfo.projectIndex].txid === undefined) {
+                        // create the txid array if it doesn't already exist
                         global.availableProjects.list[projectInfo.projectIndex].txid = []
                     }
                     else {
                         // create an array of existing txids
                         global.availableProjects.list[projectInfo.projectIndex].txid.forEach(function(txid, key) {
-                            existingTxids.push(txid)
+                            existingTxids.push(Object.keys(txid)[0])
                         })
                     }
                     
-                    var obj = {}
-                    
-                    apiCallbackInfo.txs.forEach(function(tx, key) {
-                        if (!existingTxids.includes(tx)) {
-                            obj[tx] = {confirmed: false, confirmations: 0}
+                    var obj = {}                    
+                    apiCallbackInfo.txs.forEach(function(txid, key) {
+                        if (existingTxids.includes(txid) == false) {
+                            obj[txid] = {confirmed: false, confirmations: 0}
                             global.availableProjects.list[projectInfo.projectIndex].txid.push(obj)
                         }
                     })
                     
-                    console.log(global.availableProjects.list[projectInfo.projectIndex].txid)
-                    //db.set('projects', global.availableProjects)
+                    db.set('projects', global.availableProjects)
                     
                     if (global.sharedObject.win) {
                         modal.webContents.send('gotAddressInfo', {msgType: 'data', balance: apiCallbackInfo.balance, txs: apiCallbackInfo.txs})
@@ -1196,6 +1226,7 @@ ipcMain.on('checkAvailProjectBalances', (event, args) => {
 
 // check the txid to get project funding info
 ipcMain.on('checkFundingTxids', (event, args) => {
+    //console.log('checkFundingTxids')
     //console.log(args)
     
     global.apiCallbackInfo.set('checkFundingTxids', {
@@ -1665,7 +1696,7 @@ ipcMain.on('sweepFunds', (event, args) => {
         project = global.availableProjects.list[index]
         global.apiCallbackInfo.get('sweepFunds').projectNames.push(project.name)
         
-        //smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: projectID, project: project}, apiCallback)
+        smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: projectID, project: project}, apiCallback)
     })
 })
 

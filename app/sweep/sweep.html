@@ -1,6 +1,6 @@
 <div id="sweepTab" ng-init="init()">
     <div class="infoBlock" style="margin-bottom:0;">
-        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> "Claimed Addresses", "% Claimed", and "Swept?" will show "n/a" if funds have not been sent to the promo wallets.</p>
+        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> "Claimed Addresses", "% Claimed", and "Swept?" will show "n/a" if funds have not been sent to the promo wallets or the transaction has less than 6 confirmations.</p>
         <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i><i class="fa fa-fw fa-question" title="Pending"></i> = pending sweep transaction, <i class="fa fa-fw fa-check" title="Confirmed"></i> = confirmed sweep transaction</p>
     </div>
     
@@ -56,7 +56,7 @@
                                 
                                 <!--<td class="expCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>-->
                                 
-                                <td class="sweepCol text-center"><span ng-show="project.fundsSent"><span ng-show="project.fundsSwept">Yes</span><span ng-show="!project.fundsSwept">No</span></span><span ng-show="!project.fundsSent">n/a</span></td>
+                                <td class="sweepCol text-center"><span ng-show="project.fundsSent && project.recvAddrs[0].txConfirmed"><span ng-show="project.fundsSwept">Yes</span><span ng-show="!project.fundsSwept">No</span></span><span ng-show="!project.fundsSent">n/a</span></td>
                                 
                                 <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$sweepCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
                             </tr>

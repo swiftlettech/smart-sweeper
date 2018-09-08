@@ -46,7 +46,7 @@
             ipcRenderer.on('taskStatusCheckDone', (event, args) => {
                 console.log(args);
                 if (args.function === "sweepFunds" && (args.status == true || args.error == true)) {
-                    $interval.cancel(taskStatusCheck);
+                    $interval.cancel(ctrl.taskStatusCheck);
                 }
             });
             
@@ -111,7 +111,7 @@
             ipcRenderer.send('sweepFunds', {projectIDs: projectIDs});
             
             // status checking
-            var taskStatusCheck = $interval(function() {
+            ctrl.taskStatusCheck = $interval(function() {
                 console.log('checking task status');
                 ipcRenderer.send('taskStatusCheck', 'sweepFunds');
             }, 5000);

@@ -34,8 +34,19 @@
         // catch unhandled exceptions
         unhandled({
             logger: function(err) {
-                console.log(err.name);
                 electron.remote.getGlobal('sharedObject').exceptionLogger.error(err.stack);
+                
+                // the "EPERM operation not permitted error" is fatal (https://github.com/sindresorhus/electron-store/issues/31)
+                if (err.message.indexOf('EPERM') != -1) {
+                    var content = {
+                        text: {
+                            title: 'Error',
+                            body: 'SmartSweeper has encountered a fatal error. The app will now close.'
+                        },
+                        fatal: true
+                    };
+                    ipcRenderer.send('showErrorDialog', content);
+                }
             },
             showDialog: true
         });
@@ -116,6 +127,22 @@
                 checkBlockchain();
                 // get the transaction status of all projects
                 ipcRenderer.send('getProjectTxStatus');
+                
+                /*var activeTxs;
+                remote.getGlobal('availableProjects').list.forEach(function(project, projectKey) {
+                    activeTxs = [];
+                    
+                    if (project.txid !== undefined) {
+                        project.txid.forEach(function(txid, txidKey) {
+                            activeTxs.push(Object.keys(txid)[0]);
+                        });
+                        
+                        console.log('activeTxs')
+                        console.log(activeTxs)
+
+                        ipcRenderer.send('checkFundingTxids', {projectID: project.id, projectName: project.name, address: project.addressPair.publicKey, activeTxs: activeTxs});
+                    }                    
+                });*/
             }
             else if (functionName === "checkBlockchain") {
                 remote.getGlobal('sharedObject').blockExplorerError = false;

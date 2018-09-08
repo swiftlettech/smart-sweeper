@@ -37,11 +37,14 @@
                 return height + 'px';
             });
             
-            //ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);            
-            // check every 30 for the status of the funding transactions
-            /*$interval(function() {
+            if (!ctrl.activeProject.projectFunded) {
                 ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
-            }, 30000, false);*/
+                
+                // check every 30 for the status of the funding transactions
+                $interval(function() {
+                    ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
+                }, 30000, false);
+            }
             
             // reload projects when there have been changes
             ipcRenderer.on('projectsReady', (event, args) => {            
@@ -123,13 +126,12 @@
                         getActiveProjectInfo();
                         
                         ctrl.balance = args.balance;
+                        var activeTxs = [];
                         ctrl.activeTxs = [];
-                        //var activeTxs = args.txs;
-                        var activeTxs = ctrl.activeProject.txid;
-                        console.log(activeTxs)
                         
-                        angular.forEach(activeTxs, function(tx, key) {
+                        angular.forEach(ctrl.activeProject.txid, function(tx, key) {
                             var txid = Object.keys(tx)[0];
+                            activeTxs.push(txid);
                             
                             ctrl.activeTxs.push({
                                 txid: Object.keys(tx)[0],
@@ -138,17 +140,13 @@
                             });
                         });
                         
-                        console.log(ctrl.activeTxs);
-                        
-                        /*angular.forEach(args.txs, function(tx, key) {
-                            if (tx.type === "vout")
-                                ctrl.activeTxs.push({txid: tx.addresses});
-                        });
+                        //console.log(activeTxs)
+                        //console.log(ctrl.activeTxs);
                         
                         // check the status of each txid
                         if (activeTxs.length > 0) {
                             ipcRenderer.send('checkFundingTxids', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, address: ctrl.activeProject.addressPair.publicKey, activeTxs: activeTxs});
-                        }*/
+                        }
                     }
                 });
             });

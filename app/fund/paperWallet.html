@@ -8101,7 +8101,7 @@ ninja.wallets.paperwallet = {
 		document.getElementById("wallet_instr" + idPostFix).innerHTML = walletInstructions;
 		
 		document.getElementById("btcaddress" + idPostFix).innerHTML = bitcoinAddress;
-        document.getElementById("wallet_amt" + idPostFix).innerHTML = "<strong>Amount:</strong> " +ninja.wallets.paperwallet.project.addrAmt;
+        document.getElementById("wallet_amt" + idPostFix).innerHTML = "<strong>Amount:</strong> " + ninja.wallets.paperwallet.project.addrAmt;
 		
 		var convertedDate = moment(ninja.wallets.paperwallet.project.expDate).format("MMM DD, YYYY");
 		document.getElementById("exp_date" + idPostFix).innerHTML = "<strong>Use By:</strong> " + convertedDate;

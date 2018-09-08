@@ -46,8 +46,19 @@
             // catch unhandled exceptions
             unhandled({
                 logger: function(err) {
-                    console.log(err.name);
                     electron.remote.getGlobal('sharedObject').exceptionLogger.error(err.stack);
+                    
+                    // the "EPERM operation not permitted error" is fatal (https://github.com/sindresorhus/electron-store/issues/31)
+                    if (err.message.indexOf('EPERM') != -1) {
+                        var content = {
+                            text: {
+                                title: 'Error',
+                                body: 'SmartSweeper has encountered a fatal error. The app will now close.'
+                            },
+                            fatal: true
+                        };
+                        ipcRenderer.send('showErrorDialog', content);
+                    }
                 },
                 showDialog: true
             });
@@ -207,7 +218,6 @@
                     ctrl.modalMsg = modalMsg;
                     
                     ctrl.close = function() {
-                        console.log('click');
                         $uibModalInstance.dismiss('close');
                     };
                     
