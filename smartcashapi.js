@@ -23,9 +23,9 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
     var apiCallbackInfo = global.smartcashCallbackInfo.get(referrer+projectInfo.projectID)
     //console.log('smartcashCallback referrer: ', referrer)
     //console.log('apiCallbackInfo ID: ', referrer+projectInfo.projectID)
-    console.log('apiCallbackInfo: ', apiCallbackInfo)
-    console.log('resp: ', resp.msg.body)
-    console.log()
+    //console.log('apiCallbackInfo: ', apiCallbackInfo)
+    //console.log('resp: ', resp.msg.body)
+    //console.log()
     
     if (resp.type === "data") {
         if (functionName === "sweepFunds") {
@@ -49,7 +49,7 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
             if ((referrer === "getaddressbalance") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                 global.availableProjects.list[projectInfo.projectIndex] = apiCallbackInfo.project // update project info
                 db.set('projects', global.availableProjects)
-                //doSweep(projectInfo, callback)
+                doSweep(projectInfo, callback)
             }
         }
     }
@@ -61,7 +61,14 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
         }
         
         if (projectInfo.projectName) {
-            global.sharedObject.sysLogger.error(functionName + ': ' + resp.msg + " project " + projectInfo.projectName)
+            var address = ""
+            if (projectInfo.address)
+                address = ", wallet address: " + projectInfo.address
+            
+            global.sharedObject.sysLogger.error('project ' + projectInfo.projectName + ', functionName' + functionName + ': ' + resp.msg)
+        }
+        else if (projectInfo.projectID) {
+            global.sharedObject.sysLogger.info(functionName + ', project #' + projectInfo.projectID)
         }
         else {
             global.sharedObject.sysLogger.error(functionName + ': ' + resp.msg)
@@ -107,8 +114,7 @@ function checkBalance(projectInfo, callback) {
             console.log('checkBalance')
             console.log(err)
             
-            if (err)
-                callback({type: 'error', msg: resp}, 'checkBalance', projectInfo)
+            callback({type: 'error', msg: resp.body}, 'checkBalance', projectInfo)
         }
     })
 }
@@ -170,7 +176,7 @@ function checkTransaction(projectInfo, callback) {
 
             /*if (err) {
                 // ignore the unknown transaction error for promotional wallet txids because it's probably not in the blockchain yet
-                callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
+                callback({type: 'error', msg: err}, 'checkTransaction', projectInfo)
             }*/
             if (!err) {
                 if (projectInfo.referrer !== "getWalletTxStatus") {
@@ -233,7 +239,7 @@ function doSweep(projectInfo, callback) {
         //console.log("getrawtransaction resp: ", resp)
         
         if (err) {
-            callback({type: 'error', msg: "getrawtransaction failed."}, 'sweepFunds', projectInfo)
+            callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
         }
         else {
             resp.vout.forEach(function(vout, voutIndex) {
@@ -258,7 +264,7 @@ function doSweep(projectInfo, callback) {
                 //console.log("createrawtransaction resp: ", resp)
                 
                 if (err) {
-                    callback({type: 'error', msg: "createrawtransaction failed."}, 'sweepFunds', projectInfo)
+                    callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
                 }
                 else {
                     /*var decodeTxCmd = {
@@ -279,7 +285,7 @@ function doSweep(projectInfo, callback) {
                         //console.log("signrawtransaction resp: ", resp)
                         
                         if (err) {
-                            callback({type: 'error', msg: "signrawtransaction failed."}, 'sweepFunds', projectInfo)
+                            callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
                         }
                         else if (resp.complete) {
                             var sendTxCmd = {
@@ -292,7 +298,7 @@ function doSweep(projectInfo, callback) {
                                 console.log(resp)
 
                                 if (err) {
-                                    callback({type: 'error', msg: "sendrawtransaction failed."}, 'sweepFunds', projectInfo)
+                                    callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
                                 }
                                 else {
                                     global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
@@ -335,7 +341,7 @@ function getAddressInfo(projectInfo, callback) {
             //console.log(err)
             
             if (err)
-                callback({type: 'error', msg: err.code}, 'getAddressInfo', projectInfo)
+                callback({type: 'error', msg: resp.body}, 'getAddressInfo', projectInfo)
         }
     })
 }
@@ -378,7 +384,7 @@ function sendFunds(projectInfo, callback) {
                         //console.log(resp)
 
                         if (err) {
-                            callback({type: 'error', msg: "getrawtransaction failed."}, 'sendFunds', projectInfo)
+                            callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
                         }
                         else {
                             resp.vout.forEach(function(vout, voutIndex) {
@@ -401,7 +407,7 @@ function sendFunds(projectInfo, callback) {
                             
                             rpc.sendCmd(createTxCmd, function(err, resp) {
                                 if (err) {
-                                    callback({type: 'error', msg: "createrawtransaction failed."}, 'sendFunds', projectInfo)
+                                    callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
                                 }
                                 else {
                                     var signTxCmd = {
@@ -411,7 +417,7 @@ function sendFunds(projectInfo, callback) {
                                     
                                     rpc.sendCmd(signTxCmd, function(err, resp) {
                                         if (err) {
-                                            callback({type: 'error', msg: "signrawtransaction failed."}, 'sendFunds', projectInfo)
+                                            callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
                                         }
                                         else if (resp.complete) {
                                             var sendTxCmd = {
@@ -424,7 +430,7 @@ function sendFunds(projectInfo, callback) {
                                                 console.log(resp)
                                                 
                                                 if (err) {
-                                                    callback({type: 'error', msg: "sendrawtransaction failed."}, 'sendFunds', projectInfo)
+                                                    callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
                                                 }
                                                 else {
                                                     callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
@@ -443,7 +449,7 @@ function sendFunds(projectInfo, callback) {
             }
         }
         else {
-            callback({type: 'error', msg: err}, 'sendFunds', projectInfo)
+            callback({type: 'error', msg: resp.body}, 'sendFunds', projectInfo)
         }
     })
 }
@@ -476,7 +482,7 @@ function sweepFunds(projectInfo, callback) {
                 smartcashCallback({type: 'data', msg: resp}, 'sweepFunds', projectInfo, callback)
             }
             else {
-                callback({type: 'error', msg: err}, 'sweepFunds', projectInfo)
+                callback({type: 'error', msg: resp.body}, 'sweepFunds', projectInfo)
             }
         })
     })

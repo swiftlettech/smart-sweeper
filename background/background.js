@@ -114,10 +114,10 @@
     /* Generic API callback function. */
     let apiCallback = function(resp, functionName) {
         if (resp.type === "data") {
-            console.log('from ' + functionName);
-            console.log(resp);
+            //console.log('from ' + functionName);
+            //console.log(resp);
             
-            remote.getGlobal('sharedObject').sysLogger.info(functionName + ': ' + resp.msg);
+            //remote.getGlobal('sharedObject').sysLogger.info(functionName + ': ' + resp.msg);
             
             if (functionName === "rpcCheck") {
                 remote.getGlobal('sharedObject').rpcConnected = true;
@@ -216,7 +216,7 @@
                         //console.log('checkBlockchain remote')
                         //console.log(resp.body)
                         
-                        if (resp && resp.body.error === undefined) {                            
+                        if (resp && resp.body.error === undefined) {
                             var onlineBlockCount = resp.body.blocks;
 
                             if (localBlockCount == onlineBlockCount);
@@ -236,13 +236,9 @@
                             }
                         }
                         else {
-                            console.log('checkBlockchain');
-                            console.log(err);
-
-                            if (err) {
-                                remote.getGlobal('sharedObject').blockExplorerError = true;
-                                apiCallback({type: 'error', msg: err}, 'checkBlockchain');
-                            }
+                            console.log('checkBlockchain error');
+                            remote.getGlobal('sharedObject').blockExplorerError = true;
+                            apiCallback({type: 'error', msg: resp.body}, 'checkBlockchain');
                         }
                     });
                 }

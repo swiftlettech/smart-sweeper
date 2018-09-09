@@ -97,6 +97,8 @@ function appInit() {
         explorerCheckInterval: 1.2, // minimum time between block explorer requests
         win: null,
         logger: null,
+        sysLogger: null,
+        exceptionLogger: null,
         isOnline: false,
         referrer: "",
         coreRunning: false,
@@ -553,16 +555,26 @@ let apiCallback = function(resp, functionName, projectInfo) {
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.apiCallbackInfo.get(referrer)
     
-    /*if (referrer === "checkAvailProjectBalances") {
+    /*if (referrer === "getClaimedFundsInfo") {
         console.log('apiCallback referrer: ', referrer)
         console.log('apiCallbackInfo: ', apiCallbackInfo)
+        console.log('projectInfo: ', projectInfo)
         console.log()
     }*/
     
     if (apiCallbackInfo !== undefined) {
-        if (resp.type === "data") {
-            if (projectInfo.projectName)
-                global.sharedObject.sysLogger.info(referrer + ' - ' + functionName + ', project: ' + projectInfo.projectName)
+        if (resp.type === "data") {            
+            if (projectInfo.projectName) {
+                var address = ""
+                if (projectInfo.address)
+                    address = ", wallet address: " + projectInfo.address
+                
+                global.sharedObject.sysLogger.info(referrer + ' - ' + functionName + ', project: ' + projectInfo.projectName + address)
+            }
+            else if (projectInfo.address)
+                global.sharedObject.sysLogger.info(referrer + ' - ' + functionName + ', wallet address: ' + projectInfo.address)
+            else if (projectInfo.projectID)
+                global.sharedObject.sysLogger.info(referrer + ' - ' + functionName + ', project #' + projectInfo.projectID)
             else
                 global.sharedObject.sysLogger.info(referrer + ' - ' + functionName)
             
@@ -953,6 +965,9 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     global.sharedObject.win.webContents.send('fundsSwept', {msgType: 'error', msg: 'Funds could not be swept for project "' + projectInfo.projectName + '".'}) 
                 }
             }
+            else if (projectInfo.projectID) {
+                global.sharedObject.sysLogger.info(referrer + ' - ' + functionName + ', project #' + projectInfo.projectID)
+            }
             else {
                 global.sharedObject.sysLogger.error(referrer + ' - ' + functionName + ': ' + resp.msg)
             }
@@ -1220,7 +1235,8 @@ ipcMain.on('checkAvailProjectBalances', (event, args) => {
         })
     }
     else {
-        global.sharedObject.win.webContents.send('balancesChecked', {availableBalance: 0})
+        if (global.sharedObject.win)
+            global.sharedObject.win.webContents.send('balancesChecked', {availableBalance: 0})
     }
 })
 
@@ -1704,7 +1720,9 @@ ipcMain.on('sweepFunds', (event, args) => {
 ipcMain.on('taskStatusCheck', (event, args) => {
     var status = global.taskStatus.get(args).status
     var error = global.taskStatus.get(args).error
-    global.sharedObject.win.webContents.send('taskStatusCheckDone', {function: args, status: status, error: error})
+    
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('taskStatusCheckDone', {function: args, status: status, error: error})
 })
 
 // update a project edited in the modal
