@@ -89,13 +89,14 @@ function init() {
 // send a command to the RPC server
 function sendCmd(cmd, callback) {
     client.cmd(cmd.method, cmd.params, function(err, result, resHeaders) {
-        //console.log('sendCmd')
-        //console.log(result)
-        //console.log(err)
-        //console.log(resHeaders)
-
-        if (err)
-            callback(true, err)
+        if (err) {
+            /*console.log('sendCmd')
+            console.log(err)
+            console.log(result)
+            console.log(resHeaders)*/
+            
+            callback(true, err.stack)
+        }
         else
             callback(false, result)
     })
@@ -108,7 +109,7 @@ function rpcCheck(callback) {
         params: []
     }
     
-    sendCmd(cmd, function(err, resp) {        
+    sendCmd(cmd, function(err, resp) {
         callback({msg: resp, err: err})
     })
 }

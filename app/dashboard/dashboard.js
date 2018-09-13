@@ -68,7 +68,7 @@
                 });
             });
             
-            $mainCtrl.setPageHeight();
+            //$mainCtrl.setPageHeight();
         };
         
         // reload projects when there have been changes
@@ -132,15 +132,19 @@
             ipcRenderer.send('checkAvailProjectBalances');
             
             // status checking
-            var taskStatusCheck = $interval(function() {
+            ctrl.taskStatusCheck = $interval(function() {
                 ipcRenderer.send('taskStatusCheck', 'checkAvailProjectBalances');
             }, 5000);
             
             ipcRenderer.on('taskStatusCheckDone', (event, args) => {
-                if (args.function === "checkAvailProjectBalances" && (args.status == true || args.error == true))
-                    $interval.cancel(taskStatusCheck);
-                else
-                    ctrl.showSpinner = true;
+                ipcRenderer.removeAllListeners('taskStatusCheckDone');
+                $scope.$apply(function() {
+                    if (args.function === "checkAvailProjectBalances" && (args.status == true || args.error == true)) {
+                        $interval.cancel(ctrl.taskStatusCheck);
+                    }
+                    else
+                        ctrl.showSpinner = true;
+                });
             });
         }
         

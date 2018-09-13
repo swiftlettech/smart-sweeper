@@ -16,6 +16,7 @@
                 config: {
                     templateUrl: 'app/help/help.html',
                     controller: 'HelpController',
+                    controllerAs: '$helpCtrl',
                     title: ''
                 }
             }

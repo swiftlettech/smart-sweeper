@@ -24,6 +24,7 @@
 
         $scope.init = function() {
             //$document.find('#appAlert, .formAlert').addClass('hide');
+            ctrl.taskStatusData = new Map();
             
             isOnline().then(online => {
                 ctrl.isOnline = online;
@@ -112,6 +113,11 @@
                 }
             });
         });
+        
+        /* Get API task data to be reloaded in the event the user browses away from a page. */
+        ctrl.getTaskStatusData = function(key) {
+            return ctrl.taskStatusData.get(key);
+        };
 
         ctrl.setActivePage = function(page) {
             ctrl.activePage = page;
@@ -241,8 +247,8 @@
         };
         
         /* Set API task data to be reloaded in the event the user browses away from a page. */
-        ctrl.setTaskStatusData = function(data) {
-            ctrl.taskStatusData = data;
+        ctrl.setTaskStatusData = function(key, data) {
+            ctrl.taskStatusData.set(key, data);
         };
         
         /* Show/hide a project's private key. */

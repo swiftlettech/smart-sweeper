@@ -134,7 +134,7 @@
                 <td class="deleteCol text-center"><strong>Delete</strong></td>
             </tr>
             
-            <tr id="project.id" ng-class="{active: $createCtrl.activeProjectID == project.id}" ng-model="$createCtrl.availableProjects" ng-repeat="project in $createCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
+            <tr id="{{project.id}}" ng-class="{active: $createCtrl.activeProjectID == project.id}" ng-model="$createCtrl.availableProjects" ng-repeat="project in $createCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
                 <td colspan="7" style="padding:0;">
                     <table class="innerTable">
                         <tr>

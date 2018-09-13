@@ -18,6 +18,12 @@ a:focus {
   color: #FFF;
 }
 
+#page-wrapper a,
+#page-wrapper a:hover,
+#page-wrapper a:focus {
+    color: #23527C;
+}
+
 .btn-link,
 .btn-link:hover,
 .btn-link:focus {
@@ -45,7 +51,7 @@ a.disabled {
     border-bottom: 1px solid #333;
 }
 
-.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-eye, .fa-eye-slash {
+.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-eye, .fa-eye-slash, .fa-reply {
     cursor: pointer;
 }
 
@@ -222,7 +228,7 @@ button, .btn, .form-control, .input-group-addon {
     color:inherit;
 }
 
-#projectList .addrCol, #projectList .addrAmtCol, #projectList .claimedAddrCol {
+#projectList .addrCol, #projectList .addrAmtCol {
     width: 175px;
 }
 
@@ -240,10 +246,6 @@ button, .btn, .form-control, .input-group-addon {
 
 #projectList .editCol, #projectList .deleteCol, #projectList .fundCol, #projectList .sendCol, #projectList .sweepCol {
     width: 65px;
-}
-
-#projectList .perClaimedCol {
-    width: 125px;
 }
 
 
@@ -352,6 +354,18 @@ button, .btn, .form-control, .input-group-addon {
     margin:0 auto;
 }
 
+#projectList .sweepCol {
+    text-align: center;
+}
+
+#projectList .perClaimedCol {
+    width: 125px;
+}
+
+#projectList .claimedAddrCol {
+    width: 150px;
+}
+
 
 /* Log */
 
@@ -365,3 +379,6 @@ button, .btn, .form-control, .input-group-addon {
 
 
 /* Help */
+#help .panel-heading {
+    font-weight: bold;
+}

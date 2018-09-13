@@ -211,9 +211,17 @@ function appInit() {
     // setup logging
     logFile = getCurrentDate()
     
+    /* from: https://github.com/winstonjs/winston/issues/1243#issuecomment-411360908 */
+    const formatErrorConverter = format(info =>
+        info instanceof Error
+            ? Object.assign({ level: info.level, message: info.message, stack: info.stack }, info)
+            : info,
+    )
+    const formatErrorConverterInstance = formatErrorConverter();
+    
     // system logger for info and error
     winston.loggers.add('sysLogger', {
-        format: combine(timestamp(), prettyPrint()),
+        format: combine(timestamp(), prettyPrint(), formatErrorConverterInstance),
         transports: [
             new module.exports.JsonDBTransport({filename: path.join(sysLogsPath, logFile), level: 'info', label: 'system'})
         ],
@@ -222,7 +230,7 @@ function appInit() {
     
     // unhandled exception logger
     winston.loggers.add('exceptionLogger', {
-        format: combine(timestamp(), prettyPrint()),
+        format: combine(timestamp(), prettyPrint(), formatErrorConverterInstance),
         transports: [
             new module.exports.JsonDBTransport({filename: path.join(sysLogsPath, logFile+'_exceptions'), level: 'error', label: 'exception'})
         ],
@@ -335,6 +343,7 @@ function closeSplashScreen() {
     if (splashScreen) {
         splashScreen.close()
         splashScreen = null
+        global.sharedObject.win.maximize()
         global.sharedObject.win.show()
     }
 }
@@ -367,7 +376,7 @@ function createBgWindow() {
     bgWin.on("ready-to-show", () => {
         setTimeout(function() {
             closeSplashScreen()
-            //bgWin.show()
+            bgWin.show()
         }, 12000)
     })
     
@@ -462,7 +471,7 @@ function createModal(type, text) {
         fullscreenable = true
     }
     else if (type === "fund") {
-        title = "Fund Project"
+        title = "Fund Project '" + global.activeProject.name + "'"
         parent = global.sharedObject.win
         width = Math.ceil(winBounds.width - (winBounds.width*0.35))
         height = Math.ceil(winBounds.height - (winBounds.height*0.15))
@@ -516,6 +525,8 @@ function createModal(type, text) {
 
 function createDialog(event, window, type, text, fatal = false) {
     var buttons
+    
+    console.log('dialog text: ', text)
     
     if (type === 'question')
         buttons = ['OK', 'Cancel']
@@ -710,16 +721,18 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     global.availableProjects.list.forEach(function(project, projectKey) {
                         claimed = 0
 
-                        if (project.fundsSent) {
+                        if (project.fundsSent && !project.fundsSwept) {
                             project.recvAddrs.forEach(function(address, addressKey) {
                                 if (address.claimed)
                                     claimed++
                             })
-
-                            project.claimedAddr = claimed
-                            if (project.claimedAddr == project.recvAddrs.length)
-                                project.allClaimed = true
                         }
+                        
+                        project.claimedAddr = claimed
+                        if (project.claimedAddr == project.recvAddrs.length)
+                            project.allClaimed = true
+                        else
+                            project.allClaimed = false
                     })
 
                     db.set('projects', global.availableProjects)
@@ -1712,17 +1725,19 @@ ipcMain.on('sweepFunds', (event, args) => {
         project = global.availableProjects.list[index]
         global.apiCallbackInfo.get('sweepFunds').projectNames.push(project.name)
         
-        smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: projectID, project: project}, apiCallback)
+        //smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: projectID, project: project}, apiCallback)
     })
 })
 
 // return the current status of long-running tasks
-ipcMain.on('taskStatusCheck', (event, args) => {
-    var status = global.taskStatus.get(args).status
-    var error = global.taskStatus.get(args).error
-    
-    if (global.sharedObject.win)
-        global.sharedObject.win.webContents.send('taskStatusCheckDone', {function: args, status: status, error: error})
+ipcMain.on('taskStatusCheck', (event, args) => {    
+    if (global.taskStatus.get(args)) {
+        var status = global.taskStatus.get(args).status
+        var error = global.taskStatus.get(args).error
+
+        if (global.sharedObject.win)
+            global.sharedObject.win.webContents.send('taskStatusCheckDone', {function: args, status: status, error: error})
+    }
 })
 
 // update a project edited in the modal

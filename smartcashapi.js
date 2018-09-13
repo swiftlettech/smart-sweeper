@@ -103,7 +103,7 @@ function checkBalance(projectInfo, callback) {
         if (resp && resp.body.error === undefined) {
             var balance
             
-            if (resp.body.transactions.length > 0)
+            if (resp.body.transactions && resp.body.transactions.length > 0)
                 balance = resp.body.balance
             else
                 balance = 0

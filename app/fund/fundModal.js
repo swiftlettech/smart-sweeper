@@ -31,6 +31,7 @@
             
             ctrl.showTxEntry = true;
             //ctrl.showFundForm = false;
+            ctrl.isOpen = [false, false];
             
             $document.find('#page-wrapper').css('height', function() {
                 var height = window.innerHeight - parseInt($document.find('body').css('margin-top'))*2;
@@ -117,7 +118,7 @@
             ipcRenderer.on('gotAddressInfo', (event, args) => {
                 console.log(args);
                 
-                $scope.$apply(function() {                    
+                $scope.$apply(function() {
                     ctrl.msgType = args.msgType;
                     if (ctrl.msgType === "error") {
                         ctrl.msg = args.msg;
@@ -145,7 +146,11 @@
                         
                         // check the status of each txid
                         if (activeTxs.length > 0) {
+                            ctrl.isOpen[1] = true;
                             ipcRenderer.send('checkFundingTxids', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, address: ctrl.activeProject.addressPair.publicKey, activeTxs: activeTxs});
+                        }
+                        else {
+                            ctrl.isOpen[0] = true;
                         }
                     }
                 });

@@ -6822,7 +6822,8 @@ input[type=checkbox] { position: relative; z-index: 20; }
 #paperarea .keyarea.art { display: block; height: auto; border: 0; font-family: Ubuntu, Arial; padding: 0; margin: 0; }
 #paperarea .artwallet .papersvg { width: 819px; height: 250px; border: 0; margin: 0; padding: 0; left: 0; }
 /*width: 577px; height: 310px;*/
-#paperarea .artwallet .wallet_instr { width: 137px; height: 142px; top: 37px; left: 15px; z-index: 100; margin: 0; float: none; position: absolute;}
+#paperarea .artwallet .wallet_instr { width: 137px; height: 142px; top: 37px; left: 15px; z-index: 100; margin: 0; float: none; position: absolute; }
+#paperarea .artwallet .wallet_instr span { text-decoration: underline; }
 #paperarea .artwallet .qrcode_public { top: 70px; left: 22px; z-index: 100; margin: 0; float: none; display: none; position: absolute; background-color: #FFFFFF; padding: 5px 5px 2px 5px;}
 /*top: 52px; left: 17px;*/
 #paperarea .artwallet .qrcode_private { top: 43px; left: 635px; z-index: 100; margin: 0; float: none; display: none; position: absolute; background-color: #FFFFFF; padding: 5px 5px 2px 5px; }
@@ -7984,7 +7985,7 @@ ninja.wallets.paperwallet = {
 		}
         else {		
 			// all the wallets have been generated so prompt the user to print them
-            ipcRenderer.send('showPrintDialog');
+            //ipcRenderer.send('showPrintDialog');
         }
 	},
 
@@ -8097,7 +8098,7 @@ ninja.wallets.paperwallet = {
             ninja.qrCode.showQrCode(keyValuePair, 3.75); //2.5
         }        
         
-		var walletInstructions = "wallet instructions";
+		var walletInstructions = "Download/setup a wallet from <span>smartcash.cc</span>.<br /><br />Use the private key or QR code on the right to import funds.";
 		document.getElementById("wallet_instr" + idPostFix).innerHTML = walletInstructions;
 		
 		document.getElementById("btcaddress" + idPostFix).innerHTML = bitcoinAddress;

@@ -30,24 +30,31 @@
                 //ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
                 
                 ctrl.showSpinner = new Array(ctrl.availableProjects.length);
-                for (var i=0; i<ctrl.showSpinner.length; i++) {
-                    ctrl.showSpinner[i] = false;
-                }
-            }
-            
-            // reload status spinners if a sweep is already in progress
-            if ($mainCtrl.taskStatusData) {
-                angular.forEach($mainCtrl.taskStatusData, function(checkedProject, key) {
-                    if (checkedProject)
-                        ctrl.showSpinner[parseInt(key)] = true;
+                angular.forEach(ctrl.showSpinner, function(spinner, key) {
+                    spinner = false;
                 });
             }
             
+            // reload status spinners if a sweep is already in progress
+            ctrl.taskStatusData = $mainCtrl.getTaskStatusData('sweepFunds');
+            if (ctrl.taskStatusData) {
+                
+                
+                /* for multi-sweep
+                angular.forEach(ctrl.taskStatusData, function(checkedProject, key) {
+                    if (checkedProject)
+                        ctrl.showSpinner[parseInt(key)] = true;
+                });*/
+            }
+            
             ipcRenderer.on('taskStatusCheckDone', (event, args) => {
-                console.log(args);
-                if (args.function === "sweepFunds" && (args.status == true || args.error == true)) {
-                    $interval.cancel(ctrl.taskStatusCheck);
-                }
+                ipcRenderer.removeAllListeners('taskStatusCheckDone');
+                $scope.$apply(function() {
+                    console.log(args);
+                    if (args.function === "sweepFunds" && (args.status == true || args.error == true)) {
+                        $interval.cancel(ctrl.taskStatusCheck);
+                    }
+                });
             });
             
             ipcRenderer.on('fundsSwept', (event, args) => {
@@ -58,9 +65,9 @@
                     ctrl.projectsToSweep = [];
                     
                     ctrl.disableChecks = false;
-                    for (var i=0; i<ctrl.showSpinner.length; i++) {
-                        ctrl.showSpinner[i] = false;
-                    }
+                    angular.forEach(ctrl.showSpinner, function(spinner, key) {
+                        spinner = false;
+                    });
                     $mainCtrl.setTaskStatusData(null);
                     $mainCtrl.setModalMsg(args.msgType, args.msg);
                 });
@@ -93,8 +100,29 @@
             ipcRenderer.send('editProject', {project: ctrl.activeProject});
         };
         
-        /* Return funds back to project address manually after expiration date. */
-        ctrl.sweep = function() {
+        /* Return funds back to project address manually after expiration date. (single project sweeping) */
+        ctrl.sweep = function(projectID) {            
+            var projectIDs = [];
+            projectIDs.push(projectID);
+            ctrl.projectsToSweep = [];
+            
+            var obj = {};
+            obj[projectID] = true;
+            ctrl.projectsToSweep.push(obj);
+            ctrl.showSpinner[projectID] = true;
+            
+            $mainCtrl.setTaskStatusData('sweepFunds', ctrl.projectsToSweep);
+            ipcRenderer.send('sweepFunds', {projectIDs: projectIDs});
+            
+            // status checking
+            ctrl.taskStatusCheck = $interval(function() {
+                console.log('checking task status');
+                ipcRenderer.send('taskStatusCheck', 'sweepFunds');
+            }, 5000);
+        };
+        
+        /* Return funds back to project address manually after expiration date. (multi-project sweeping) */
+        /*ctrl.sweep = function() {
             var projectIDs = [];
             
             angular.forEach(ctrl.projectsToSweep, function(checkedProject, key) {
@@ -107,7 +135,7 @@
             // disable checkboxes while sweeping
             ctrl.disableChecks = true;
             
-            $mainCtrl.setTaskStatusData(ctrl.projectsToSweep);
+            $mainCtrl.setTaskStatusData('sweepFunds', ctrl.projectsToSweep);
             ipcRenderer.send('sweepFunds', {projectIDs: projectIDs});
             
             // status checking
@@ -115,6 +143,6 @@
                 console.log('checking task status');
                 ipcRenderer.send('taskStatusCheck', 'sweepFunds');
             }, 5000);
-        };
+        };*/
     }
 })();

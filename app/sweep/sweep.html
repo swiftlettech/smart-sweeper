@@ -16,9 +16,9 @@
                         <i class="fa fa-fw fa-sort-alpha-asc" title="Sort A to Z" ng-show="$mainCtrl.nameSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('name', false)"></i>
                         <i class="fa fa-fw fa-sort-alpha-desc" title="Sort Z to A" ng-show="$mainCtrl.nameSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('name', true)"></i>
                     </td>
-                    <td class="addrAmtCol text-center"><strong>SMART per Address</strong></td>
-                    <td class="numAddrCol text-center"><strong>Total Addresses</strong></td>
-                    <td class="claimedAddrCol text-center"><strong>Claimed Addresses</strong></td>
+                    <td class="addrAmtCol text-center"><strong>SMART per Wallet</strong></td>
+                    <td class="numAddrCol text-center"><strong>Total Wallets</strong></td>
+                    <td class="claimedAddrCol text-center"><strong>Claimed Wallets</strong></td>
                     <td class="perClaimedCol text-center">
                         <strong>% Claimed</strong>
                         <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.percentClaimedSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('percentClaimed', false)"></i>
@@ -33,11 +33,14 @@
                     <td class="editCol text-center"><strong>Edit</strong></td>
                 </tr>
 
-                <tr id="project.id" ng-class="{active: $sweepCtrl.activeProjectID == project.id}" ng-model="$sweepCtrl.availableProjects" ng-repeat="project in $sweepCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
+                <tr id="{{project.id}}" class="projectRow" ng-class="{active: $sweepCtrl.activeProjectID == project.id}" ng-model="$sweepCtrl.availableProjects" ng-repeat="project in $sweepCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
                     <td colspan="9" style="padding:0;">
                         <table class="innerTable">
                             <tr>
-                                <td class="sweepCol"><input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="$sweepCtrl.disableChecks || project.fundsSwept || !project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError" ng-enabled="project.fundsSent" /></td>
+                                <td class="sweepCol"><!--<input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="$sweepCtrl.disableChecks || project.fundsSwept || !project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError" ng-enabled="project.fundsSent" />-->
+                                <i class="fa fa-fw fa-reply" title="Sweep" ng-enabled="project.fundsSent" ng-click="$sweepCtrl.sweep(project.id)"></i>
+                                </td>
+                                <!-- ng-disabled="$sweepCtrl.disableChecks || project.fundsSwept || !project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError"-->
                                 
                                 <td class="nameCol">{{project.name}} 
                                     <span ng-hide="project.sweepTxConfirmed === undefined">
@@ -73,7 +76,7 @@
                 </tr>
             </table>
         
-            <button type="button" class="btn btn-primary" ng-disabled="$sweepCtrl.projectsToSweepCount == 0 || $sweepCtrl.disableChecks || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError" ng-click="$sweepCtrl.sweep()">Sweep selected projects</button>
+            <button type="button" class="btn btn-primary" ng-disabled="$sweepCtrl.projectsToSweepCount == 0 || $sweepCtrl.disableChecks || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError" ng-click="$sweepCtrl.sweep()" ng-show="false">Sweep selected projects</button>
         </form>
     </div>
 </div>

@@ -214,7 +214,6 @@
                         method: 'GET'
                     }, function (err, resp, body) {
                         //console.log('checkBlockchain remote')
-                        //console.log(resp.body)
                         
                         if (resp && resp.body.error === undefined) {
                             var onlineBlockCount = resp.body.blocks;
@@ -237,6 +236,9 @@
                         }
                         else {
                             console.log('checkBlockchain error');
+                            console.log('err: ' + err);
+                            console.log('resp.body: ' + resp.body);
+                            
                             remote.getGlobal('sharedObject').blockExplorerError = true;
                             apiCallback({type: 'error', msg: resp.body}, 'checkBlockchain');
                         }

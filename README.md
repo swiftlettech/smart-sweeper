@@ -76,7 +76,7 @@ Your SmartCash wallet must be started with the following arguments:
 -rpcpassword=rpcpassword
 ```
 
-If it isn't running, SmartSweeper will start it for you with the above arguments. You can also [edit your wallet's smartcash.conf file](https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file). Please don't do this with your wallet running.
+If it isn't running, SmartSweeper will start it for you with the above arguments. You can also [edit your node client's smartcash.conf file](https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file). Please don't do this with your client running.
 
 ```
 txindex=1 (if SmartCash Node Client is < v1.2.3)
