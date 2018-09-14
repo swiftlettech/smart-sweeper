@@ -30,6 +30,7 @@ Requirements
 * [Node.js](http://nodejs.org) - 8.9.0+
 * [npm](http://npmjs.com) - 5.6.0+
 * [SmartCash Node Client](https://smartcash.cc/wallets/) for Windows - 1.2.3+ (excluding 1.2.4) ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
+* [yarn](https://yarnpkg.com) for building the installer
 
 Run node -v and npm -v from a command prompt to make sure they're in your PATH. Open your SmartCash desktop wallet application to make sure it is up to date before launching SmartSweeper.
 
@@ -45,6 +46,13 @@ To run
 ---------------
 ``` bash
 npm start
+```
+
+
+To build the installer
+---------------
+``` bash
+yarn dist
 ```
 
 
@@ -116,6 +124,7 @@ Software | License
 [clipboard.js](https://clipboardjs.com) | MIT
 [devtron](https://github.com/electron/devtron) | MIT
 [electron](https://github.com/electron/electron) | MIT
+[electron-builder](https://github.com/electron-userland/electron-builder) | MIT
 [electron-debug](https://github.com/sindresorhus/electron-debug) | MIT
 [electron-is-dev](https://github.com/sindresorhus/electron-is-dev) | MIT
 [electron-store](https://github.com/sindresorhus/electron-store) | MIT
