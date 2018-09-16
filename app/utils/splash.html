@@ -6,24 +6,49 @@
             body {
                 background-image: url('../../images/SmartSweeper-logo.png');
                 background-repeat: no-repeat;
-                background-position: 50% 25px;
+                background-position: 50% 50%;
                 margin: 0;
             }
             
             body div {
-                padding-top: 5px;
                 text-align: center;
                 font-size: 1.1em;
                 font-family: sans-serif;
+            }
+            
+            #textArea {
+                padding: 5px 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
             }
         </style>
     </head>
     
     <body>
-        <script>
-            document.body.style.height = window.innerHeight + 'px';
-        </script>
+        <div id="textArea">
+            <div id="loadingMsg">Loading...</div>
+            <div id="versionNum">v0.9.0</div>
+        </div>
         
-        <div>Loading...</div>
+        <script>
+            (function() {
+                'use strict';
+                
+                // get version number from package.json
+                const fs = window.nodeRequire('fs');
+                var appVersion;
+                try {
+                    var fileContents = fs.readFileSync('package.json')
+                    var jsonFileContents = JSON.parse(fileContents)
+                    appVersion = jsonFileContents.version
+                    document.getElementById('versionNum').innerHTML = "v"+appVersion;
+                }
+                catch(err) {}
+                
+                document.body.style.height = window.innerHeight + 'px';
+                document.getElementById('textArea').style.height = (window.innerHeight-10) + 'px';
+            })();
+        </script>
     </body>
 </html>

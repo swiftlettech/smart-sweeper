@@ -49,7 +49,7 @@
 	GitHub Repository: https://github.com/SmartCash/PaperWalletGenerator
 	-->
 
-	<title>Paper Wallets</title>
+	<title></title>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<script type="text/javascript">
@@ -6868,6 +6868,7 @@ input[type=checkbox] { position: relative; z-index: 20; }
 	position: absolute; top: 110px; left: 470px; z-index: 100; background-color: #FFF;
 	font-size: 14px; color: #000000; margin: 0;  padding: 5px;
 }
+#paperarea .artwallet .wallet_meta #exp_date {display: none;}
 /*top: 230px; left: 250px;*/
 #bulkarea .body { padding: 5px 0 0 0; }
 #bulkarea .format { font-style: italic; font-size: 90%; }
@@ -7924,6 +7925,7 @@ ninja.wallets.paperwallet = {
     project: {},
     showQRCode: true,
     showInstructions: false,
+	showExpDate: false,
 
 	build: function (numWallets, pageBreakAt, useArtisticWallet, passphrase) {        
 		if (numWallets < 1) numWallets = 1;
@@ -8104,8 +8106,11 @@ ninja.wallets.paperwallet = {
 		document.getElementById("btcaddress" + idPostFix).innerHTML = bitcoinAddress;
         document.getElementById("wallet_amt" + idPostFix).innerHTML = "<strong>Amount:</strong> " + ninja.wallets.paperwallet.project.addrAmt;
 		
-		var convertedDate = moment(ninja.wallets.paperwallet.project.expDate).format("MMM DD, YYYY");
-		document.getElementById("exp_date" + idPostFix).innerHTML = "<strong>Use By:</strong> " + convertedDate;
+		if (ninja.wallets.paperwallet.showExpDate) {
+			var convertedDate = moment(ninja.wallets.paperwallet.project.expDate).format("MMM DD, YYYY");
+			document.getElementById("exp_date" + idPostFix).innerHTML = "<strong>Use By:</strong> " + convertedDate;
+			document.getElementById("exp_date" + idPostFix).style.display = "block";
+		}
 
 		if (ninja.wallets.paperwallet.encrypt) {
 			var half = privateKey.length / 2;
@@ -8228,6 +8233,12 @@ if (ninja.getQueryString()["showseedpool"] == "true" || ninja.getQueryString()["
             ninja.wallets.paperwallet.project = project;
             ninja.wallets.paperwallet.showQRCode = project.qrCode;
             ninja.wallets.paperwallet.showInstructions = project.walletIns;
+			
+			if (project.expDate === "")
+				ninja.wallets.paperwallet.showExpDate = false;
+			else
+				ninja.wallets.paperwallet.showExpDate = true;
+				
             ninja.seeder.seedingOver();
             
             ninja.tab.select(document.getElementById('paperwallet'));

@@ -93,6 +93,8 @@ function appInit() {
     
     // global object to be shared amongst renderer processes
     global.sharedObject = {
+        config: null,
+        version: null,
         txFee: 0.002, // minimum transaction fee
         explorerCheckInterval: 1.2, // minimum time between block explorer requests
         win: null,
@@ -264,7 +266,6 @@ function appInit() {
         },
         showDialog: true
     })
-    smartcashapi.init()
     
     //if (isDev)
         //global.sharedObject.logger.add(new transports.Console({format: format.simple()}))
@@ -316,14 +317,14 @@ function createSplashScreen() {
     // set up splash screen
     const splashScreenConfig = {
         backgroundColor: '#FFF',
-        width: 330,
-        height: 330,
+        width: 365,
+        height: 365,
         frame: false,
         center: true,
         webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
             devTools: false,
-            nodeIntegration: false,
-            sandbox: true
+            nodeIntegration: true,
         },
         show: false
     }
@@ -335,6 +336,7 @@ function createSplashScreen() {
         slashes: true
     }))
     splashScreen.on("ready-to-show", () => {
+        //splashScreen.maximize()
         splashScreen.show()
     })
 }
@@ -376,7 +378,7 @@ function createBgWindow() {
     bgWin.on("ready-to-show", () => {
         setTimeout(function() {
             closeSplashScreen()
-            bgWin.show()
+            //bgWin.show()
         }, 12000)
     })
     
@@ -446,7 +448,7 @@ function createModal(type, text) {
     winBounds = global.sharedObject.win.getBounds()
     
     if (type === "edit") {
-        title = "Edit Project"
+        title = "Edit Project '" + global.activeProject.name + "'"
         parent = global.sharedObject.win
         width = Math.ceil(winBounds.width - (winBounds.width*0.6))
         height = Math.ceil(winBounds.height - (winBounds.height*0.15))
@@ -458,7 +460,7 @@ function createModal(type, text) {
         fullscreenable = true
     }
     else if (type === "paperWallets") {
-        title = "Paper Wallet Generator"
+        title = "Paper Wallets for Project '" + global.activeProject.name + "'"
         parent = global.sharedObject.win
         width = 1000
         //width = Math.ceil(winBounds.width - (winBounds.width*0.52))
@@ -555,9 +557,10 @@ function createDialog(event, window, type, text, fatal = false) {
             }
         }
         
-        if (fatal) {
-            app.exit()
-        }
+        console.log('fatal: ', fatal)
+        
+        if (fatal)
+            app.quit()
     })
 }
 
@@ -1107,6 +1110,9 @@ function newProject(event, project) {
     newProject.addressPair.publicKey = addressPair.publicKey
     newProject.addressPair.privateKey = addressPair.privateKey
     
+    if (newProject.expDate == null) newProject.expDate = ""
+    if (newProject.sweepDate == null) newProject.sweepDate = ""
+    
     loadProjects()
     global.availableProjects.index = global.availableProjects.index + 1
     global.availableProjects.list.push(newProject)
@@ -1153,7 +1159,7 @@ app.on('will-finish-launching', () => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
     createSplashScreen()
-    appInit()
+    appInit()    
     createBgWindow()
     createWindow()
     
@@ -1661,9 +1667,9 @@ ipcMain.on('showErrorDialog', (event, content) => {
     }
     
     if (modal === undefined || modal == null)
-        createDialog(event, global.sharedObject.win, 'error', content.text)
+        createDialog(event, global.sharedObject.win, 'error', content.text, fatal)
     else
-        createDialog(event, modal, 'error', content.text)
+        createDialog(event, modal, 'error', content.text, fatal)
 })
 
 // open a modal for the user to enter the information necessary to fund a project
@@ -1720,12 +1726,12 @@ ipcMain.on('sweepFunds', (event, args) => {
     var unclaimedWallets
     
     loadProjects()
-    args.projectIDs.forEach(function(projectID, projectKey) {
+    args.projectIDs.forEach(function(projectID, key) {
         index = getDbIndex(projectID)
         project = global.availableProjects.list[index]
         global.apiCallbackInfo.get('sweepFunds').projectNames.push(project.name)
         
-        //smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: projectID, project: project}, apiCallback)
+        smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: projectID, project: project}, apiCallback)
     })
 })
 

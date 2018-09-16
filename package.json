@@ -1,11 +1,11 @@
 {
     "name": "smart-sweeper",
     "productName": "SmartSweeper",
-    "version": "0.1.1",
+    "version": "0.9.0",
     "description": "Sweeper application for SmartCash cryptocurrency to allow easy retrieval of gift funds.",
-    "homepage": "https://swiftlettech.github.io/smart-sweeper-website/",
+    "homepage": "http://smartsweeper.cc",
     "author": "Swiftlet Technology, LLC",
-    "keywords": [],
+    "keywords": ["smartcash"],
     "license": "GPL-3.0",
     "repository": {
         "type": "git",
@@ -16,29 +16,28 @@
         "start": "electron .",
         "build": "node packager.js",
         "pack": "electron-builder --dir",
-        "dist": "electron-builder build -w"
+        "dist": "electron-builder build --x64 --ia32"
     },
     "build": {
-		"files": [
-			"**/*",
-			"config/*"
-		],
+        "files": [
+            "**/*"
+        ],
         "appId": "smart-sweeper.app",
         "nsis": {
             "oneClick": false,
             "allowToChangeInstallationDirectory": true
         },
         "win": {
-            "target": "NSIS"
+            "target": "nsis"
         }
     },
     "dependencies": {
         "bitcoin": "^3.0.1",
-        "conf": "1.1.2",
         "devtron": "^1.4.0",
         "electron-debug": "^1.5.0",
         "electron-is-dev": "^0.3.0",
-        "electron-store": "1.2.0",
+        "electron-store": "^1.3.0",
+        "electron-unhandled": "^1.1.0",
         "electron-util": "^0.6.0",
         "elemon": "^5.0.3",
         "exp-config": "^2.0.1",
@@ -52,7 +51,7 @@
     },
     "devDependencies": {
         "electron": "^1.8.7",
-        "electron-builder": "^20.11.1",
+        "electron-builder": "^20.22.1",
         "electron-packager": "^12.1.0"
     }
 }

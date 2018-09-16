@@ -29,7 +29,7 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
     
     if (resp.type === "data") {
         if (functionName === "sweepFunds") {
-            if (referrer === "getaddressbalance") {
+            if (referrer === "getAddressBalance") {
                 global.sharedObject.blockExplorerError = false
                 
                 if (resp.msg.body.balance == 0) {
@@ -46,7 +46,7 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
         var apiCallbackCounter = apiCallbackInfo.apiCallbackCounter
         
         if (functionName === "sweepFunds") {
-            if ((referrer === "getaddressbalance") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
+            if ((referrer === "getAddressBalance") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                 global.availableProjects.list[projectInfo.projectIndex] = apiCallbackInfo.project // update project info
                 db.set('projects', global.availableProjects)
                 doSweep(projectInfo, callback)
@@ -56,7 +56,7 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
     else if (resp.type === "error") {
         console.log('error msg: ', resp.msg)
         
-        if (referrer === "getaddressbalance") {
+        if (referrer === "getAddressBalance") {
             global.sharedObject.blockExplorerError = true
         }
         
@@ -211,7 +211,7 @@ function checkTransaction(projectInfo, callback) {
 
 /* Actually sweep the funds. */
 function doSweep(projectInfo, callback) {
-    var referrer = "getaddressbalance"
+    var referrer = "getAddressBalance"
     var project = projectInfo.project
     projectInfo.referrer = "sweepFunds"
     
@@ -460,8 +460,8 @@ function sweepFunds(projectInfo, callback) {
     projectInfo.projectName = project.name
     var receiver = project.sweepAddr
     
-    if (global.smartcashCallbackInfo.get('getaddressbalance'+project.id) === undefined) {
-        global.smartcashCallbackInfo.set('getaddressbalance'+project.id, {
+    if (global.smartcashCallbackInfo.get('getAddressBalance'+project.id) === undefined) {
+        global.smartcashCallbackInfo.set('getAddressBalance'+project.id, {
             apiCallbackCounter: 0,
             totalAddrs: project.recvAddrs.length,
             project: project
@@ -470,8 +470,8 @@ function sweepFunds(projectInfo, callback) {
     
     //console.log(global.smartcashCallbackInfo)
     
-    // check the balance of each "unclaimed" promotional wallet to make sure they're really unclaimed
-    projectInfo.referrer = "getaddressbalance"
+    // check the balance of each "unclaimed" promotional wallet to make sure they're still unclaimed
+    projectInfo.referrer = "getAddressBalance"
     project.recvAddrs.forEach(function(address, key) {
         request({
             url: smartcashExplorer + '/addr/' + address.publicKey,

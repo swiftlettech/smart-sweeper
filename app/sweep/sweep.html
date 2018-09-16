@@ -37,10 +37,10 @@
                     <td colspan="9" style="padding:0;">
                         <table class="innerTable">
                             <tr>
-                                <td class="sweepCol"><!--<input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="$sweepCtrl.disableChecks || project.fundsSwept || !project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError" ng-enabled="project.fundsSent" />-->
-                                <i class="fa fa-fw fa-reply" title="Sweep" ng-enabled="project.fundsSent" ng-click="$sweepCtrl.sweep(project.id)"></i>
+                                <td class="sweepCol">
+                                    <!--<input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="$sweepCtrl.disableChecks || project.fundsSwept || !project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError" />-->
+                                    <button class="btn btn-link" title="Sweep project" ng-click="$sweepCtrl.sweep(project.id)" ng-disabled="!project.fundsSent || project.fundsSwept || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError"><i class="fa fa-fw fa-reply"></i></button>
                                 </td>
-                                <!-- ng-disabled="$sweepCtrl.disableChecks || project.fundsSwept || !project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError"-->
                                 
                                 <td class="nameCol">{{project.name}} 
                                     <span ng-hide="project.sweepTxConfirmed === undefined">

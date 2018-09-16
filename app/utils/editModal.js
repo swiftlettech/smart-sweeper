@@ -17,13 +17,14 @@
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
             
             ctrl.activeProject = electron.remote.getGlobal('activeProject');
-            ctrl.expDate = new Date(ctrl.activeProject.expDate);
+            ctrl.activeProject.expDate !== "" ? ctrl.expDate = ctrl.activeProject.expDate : ctrl.expDate = ""; // expDate is optional
             //ctrl.sweepDate = new Date(ctrl.activeProject.sweepDate);
             ctrl.sweepDate = ""; // auto-sweep hasn't been implemented, use an empty string to prevent a form validation error
             
             ctrl.updateAddrAmt();
             console.log("activeProject");
             console.log(ctrl.activeProject);
+            console.log(ctrl.expDate);
             
             ctrl.expCalendar = {
                 opened: false
@@ -57,7 +58,7 @@
                 value = ctrl.sweepDate;
             }
             
-            if (value > today)
+            if (value == null || value === "" || value > today)
                 input.$setValidity('invalidDate', true);
             else
                 input.$setValidity('invalidDate', false);
@@ -109,10 +110,10 @@
         };
         
         /* Update the project. */
-        ctrl.update = function(form) {
+        ctrl.update = function(form) {            
             ctrl.activeProject.numAddr = parseInt(ctrl.activeProject.numAddr);
-            ctrl.activeProject.expDate = ctrl.expDate;
-            ctrl.activeProject.sweepDate = ctrl.sweepDate;
+            ctrl.expDate == null ? ctrl.activeProject.expDate = "" : ctrl.activeProject.expDate = ctrl.expDate;
+            ctrl.sweepDate == null ? ctrl.activeProject.sweepDate = "" : ctrl.activeProject.sweepDate = ctrl.sweepDate;
             
             ipcRenderer.send('updateProject', {activeProject: ctrl.activeProject});
             ipcRenderer.on('projectUpdated', (event, arg) => {
@@ -127,6 +128,19 @@
         
         /* Calculate the amount of SMART to send to each receiving address. */
         ctrl.updateAddrAmt = function() {
+            var input;
+            var value;
+            
+            if ($scope.editProjectForm) {
+                input = $scope.editProjectForm.numAddr;
+                value = ctrl.activeProject.numAddr;
+                
+                if (value > 0 && value <= 500)
+                    input.$setValidity('invalidNumAddresses', true);
+                else
+                    input.$setValidity('invalidNumAddresses', false);
+            }
+            
             if (ctrl.activeProject.originalFunds > 0)
                 ctrl.activeProject.addrAmt = (ctrl.activeProject.originalFunds - electron.remote.getGlobal('sharedObject').txFee) / ctrl.activeProject.numAddr;
             else

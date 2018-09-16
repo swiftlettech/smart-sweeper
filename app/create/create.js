@@ -78,10 +78,21 @@
                 value = ctrl.newProject.sweepDate;
             }
             
-            if (value > ctrl.today)
+            if (value == null || value > ctrl.today)
                 input.$setValidity('invalidDate', true);
             else
                 input.$setValidity('invalidDate', false);
+        };
+        
+        /* Is the number of promo wallet addresses between 1 and 500? */
+        ctrl.checkNumAddresses = function() {
+            var input = $scope.addNewProjectForm.numAddr;
+            var value = ctrl.newProject.numAddr;
+            
+            if (value > 0 && value <= 500)
+                input.$setValidity('invalidNumAddresses', true);
+            else
+                input.$setValidity('invalidNumAddresses', false);
         };
         
         /* Create sender addresses for a project. */

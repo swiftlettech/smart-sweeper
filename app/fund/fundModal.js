@@ -12,6 +12,8 @@
         const {ipcRenderer} = electron;
         
         var ctrl = this;
+        ctrl.activeProject = electron.remote.getGlobal('activeProject');
+        ctrl.modalTitle = "Fund Project '" + ctrl.activeProject.name + "'";
 
         $scope.init = function() {
             var clipboardjs = new ClipboardJS('.copy-btn');
@@ -24,7 +26,6 @@
             ctrl.originalFunds = 0;
             ctrl.txFee = electron.remote.getGlobal('sharedObject').txFee;
             ctrl.walletAmt = 1;
-            ctrl.activeProject = electron.remote.getGlobal('activeProject');
             
             ctrl.calcCollapsed = true;
             ctrl.projectTxCollapsed = true;

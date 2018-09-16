@@ -7,9 +7,9 @@ const smartcash = require('node-smartcash')
 
 let config, client
 
-init();
+init()
 
-function init() {
+function init() {    
     // check for default config file, create an empty one if it doesn't exist
     if (!fs.existsSync('config'))
         fs.mkdirSync('config')

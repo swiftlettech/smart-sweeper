@@ -51,7 +51,7 @@ a.disabled {
     border-bottom: 1px solid #333;
 }
 
-.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-eye, .fa-eye-slash, .fa-reply {
+.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-eye, .fa-eye-slash {
     cursor: pointer;
 }
 
@@ -61,10 +61,6 @@ a.disabled {
 
 .success .fa-check {
     color: #00FF00;
-}
-
-#statusMsgs {
-    margin-bottom: 15px;
 }
 
 #statusMsgs div {

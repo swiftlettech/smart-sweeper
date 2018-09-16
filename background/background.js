@@ -15,8 +15,8 @@
     const Store = window.nodeRequire('electron-store');
     const ps = window.nodeRequire('ps-node');
     const smartcashapi = window.nodeRequire('./smartcashapi');
-    const smartcashExplorer = "https://insight.smartcash.cc/api/";
     const rpc = window.nodeRequire('./rpc-client');
+    const smartcashExplorer = "https://insight.smartcash.cc/api/";
     
     // get the parent dir
     var basepath = __dirname.split(path.sep);
@@ -35,6 +35,8 @@
         unhandled({
             logger: function(err) {
                 electron.remote.getGlobal('sharedObject').exceptionLogger.error(err.stack);
+                
+                console.log(err.message);
                 
                 // the "EPERM operation not permitted error" is fatal (https://github.com/sindresorhus/electron-store/issues/31)
                 if (err.message.indexOf('EPERM') != -1) {

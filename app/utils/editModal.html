@@ -4,7 +4,7 @@
         <meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Edit Project</title>
+        <title></title>
         
         <link type="text/css" rel="stylesheet" href="../../css/bootstrap-3.3.7.min.css" />
         <link type="text/css" rel="stylesheet" href="../../css/sb-admin.css">
@@ -12,7 +12,7 @@
 		<link type="text/css" rel="stylesheet" href="../../css/styles.css" />
     </head>
     
-    <body class="modalBody" ng-controller="EditController as $editCtrl" style="margin:20px 0;" ng-init="init()">
+    <body class="modalBody" ng-controller="EditController as $editCtrl" ng-init="init()">
         <div id="page-wrapper" style="padding:15px;">
             <form id="editProjectForm" name="editProjectForm" ng-submit="$editCtrl.update(editProjectForm)">
                 <div class="form-group">
@@ -22,10 +22,10 @@
 
                 <div class="form-group">
                     <label for="numAddr" class="control-label">Number of addresses to create<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
-                    <input name="numAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.numAddr" ng-pattern="$editCtrl.greaterThanZeroIntPattern" ng-change="$editCtrl.updateAddrAmt()" ng-disabled="$editCtrl.addressesCreated || $editCtrl.activeProject.recvAddrs.length > 0" required />
+                    <input name="numAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.numAddr" ng-change="$editCtrl.updateAddrAmt()" ng-disabled="$editCtrl.addressesCreated || $editCtrl.activeProject.recvAddrs.length > 0" required />
 
-                    <div ng-show="editProjectForm.numAddr.$error.pattern" role="alert">
-                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Cannot be zero.</span>
+                    <div ng-show="editProjectForm.numAddr.$error.invalidNumAddresses" role="alert">
+                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Must be between 1 and 500.</span>
                     </div>
                 </div>
 
@@ -58,9 +58,9 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="expDate" class="control-label">"Use by" date<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <label for="expDate" class="control-label">"Use by" date</label>
                     <div id="expDateGroup" class="input-group">
-                        <input type="text" name="expDate" class="form-control" ng-model="$editCtrl.expDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$editCtrl.datepickerFormat}}" is-open="$editCtrl.expCalendar.opened" datepicker-options="$editCtrl.datepickerOptions" close-text="Close" ng-change="$editCtrl.checkCalendarDate('expCalendar')" ng-required="true" />
+                        <input type="text" name="expDate" class="form-control" ng-model="$editCtrl.expDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$editCtrl.datepickerFormat}}" is-open="$editCtrl.expCalendar.opened" datepicker-options="$editCtrl.datepickerOptions" close-text="Close" ng-change="$editCtrl.checkCalendarDate('expCalendar')" ng-required="false" />
 
                         <span class="input-group-btn">
                             <button id="expCalendarBtn" type="button" class="btn btn-default" ng-click="$editCtrl.openCalendar('expCalendar')"><i class="fa fa-fw fa-calendar" title="Calendar"></i></button>
@@ -73,7 +73,7 @@
                         <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Required.</span>
                     </div>
 
-                    <div ng-show="editProjectForm.expDate.$error.invalidDate" role="alert">
+                    <div ng-show="$editCtrl.expDate && editProjectForm.expDate.$error.invalidDate" role="alert">
                         <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> "Use by" date must be in the future.</span>
                     </div>
                 </div>
@@ -82,11 +82,11 @@
                     <label for="options" class="control-label">Options</label>
 
                     <div class="checkbox">
-                        <label><input type="checkbox" ng-model="$editCtrl.activeProject.qrCode">Add QR code to wallet</label>
+                        <label><input type="checkbox" ng-model="$editCtrl.activeProject.qrCode">Add QR code to paper wallet</label>
                     </div>
 
                     <div class="checkbox">
-                        <label><input type="checkbox" ng-model="$editCtrl.activeProject.walletIns">Add URL to instructions</label>
+                        <label><input type="checkbox" ng-model="$editCtrl.activeProject.walletIns">Add instructions to paper wallet</label>
                     </div>
 
                     <div class="form-group hide">
