@@ -24,7 +24,7 @@
             
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
             ctrl.originalFunds = 0;
-            ctrl.txFee = electron.remote.getGlobal('sharedObject').txFee;
+            ctrl.txFee = electron.remote.getGlobal('sharedObject').txBaseFee;
             ctrl.walletAmt = 1;
             
             ctrl.calcCollapsed = true;
@@ -34,19 +34,24 @@
             //ctrl.showFundForm = false;
             ctrl.isOpen = [false, false];
             
-            $document.find('#page-wrapper').css('height', function() {
+            /*$document.find('#page-wrapper').css('height', function() {
                 var height = window.innerHeight - parseInt($document.find('body').css('margin-top'))*2;
                 return height + 'px';
-            });
+            });*/
             
             if (!ctrl.activeProject.projectFunded) {
                 ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
                 
                 // check every 30 for the status of the funding transactions
-                $interval(function() {
+                $scope.projectTxStatusInterval = $interval(function() {
                     ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
                 }, 30000, false);
             }
+            
+            $document.on('onbeforeunload', function() {
+                if ($scope.projectTxStatusInterval)
+                    $interval.cancel($scope.projectTxStatusInterval);
+            });
             
             // reload projects when there have been changes
             ipcRenderer.on('projectsReady', (event, args) => {            

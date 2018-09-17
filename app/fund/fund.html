@@ -1,14 +1,14 @@
 <div id="fund" ng-init="init()">
     <div class="infoBlock">
-        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Fund is disabled if the project has already been funded.</p>
-        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Send is disabled if promo wallet addresses haven't been created yet, if funds have already been sent, if the project hasn't been funded, and if the project hasn't been marked as completely funded.</p>
-        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Print is disabled if funds haven't been sent to the promo wallets and if the funds have been swept.</p>
-        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> SMART per wallet is 0 if funds haven't been sent.</p>
-        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i><i class="fa fa-fw fa-question" title="Pending"></i> = pending funding transaction(s), <i class="fa fa-fw fa-check" title="Confirmed"></i> = all funding transaction(s) are confirmed</p>
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i> Fund is disabled if the project has already been funded.</p>
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i> Send is disabled if promo wallet addresses haven't been created yet, if funds have already been sent, if the project hasn't been funded, and if the project hasn't been marked as completely funded.</p>
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i> Print is disabled if funds haven't been sent to the promo wallets and if the funds have been swept.</p>
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i> SMART per wallet is 0 if funds haven't been sent.</p>
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i><i class="fa fa-fw fa-question" title="Pending"></i> = pending funding transaction(s), <i class="fa fa-fw fa-check" title="Confirmed"></i> = all funding transaction(s) are confirmed</p>
     </div>
     
     <div class="importantInfoBlock">
-        <p><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> SmartSweeper is configured to include a Σ{{$fundCtrl.txFee}} transaction fee when funding the promotional wallets. The SMART per wallet listed is minus the fee.</p>
+        <p><i class="fa fa-fw fa-exclamation-circle bullet" aria-hidden="true"></i> SmartSweeper is configured to include a transaction fee between Σ0.001 and Σ0.06 when funding the promotional wallets, which depends on the total. The SMART per wallet listed is minus the fee.</p>
     </div>
     
     <div id="projectList">

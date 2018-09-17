@@ -14,7 +14,7 @@ let reqPerMin
 global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per function call
 
 function init() {
-    reqPerMin = parseInt(60 / global.sharedObject.explorerCheckInterval)
+    //reqPerMin = parseInt(60 / global.sharedObject.explorerCheckInterval)
 }
 
 /* Generic API callback function. */

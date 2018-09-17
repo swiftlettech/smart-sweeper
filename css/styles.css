@@ -33,7 +33,7 @@ a:focus {
 .panel-heading a,
 .panel-heading a:hover,
 .panel-heading a:focus {
-  color: #000;
+  color: #000!important;
 }
 
 a.disabled {
@@ -75,6 +75,15 @@ a.disabled {
 
 .infoBlock {
     margin-bottom: 20px;
+}
+
+.infoBlock p, .importantInfoBlock p {
+    display: flex;
+    align-items: baseline;
+}
+
+.infoBlock .bullet, .importantInfoBlock .bullet {
+    margin: 0 3px 0 0;
 }
 
 .importantInfoBlock {

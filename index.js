@@ -91,11 +91,23 @@ function appInit() {
     // global task status object to be used in the renderer
     global.taskStatus = new Map();
     
+    // fee tiers for SmartCash transactions, based on number of promo wallets
+    var txFeeTiers = {
+        "1-10": 0.001,
+        "11-50": 0.01,
+        "51-100": 0.02,
+        "101-200": 0.03,
+        "201-300": 0.04,
+        "301-400": 0.05,
+        "401-500": 0.06
+    }
+    
     // global object to be shared amongst renderer processes
     global.sharedObject = {
         config: null,
         version: null,
-        txFee: 0.002, // minimum transaction fee
+        txBaseFee: 0.001, // minimum transaction fee
+        txFeeTiers: txFeeTiers,
         explorerCheckInterval: 1.2, // minimum time between block explorer requests
         win: null,
         logger: null,
@@ -592,12 +604,12 @@ let apiCallback = function(resp, functionName, projectInfo) {
             else
                 global.sharedObject.sysLogger.info(referrer + ' - ' + functionName)
             
-            /*if (referrer === "checkFundingTxids") {
+            if (referrer === "getProjectAddressInfo") {
                 console.log('projectInfo: ', projectInfo)
                 //console.log('from ' + functionName)
                 console.log(resp.msg)
                 console.log()
-            }*/
+            }
 
             if (functionName === "checkBalance") {
                 global.sharedObject.blockExplorerError = false
@@ -630,8 +642,8 @@ let apiCallback = function(resp, functionName, projectInfo) {
             else if (functionName === "checkTransaction") {
                 if (referrer === "checkFundingTxids") {
                     var obj = {}
-
-                    resp.msg.vout.forEach(function(tx, key) {
+                    
+                    resp.msg.vout.forEach(function(tx, key) {                        
                         if (tx.scriptPubKey.addresses.includes(projectInfo.address)) {
                             if (resp.msg.confirmations >= 6) {
                                 obj[projectInfo.txid] = {confirmed: true, confirmations: resp.msg.confirmations}
@@ -763,7 +775,8 @@ let apiCallback = function(resp, functionName, projectInfo) {
                                 }
                             })
                             
-                            totalSweptFunds = totalSweptFunds + (projectSweptFunds - global.sharedObject.txFee)
+                            var txFee = getTxFee(sweptWalletsCount)
+                            totalSweptFunds = totalSweptFunds + (projectSweptFunds - txFee)
                         }
                     });
 
@@ -998,7 +1011,7 @@ function autoSweepFunds() {
 // create the receiver addresses for a project
 function createRecvAddresses(project) {
     project.recvAddrs = []
-    let addressPair
+    var addressPair
     
     for (var i=0; i<project.numAddr; i++) {
         addressPair = smartcashapi.generateAddress()
@@ -1007,8 +1020,9 @@ function createRecvAddresses(project) {
     }
     project.claimedAddr = 0
     
+    var txFee = getTxFee(project.recvAddrs.length)    
     if (project.projectFunded)
-        project.addrAmt = (project.originalFunds - global.sharedObject.txFee) / project.numAddr
+        project.addrAmt = (project.originalFunds - txFee) / project.numAddr
     
     var index = getDbIndex(project.id)
     global.availableProjects.list[index] = project
@@ -1087,6 +1101,23 @@ function getNewestLogFile(type, subtype = "") {
     })
     
     return mostRecent
+}
+
+/* Given a certain number of wallets, get the SmartCash transaction fee. */
+function getTxFee(numWallets) {
+    // get the appropriate tx fee based on the total number of wallets
+    var txTiers = Object.keys(global.sharedObject.txFeeTiers)
+    var tierKey
+    var numAddr
+    
+    txTiers.forEach(function(tier, key) {
+        numAddr = tier.split('-')
+        
+        if ((numWallets >= parseInt(numAddr[0])) && (numWallets <= parseInt(numAddr[1])))
+            tierKey = tier
+    })
+    
+    return global.sharedObject.txFeeTiers[tierKey]
 }
 
 // load the most recent log file
@@ -1274,7 +1305,7 @@ ipcMain.on('checkFundingTxids', (event, args) => {
     loadProjects()
     var index = getDbIndex(args.projectID)
     args.activeTxs.forEach(function(tx, key) {
-        smartcashapi.checkTransaction({referrer: "checkFundingTxids", projectID: args.projectID, projectName: args.projectName, projectIndex: index, balance: args.balance, address: args.address, txid: tx}, apiCallback)
+        smartcashapi.checkTransaction({referrer: "checkFundingTxids", projectID: args.projectID, projectName: args.projectName, projectIndex: index, address: args.address, txid: tx}, apiCallback)
     })
 })
 
@@ -1617,14 +1648,17 @@ ipcMain.on('refreshLog', (event, args) => {
 
 // send funds to receiver addresses
 ipcMain.on('sendPromotionalFunds', (event, args) => {
+    var numWallets = args.wallets.length
+    var txFee = getTxFee(numWallets)
+    
     // calculate and save the amount per address
-    var totalAmtToSend = args.originalFunds-global.sharedObject.txFee
-    var amtPerWallet = totalAmtToSend / args.wallets.length
-    console.log('amtPerWallet: ', amtPerWallet)
+    var totalAmtToSend = args.originalFunds - txFee
+    var amtPerWallet = totalAmtToSend / numWallets
     
     console.log('args.originalFunds: ', args.originalFunds)
-    console.log('global.sharedObject.txFee: ', global.sharedObject.txFee)
+    console.log('txFee: ', txFee)
     console.log('args.wallets.length: ', args.wallets.length)
+    console.log('amtPerWallet: ', amtPerWallet)
     
     loadProjects()
     var index = getDbIndex(args.projectID)
@@ -1641,7 +1675,7 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
         apiCallbackCounter: 0
     })
     
-    smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectName: global.availableProjects.list[index].name, total: totalAmtToSend, amount: amtPerWallet, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
+    //smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectName: global.availableProjects.list[index].name, total: totalAmtToSend, amount: amtPerWallet, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback);
 })
 
 // set which function opened a modal/dialog

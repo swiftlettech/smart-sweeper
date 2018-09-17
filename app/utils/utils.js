@@ -64,8 +64,6 @@
         return {
             link: function(scope, element, attrs) {
                 var project = JSON.parse(attrs.enableDeleteBtn);
-                //console.log(project.name)
-                //console.log(project)
                 
                 /*
                     conditions (one is true):
