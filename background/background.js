@@ -16,7 +16,7 @@
     const ps = window.nodeRequire('ps-node');
     const smartcashapi = window.nodeRequire('./smartcashapi');
     const rpc = window.nodeRequire('./rpc-client');
-    const smartcashExplorer = "https://insight.smartcash.cc/api/";
+    const smartcashExplorer = "https://insight.smartcash.cc/api";
     
     // get the parent dir
     var basepath = __dirname.split(path.sep);
@@ -31,6 +31,21 @@
     init();
     
     function init() {
+        /*request({
+            url: smartcashExplorer + '/addr',
+            method: 'GET'
+        }, function (err, resp, body) {
+            console.log('err: ', err)
+            console.log('resp: ', resp)
+            console.log('body: ', body)
+            
+            console.log(resp.headers['content-type'])
+            console.log("typeof resp.body: ", typeof body)
+            body = JSON.parse(body)
+            console.log('body: ', body)
+            console.log('body.error: ', body.error)
+        })*/
+        
         // catch unhandled exceptions
         unhandled({
             logger: function(err) {
@@ -156,6 +171,9 @@
             }
         }
         else if (resp.type === "error") {
+            /*console.log('background.js error')
+            console.log('functionName: ', functionName)
+            console.log('resp.msg: ', resp.msg)*/
             remote.getGlobal('sharedObject').sysLogger.error(functionName + ': ' + resp.msg);
 
             if (functionName === "rpcCheck") {
@@ -212,13 +230,19 @@
                 // there is an active internet connection, also get the total block count from the online block explorer
                 if (remote.getGlobal('sharedObject').isOnline) {
                     request({
-                        url: smartcashExplorer + 'status?q=getInfo',
+                        url: smartcashExplorer + '/status?q=getInfo',
                         method: 'GET'
                     }, function (err, resp, body) {
                         //console.log('checkBlockchain remote')
+                        //console.log('err: ', err)
+                        //console.log('resp.body: ', resp.body)
+                        //console.log('body: ', body)
                         
-                        if (resp && resp.body.error === undefined) {
-                            var onlineBlockCount = resp.body.blocks;
+                        if ((resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
+                            body = JSON.parse(body)
+
+                        if (resp && err == null && body.error === undefined) {
+                            var onlineBlockCount = body.info.blocks;
 
                             if (localBlockCount == onlineBlockCount);
                                 valid++
@@ -239,10 +263,19 @@
                         else {
                             console.log('checkBlockchain error');
                             console.log('err: ' + err);
-                            console.log('resp.body: ' + resp.body);
+                            console.log('body.error: ' + body.error);
+                            
+                            var error
+                            
+                            if (err)
+                                error = err
+                            else if (body.error)
+                                error = body.error
+                            else
+                                error = body
                             
                             remote.getGlobal('sharedObject').blockExplorerError = true;
-                            apiCallback({type: 'error', msg: resp.body}, 'checkBlockchain');
+                            apiCallback({type: 'error', msg: error}, 'checkBlockchain');
                         }
                     });
                 }

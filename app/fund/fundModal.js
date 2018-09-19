@@ -13,7 +13,6 @@
         
         var ctrl = this;
         ctrl.activeProject = electron.remote.getGlobal('activeProject');
-        ctrl.modalTitle = "Fund Project '" + ctrl.activeProject.name + "'";
 
         $scope.init = function() {
             var clipboardjs = new ClipboardJS('.copy-btn');
@@ -21,6 +20,8 @@
                 // select the text on clicking the copy button
                 $('#projectAddress').selectText();
             });
+            
+            buildTxData();
             
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
             ctrl.originalFunds = 0;
@@ -34,12 +35,12 @@
             //ctrl.showFundForm = false;
             ctrl.isOpen = [false, false];
             
-            /*$document.find('#page-wrapper').css('height', function() {
-                var height = window.innerHeight - parseInt($document.find('body').css('margin-top'))*2;
-                return height + 'px';
-            });*/
+            if (ctrl.activeProject.txid && ctrl.activeProject.txid.length > 0)
+                ctrl.isOpen[1] = true;
+            else
+                ctrl.isOpen[0] = true;
             
-            if (!ctrl.activeProject.projectFunded) {
+            /*if (!ctrl.activeProject.projectFunded) {
                 ctrl.projectTxStatus(ctrl.activeProject.addressPair.publicKey);
                 
                 // check every 30 for the status of the funding transactions
@@ -51,7 +52,7 @@
             $document.on('onbeforeunload', function() {
                 if ($scope.projectTxStatusInterval)
                     $interval.cancel($scope.projectTxStatusInterval);
-            });
+            });*/
             
             // reload projects when there have been changes
             ipcRenderer.on('projectsReady', (event, args) => {            
@@ -61,6 +62,23 @@
             });
         };
         
+        function buildTxData() {
+            ctrl.balance = ctrl.activeProject.originalFunds;
+            var activeTxs = [];
+            ctrl.activeTxs = [];
+
+            angular.forEach(ctrl.activeProject.txid, function(tx, key) {
+                var txid = Object.keys(tx)[0];
+                activeTxs.push(txid);
+
+                ctrl.activeTxs.push({
+                    txid: Object.keys(tx)[0],
+                    confirmations: tx[txid].confirmations,
+                    confirmed: tx[txid].confirmed
+                });
+            });
+        }
+        
         function getActiveProjectInfo() {
             ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                     
@@ -69,16 +87,14 @@
                 if (project.id == activeProjectID)
                     ctrl.activeProject = project;
             })
+            
+            buildTxData();
         }
 
         /* Close the modal without funding the project. */
         ctrl.cancel = function() {
             ipcRenderer.send('modalNo');
         };
-        
-        /*ctrl.copyAddress = function() {
-            document.execCommand("copy", false, $document.find('#projectAddress').html());
-        };*/
         
         /* Send funding information back to the main process. */
         ctrl.fundInfo = function(form) {
@@ -93,7 +109,7 @@
                 
                 ipcRenderer.send('fundProject', {projectID: ctrl.activeProject.id, projectName: ctrl.activeProject.name, amount: parseFloat(ctrl.originalFunds), toAddr: [ctrl.activeProject.addressPair.publicKey], fromAddr: ctrl.fundingAddr, fromPK: ctrl.fundingPK});
                 
-                ipcRenderer.on('projectFunded', (event, args) => {
+                /*ipcRenderer.on('projectFunded', (event, args) => {
                     $scope.$apply(function() {
                         ctrl.txSuccessful = args.txSuccessful;
                         
@@ -102,7 +118,7 @@
                         form.$setUntouched();
                         form.$submitted = false;
                     });
-                });
+                });*/
             });
             
             if (form.$valid) {

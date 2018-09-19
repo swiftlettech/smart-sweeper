@@ -17,7 +17,7 @@
             ctrl.greaterThanZeroIntPattern = greaterThanZeroIntPattern;
             
             ctrl.activeProject = electron.remote.getGlobal('activeProject');
-            ctrl.activeProject.expDate !== "" ? ctrl.expDate = ctrl.activeProject.expDate : ctrl.expDate = ""; // expDate is optional
+            ctrl.activeProject.expDate !== "" ? ctrl.expDate = new Date(ctrl.activeProject.expDate) : ctrl.expDate = ""; // expDate is optional
             //ctrl.sweepDate = new Date(ctrl.activeProject.sweepDate);
             ctrl.sweepDate = ""; // auto-sweep hasn't been implemented, use an empty string to prevent a form validation error
             

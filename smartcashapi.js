@@ -7,7 +7,7 @@ const http = require('http')
 const util = require('util')
 const {watch} = require('melanke-watchjs')
 const Store = require('electron-store')
-const smartcashExplorer = "https://insight.smartcash.cc/api/"
+const smartcashExplorer = "https://insight.smartcash.cc/api"
 
 let db = new Store({name: "smart-sweeper"})
 let reqPerMin
@@ -54,7 +54,8 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
         }
     }
     else if (resp.type === "error") {
-        console.log('error msg: ', resp.msg)
+        //console.log('smartcashapi.js error block')
+        //console.log('error msg: ', resp.msg)
         
         if (referrer === "getAddressBalance") {
             global.sharedObject.blockExplorerError = true
@@ -100,7 +101,10 @@ function checkBalance(projectInfo, callback) {
         //console.log(err)
         //console.log(resp.body)
         
-        if (resp && resp.body.error === undefined) {
+        if ((resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
+            body = JSON.parse(body)
+        
+        if (resp && err == null && resp.body.error === undefined) {
             var balance
             
             if (resp.body.transactions && resp.body.transactions.length > 0)
@@ -114,7 +118,16 @@ function checkBalance(projectInfo, callback) {
             console.log('checkBalance')
             console.log(err)
             
-            callback({type: 'error', msg: resp.body}, 'checkBalance', projectInfo)
+            var error
+                            
+            if (err)
+                error = err
+            else if (body.error)
+                error = body.error
+            else
+                error = body
+            
+            callback({type: 'error', msg: error}, 'checkBalance', projectInfo)
         }
     })
 }
@@ -179,31 +192,10 @@ function checkTransaction(projectInfo, callback) {
                 callback({type: 'error', msg: err}, 'checkTransaction', projectInfo)
             }*/
             if (!err) {
-                if (projectInfo.referrer !== "getWalletTxStatus") {
-                    if (projectInfo.referrer !== "getProjectTxStatus") {
-                        if (resp.confirmations !== undefined)
-                            callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
-                        /*else
-                            callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)*/
-                    }
-                    else {
-                        if (resp.confirmations !== undefined) {
-                            if (resp.confirmations >= 6)
-                                global.smartcashCallbackInfo.get(projectInfo.referrer).confirmedTxFlag++
-                        }
-                        /*else
-                            callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)*/
-
-                        if (global.smartcashCallbackInfo.get(projectInfo.referrer).txCounter == txArray.length) {
-                            callback({type: 'data', msg: global.smartcashCallbackInfo.get(projectInfo.referrer).confirmedTxFlag}, 'checkTransaction', projectInfo)
-                            global.smartcashCallbackInfo.delete(projectInfo.referrer)
-                        }
-                    }
-                }
-                else {
-                    if (resp.confirmations !== undefined)
-                        callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
-                }
+                if (resp.confirmations !== undefined)
+                    callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
+                /*else
+                    callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)*/
             }
         })
     })
@@ -253,7 +245,7 @@ function doSweep(projectInfo, callback) {
                 })
             })
 
-            outputs[project.sweepAddr] = (project.addrAmt * transactions.length) - global.sharedObject.txFee
+            outputs[project.sweepAddr] = (project.addrAmt * transactions.length) - projectInfo.txFee
             
             var createTxCmd = {
                 method: 'createrawtransaction',
@@ -331,17 +323,28 @@ function getAddressInfo(projectInfo, callback) {
     }, function (err, resp, body) {
         //console.log('getAddressInfo')
         //console.log(err)
-        //console.log(resp.body)
+        //console.log(body)
         
-        if (resp && resp.body.error === undefined) {
-            callback({type: 'data', msg: resp.body}, 'getAddressInfo', projectInfo)
+        if ((resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
+            body = JSON.parse(body)
+        
+        if (body && err == null && body.error === undefined) {
+            callback({type: 'data', msg: body}, 'getAddressInfo', projectInfo)
         }
         else {
             //console.log('getAddressInfo')
             //console.log(err)
             
+            var error
+                            
             if (err)
-                callback({type: 'error', msg: resp.body}, 'getAddressInfo', projectInfo)
+                error = err
+            else if (body.error)
+                error = body.error
+            else
+                error = body
+            
+            callback({type: 'error', msg: error}, 'getAddressInfo', projectInfo)
         }
     })
 }
@@ -359,7 +362,10 @@ function sendFunds(projectInfo, callback) {
         //console.log(err)
         //console.log(resp.body)
         
-        if (resp && resp.body.error === undefined) {
+        if ((resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
+            body = JSON.parse(body)
+        
+        if (resp && err == null && resp.body.error === undefined) {
             // check to see if there is enough in the balance to cover the amount to send
             if (resp.body.balance >= projectInfo.total) {
                 var txArray = []
@@ -449,7 +455,16 @@ function sendFunds(projectInfo, callback) {
             }
         }
         else {
-            callback({type: 'error', msg: resp.body}, 'sendFunds', projectInfo)
+            var error
+                            
+            if (err)
+                error = err
+            else if (body.error)
+                error = body.error
+            else
+                error = body
+            
+            callback({type: 'error', msg: error}, 'sendFunds', projectInfo)
         }
     })
 }
@@ -478,11 +493,23 @@ function sweepFunds(projectInfo, callback) {
             method: 'GET',
             json: true
         }, function (err, resp, body) {            
-            if (resp && resp.body.error === undefined) {
+            if ((resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
+                body = JSON.parse(body)
+            
+            if (resp && err == null && resp.body.error === undefined) {
                 smartcashCallback({type: 'data', msg: resp}, 'sweepFunds', projectInfo, callback)
             }
             else {
-                callback({type: 'error', msg: resp.body}, 'sweepFunds', projectInfo)
+                var error
+                            
+                if (err)
+                    error = err
+                else if (body.error)
+                    error = body.error
+                else
+                    error = body
+                
+                callback({type: 'error', msg: error}, 'sweepFunds', projectInfo)
             }
         })
     })

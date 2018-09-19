@@ -73,9 +73,9 @@
                         </tr>
                     </table>
                     
-                    <p><strong>Current Balance:</strong> <span ng-show="!$fundCtrl.currentBalance">unknown</span><span ng-show="$fundCtrl.currentBalance">{{$fundCtrl.currentBalance | toFixedNum: 8}}</span></p>
+                    <p><strong>Current Balance:</strong> <span ng-show="!$fundCtrl.activeProject.originalFunds">unknown</span><span ng-show="$fundCtrl.activeProject.originalFunds">{{$fundCtrl.activeProject.originalFunds | toFixedNum: 8}}</span></p>
                     
-                    <button type="button" class="btn btn-primary" ng-click="$fundCtrl.projectFullyFunded()" ng-disabled="$fundCtrl.activeTxs === undefined || !$fundCtrl.activeProject.txConfirmed || $fundCtrl.projectFullyFundedFlag">Project fully funded?</button>
+                    <!--<button type="button" class="btn btn-primary" ng-click="$fundCtrl.projectFullyFunded()" ng-disabled="$fundCtrl.activeTxs === undefined || !$fundCtrl.activeProject.txConfirmed || $fundCtrl.projectFullyFundedFlag">Project fully funded?</button>-->
                 </div>
             </uib-accordion>
 

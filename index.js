@@ -173,11 +173,7 @@ function appInit() {
             }
             else if (property === "rpcError") {
                 global.sharedObject.win.webContents.send('rpcCheckAPP', {rpcError: global.sharedObject.rpcError})
-                global.sharedObject.win.webContents.send('rpcError')
-                
-                errorMsg = true
-                msg = "RPC connection error"
-                
+                global.sharedObject.win.webContents.send('rpcError')                
             }
             else if (property === "coreSynced") {
                 global.sharedObject.win.webContents.send('coreSyncCheckAPP', {coreSynced: global.sharedObject.coreSynced})
@@ -195,9 +191,6 @@ function appInit() {
             }
             else if (property === "blockExplorerError") {
                 global.sharedObject.win.webContents.send('blockExplorerErrorAPP', {blockExplorerError: global.sharedObject.blockExplorerError})
-                
-                errorMsg = true
-                msg = "Block explorer error"
             }
             
             if (infoMsg)
@@ -579,14 +572,23 @@ function createDialog(event, window, type, text, fatal = false) {
 /* Generic API callback function. */
 let apiCallback = function(resp, functionName, projectInfo) {
     var referrer = projectInfo.referrer
-    var apiCallbackInfo = global.apiCallbackInfo.get(referrer)
+    var apiCallbackInfo
     
-    /*if (referrer === "getClaimedFundsInfo") {
+    console.log('functionName: ', functionName)
+    
+    if ((referrer.indexOf('getProjectAddressInfo') == -1) && (referrer.indexOf('getProjectTxStatus') == -1))
+        apiCallbackInfo = global.apiCallbackInfo.get(referrer)
+    else
+        apiCallbackInfo = global.apiCallbackInfo.get(referrer+projectInfo.projectID)
+    
+    if (referrer === "getProjectTxStatus") {
         console.log('apiCallback referrer: ', referrer)
         console.log('apiCallbackInfo: ', apiCallbackInfo)
         console.log('projectInfo: ', projectInfo)
+        console.log(resp.type)
+        console.log(resp.msg)
         console.log()
-    }*/
+    }
     
     if (apiCallbackInfo !== undefined) {
         if (resp.type === "data") {            
@@ -604,12 +606,12 @@ let apiCallback = function(resp, functionName, projectInfo) {
             else
                 global.sharedObject.sysLogger.info(referrer + ' - ' + functionName)
             
-            if (referrer === "getProjectAddressInfo") {
+            /*if (referrer === "getProjectTxStatus") {
                 console.log('projectInfo: ', projectInfo)
                 //console.log('from ' + functionName)
                 console.log(resp.msg)
                 console.log()
-            }
+            }*/
 
             if (functionName === "checkBalance") {
                 global.sharedObject.blockExplorerError = false
@@ -666,12 +668,25 @@ let apiCallback = function(resp, functionName, projectInfo) {
                         })
                     } 
                 }
-                else if (referrer === "getProjectTxStatus") {
-                    // check the total num of confirmed tx for each project against the total number of txids
-                    if (resp.msg == global.availableProjects.list[projectInfo.projectIndex].txid.length)
-                        global.availableProjects.list[projectInfo.projectIndex].txConfirmed = true
-                    else
-                        global.availableProjects.list[projectInfo.projectIndex].txConfirmed = false
+                else if (referrer.indexOf('getProjectTxStatus') != -1) {
+                    var obj = {}
+                    
+                    console.log()
+                    
+                    resp.msg.vout.forEach(function(tx, key) {
+                        if (tx.scriptPubKey.addresses.includes(projectInfo.address)) {
+                            if (resp.msg.confirmations >= 6) {
+                                obj[projectInfo.txid] = {confirmed: true, confirmations: resp.msg.confirmations}
+                                apiCallbackInfo.balance += tx.value
+                                apiCallbackInfo.confirmedTxs++
+                            }
+                            else {
+                                obj[projectInfo.txid] = {confirmed: false, confirmations: resp.msg.confirmations}
+                            }
+
+                            apiCallbackInfo.txInfo.push(obj)
+                        }
+                    })
                 }
                 else if (referrer === "getSweptTxStatus") {
                     if (resp.msg.confirmations >= 6)
@@ -694,8 +709,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 }
             }
             else if (functionName === "getAddressInfo") {
-                if (referrer === "getProjectAddressInfo") {
-                    apiCallbackInfo.balance = resp.msg.balance
+                if (referrer.indexOf('getProjectAddressInfo') != -1) {
                     apiCallbackInfo.txs = resp.msg.transactions
                 }
             }
@@ -840,7 +854,16 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     
                     global.apiCallbackInfo.delete(referrer)
                 }
-                else if ((referrer === "getProjectTxStatus") && (apiCallbackCounter == apiCallbackInfo.totalProjects)) {
+                else if ((referrer.indexOf('getProjectTxStatus') != -1) && (apiCallbackCounter == apiCallbackInfo.totalTxs)) {
+                    global.availableProjects.list[projectInfo.projectIndex].txid = apiCallbackInfo.txInfo
+                    global.availableProjects.list[projectInfo.projectIndex].originalFunds = apiCallbackInfo.balance
+                    
+                    // check the total num of confirmed tx for each project against the total number of funding txids
+                    if (apiCallbackInfo.confirmedTxs == apiCallbackInfo.txInfo.length)
+                        global.availableProjects.list[projectInfo.projectIndex].txConfirmed = true
+                    else
+                        global.availableProjects.list[projectInfo.projectIndex].txConfirmed = false
+                    
                     db.set('projects', global.availableProjects)
                     
                     if (global.sharedObject.win)
@@ -873,7 +896,21 @@ let apiCallback = function(resp, functionName, projectInfo) {
             }
             else if (functionName === "getAddressInfo") {
                 if (referrer === "getProjectAddressInfo") {
-                    var existingTxids = []
+                    global.apiCallbackInfo.set('getProjectTxStatus'+projectInfo.projectID, {
+                        apiCallbackCounter: 0,
+                        totalTxs: apiCallbackInfo.txs.length,
+                        txInfo: [],
+                        confirmedTxs: 0,
+                        balance: 0
+                    })
+                    
+                    apiCallbackInfo.txs.forEach(function(txid, txKey) {
+                        smartcashapi.checkTransaction({referrer: "getProjectTxStatus", projectName: projectInfo.projectName, projectID: projectInfo.projectID, projectIndex: projectInfo.projectIndex, address: projectInfo.address, txid: txid}, apiCallback)
+                    })
+                    
+                    global.apiCallbackInfo.delete(referrer)
+                    
+                    /*var existingTxids = []
                     
                     if (global.availableProjects.list[projectInfo.projectIndex].txid === undefined) {
                         // create the txid array if it doesn't already exist
@@ -900,7 +937,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                         modal.webContents.send('gotAddressInfo', {msgType: 'data', balance: apiCallbackInfo.balance, txs: apiCallbackInfo.txs})
                     }
                     
-                    global.apiCallbackInfo.delete(referrer)
+                    global.apiCallbackInfo.delete(referrer)*/
                 }
             }
             else if (functionName === "sendFunds") {
@@ -962,6 +999,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
             }
         }
         else if (resp.type === "error") {
+            console.log('index.js error block: ')
             console.log('error msg: ', resp.msg)
             
             // transaction's not in the blockchain yet
@@ -1390,7 +1428,7 @@ ipcMain.on('fundProject', (event, args) => {
 })
 
 // check the txid to get project funding info
-ipcMain.on('getProjectAddressInfo', (event, args) => {
+/*ipcMain.on('getProjectAddressInfo', (event, args) => {
     global.apiCallbackInfo.set('getProjectAddressInfo', {
         apiCallbackCounter: 0
     })
@@ -1398,7 +1436,7 @@ ipcMain.on('getProjectAddressInfo', (event, args) => {
     loadProjects()
     var index = getDbIndex(args.projectID)    
     smartcashapi.getAddressInfo({referrer: "getProjectAddressInfo", projectID: args.projectID, projectName: args.projectName, projectIndex: index, address: args.address}, apiCallback);
-})
+})*/
 
 // get the status of one or all project funding transactions
 ipcMain.on('getProjectTxStatus', (event, args) => {
@@ -1408,20 +1446,20 @@ ipcMain.on('getProjectTxStatus', (event, args) => {
 
     loadProjects()
     global.availableProjects.list.forEach(function(project, projectKey) {
-        if (project.projectFunded && !project.txConfirmed)
+        if (!project.fundsSent)
             totalProjects++
     })
 
     if (totalProjects > 0) {
-        global.apiCallbackInfo.set('getProjectTxStatus', {
-            apiCallbackCounter: 0,
-            totalProjects: totalProjects
-        })
-
+        var index
+        
         global.availableProjects.list.forEach(function(project, projectKey) {
-            if (project.projectFunded && !project.txConfirmed) {                
-                smartcashapi.checkTransaction({referrer: "getProjectTxStatus", projectName: project.name, projectIndex: projectKey, txid: project.txid}, apiCallback)
-            }
+            global.apiCallbackInfo.set('getProjectAddressInfo'+project.id, {
+                txs: []
+            })
+            
+            index = getDbIndex(project.id)
+            smartcashapi.getAddressInfo({referrer: "getProjectAddressInfo", projectID: project.id, projectName: project.name, projectIndex: index, address: project.addressPair.publicKey}, apiCallback)
         })
     }
 })
@@ -1758,14 +1796,16 @@ ipcMain.on('sweepFunds', (event, args) => {
     var index
     var project
     var unclaimedWallets
+    var txFee
     
     loadProjects()
     args.projectIDs.forEach(function(projectID, key) {
         index = getDbIndex(projectID)
         project = global.availableProjects.list[index]
         global.apiCallbackInfo.get('sweepFunds').projectNames.push(project.name)
+        txFee = getTxFee(project.numAddr)
         
-        smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: projectID, project: project}, apiCallback)
+        smartcashapi.sweepFunds({referrer: "sweepFunds", projectIndex: index, projectID: projectID, project: project, txFee: txFee}, apiCallback)
     })
 })
 

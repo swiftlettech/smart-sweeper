@@ -5,7 +5,9 @@
     "description": "Sweeper application for SmartCash cryptocurrency to allow easy retrieval of gift funds.",
     "homepage": "http://smartsweeper.cc",
     "author": "Swiftlet Technology, LLC",
-    "keywords": ["smartcash"],
+    "keywords": [
+        "smartcash"
+    ],
     "license": "GPL-3.0",
     "repository": {
         "type": "git",
@@ -45,7 +47,7 @@
         "melanke-watchjs": "^1.4.3",
         "node-smartcash": "^1.1.1",
         "ps-node": "^0.1.6",
-        "request": "^2.87.0",
+        "request": "^2.88.0",
         "smartcashjs-lib": "^3.3.4",
         "winston": "^3.0.0"
     },

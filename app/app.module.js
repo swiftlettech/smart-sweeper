@@ -47,6 +47,7 @@
             // catch unhandled exceptions
             unhandled({
                 logger: function(err) {
+                    console.log(err);
                     electron.remote.getGlobal('sharedObject').exceptionLogger.error(err.stack);
                     
                     // the "EPERM operation not permitted error" is fatal (https://github.com/sindresorhus/electron-store/issues/31)

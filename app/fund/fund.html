@@ -49,9 +49,7 @@
             </tr>
 
             <tr id="{{project.id}}" class="projectRow" ng-class="{active: $fundCtrl.activeProjectID == project.id}" ng-model="$fundCtrl.availableProjects" ng-repeat="project in $fundCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
-                <td colspan="9" style="padding:0;">
-                    <p style="display:none;">project.projectFunded: {{project.projectFunded}}</p>
-                    
+                <td colspan="9" style="padding:0;">                    
                     <table class="innerTable">
                         <tr>
                             <td class="nameCol">{{project.name}} 
@@ -71,9 +69,9 @@
                             
                             <!--<td class="autoSweepCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>-->
                             
-                            <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-disabled="project.projectFunded || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError" ng-click="$fundCtrl.fundProject(project)"><i class="fa fa-fw sigma">Σ</i></button></td>
+                            <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-disabled="!$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError" ng-click="$fundCtrl.fundProject(project)"><i class="fa fa-fw sigma">Σ</i></button></td>
                             
-                            <td class="sendCol text-center"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project)" ng-disabled="project.recvAddrs.length == 0 || !project.projectFunded || project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw fa-share"></i></button></td>
+                            <td class="sendCol text-center"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project)" ng-disabled="project.recvAddrs.length == 0 || project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw fa-share"></i></button></td>
                             
                             <td class="printCol text-center"><button class="btn btn-link" title="Print paper wallets" ng-click="$fundCtrl.createPaperWallets(project.id)" ng-disabled="!project.fundsSent || project.fundsSwept"><i class="fa fa-fw fa-print"></i></button></td>
                             
