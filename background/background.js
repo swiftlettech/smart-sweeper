@@ -23,10 +23,10 @@
     basepath.pop();
     basepath = basepath.join(path.sep);
     
-    let apiCallbackCounter, isOnlineFlag;
+    let apiCallbackCounter;
     let smartcashProg, smartcashPath, smartcash;
     let db = new Store({name: "smart-sweeper"});
-    //global.bgApiCallbackInfo = new Map() // keeps track of API callback vars per function call
+    //global.bgApiCallbackInfo = new Map(); // keeps track of API callback vars per function call
     
     init();
     
@@ -144,22 +144,6 @@
                 checkBlockchain();
                 // get the transaction status of all projects
                 ipcRenderer.send('getProjectTxStatus');
-                
-                /*var activeTxs;
-                remote.getGlobal('availableProjects').list.forEach(function(project, projectKey) {
-                    activeTxs = [];
-                    
-                    if (project.txid !== undefined) {
-                        project.txid.forEach(function(txid, txidKey) {
-                            activeTxs.push(Object.keys(txid)[0]);
-                        });
-                        
-                        console.log('activeTxs')
-                        console.log(activeTxs)
-
-                        ipcRenderer.send('checkFundingTxids', {projectID: project.id, projectName: project.name, address: project.addressPair.publicKey, activeTxs: activeTxs});
-                    }                    
-                });*/
             }
             else if (functionName === "checkBlockchain") {
                 remote.getGlobal('sharedObject').blockExplorerError = false;
@@ -188,7 +172,7 @@
         apiCallbackCounter++        
     }
     
-    /* Auto-sweep funds. */
+    /* Auto-sweep funds. NOT USED */
     function autoSweep() {
         // auto sweep funds on startup
         
@@ -355,11 +339,8 @@
     }
     
     /* Update various info. */
-    function updateData() {
-        // dashboard info
-        ipcRenderer.send('checkAvailProjectBalances');
-        
+    function updateData() {        
         // update a project's currentFunds property
-        //ipcRenderer.send('checkProjectBalances');
+        ipcRenderer.send('checkProjectBalances');
     }
 })();

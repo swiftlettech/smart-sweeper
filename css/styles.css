@@ -256,6 +256,17 @@ button, .btn, .form-control, .input-group-addon {
 
 /* Dashboard */
 
+#dashboard .panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#dashboard .panel-heading .spinner {
+    background: none;
+    background-size: auto;
+}
+
 #dashboard .panel:last-child {
     margin-bottom: 0;
 }

@@ -11,14 +11,8 @@
         var ctrl = this;
 
         $scope.init = function() {
-            resetDashboardVals();
-            
-            if (electron.remote.getGlobal('sharedObject').rpcConnected) {
-                availableFunds();
-                txInfo();
-                claimedFunds();
-                sweptFunds();
-            }
+            resetDashboardVals();            
+            ctrl.progressSpinner = ['false', 'false', 'false', 'false', 'false'];
             
             $scope.$on('onlineCheck', function(event, args) {
                 resetDashboardVals();
@@ -32,25 +26,22 @@
                 }
                 
                 // load the last saved dashboard values from the app config file
-                // if the user has not gone online during the current session
-                if (!args.isOnline && !$mainCtrl.hasBeenOnline) {
-                    ipcRenderer.send('getSavedAppData');
-                    ipcRenderer.on('savedAppData', (event, args) => {
-                        $scope.$apply(function() {
-                            var savedAppData = args.savedAppData;
-                        
-                            ctrl.availableBalance = savedAppData.availableBalanceTotal;
-                            ctrl.claimedFunds = savedAppData.claimedFundsTotal;
-                            ctrl.claimedWalletsCount = savedAppData.claimedWalletsTotal;
-                            ctrl.pendingFunds = savedAppData.pendingFundsTotal;
-                            ctrl.pendingWalletsCount = savedAppData.pendingWalletsTotal;
-                            ctrl.confirmedFunds = savedAppData.confirmedFundsTotal;
-                            ctrl.confirmedWalletsCount = savedAppData.confirmedWalletsTotal;
-                            ctrl.sweptFunds = savedAppData.sweptFundsTotal;
-                            ctrl.sweptWalletsCount = savedAppData.sweptWalletsTotal;
-                        });
+                ipcRenderer.send('getSavedAppData');
+                ipcRenderer.on('savedAppData', (event, args) => {
+                    $scope.$apply(function() {
+                        var savedAppData = args.savedAppData;
+
+                        ctrl.availableBalance = savedAppData.availableBalanceTotal;
+                        ctrl.claimedFunds = savedAppData.claimedFundsTotal;
+                        ctrl.claimedWalletsCount = savedAppData.claimedWalletsTotal;
+                        ctrl.pendingFunds = savedAppData.pendingFundsTotal;
+                        ctrl.pendingWalletsCount = savedAppData.pendingWalletsTotal;
+                        ctrl.confirmedFunds = savedAppData.confirmedFundsTotal;
+                        ctrl.confirmedWalletsCount = savedAppData.confirmedWalletsTotal;
+                        ctrl.sweptFunds = savedAppData.sweptFundsTotal;
+                        ctrl.sweptWalletsCount = savedAppData.sweptWalletsTotal;
                     });
-                }
+                });
             });
             
             // load all projects
@@ -62,9 +53,9 @@
                     ctrl.projectCount = ctrl.availableProjects.length;
 
                     availableFunds();
-                    txInfo();
-                    claimedFunds();
-                    sweptFunds();
+                    //txInfo();
+                    //claimedFunds();
+                    //sweptFunds();
                 });
             });
             
@@ -86,19 +77,11 @@
         });
         
         ipcRenderer.on('balancesChecked', (event, args) => {
+            ctrl.availableBalance = 0;
+            
             $scope.$apply(function() {
-                ctrl.showSpinner = false;
+                ctrl.progressSpinner[0] = false;
                 ctrl.availableBalance = $filter('toFixedNum')(args.availableBalance, 8);
-            });
-        });
-        
-        ipcRenderer.on('claimedFundsInfo', (event, args) => {
-            ctrl.claimedFunds = 0;
-            ctrl.claimedWalletsCount = 0;
-
-            $scope.$apply(function() {
-                ctrl.claimedFunds = args.claimedFunds;
-                ctrl.claimedWalletsCount = args.claimedWallets;
             });
         });
         
@@ -107,12 +90,27 @@
             ctrl.pendingWalletsCount = 0;
             ctrl.confirmedFunds = 0;
             ctrl.confirmedWalletsCount = 0;
-
+            
             $scope.$apply(function() {
+                ctrl.progressSpinner[1] = false;
+                ctrl.progressSpinner[2] = false;
+                
                 ctrl.pendingFunds = args.pendingFunds;
                 ctrl.pendingWalletsCount = args.pendingWallets;
                 ctrl.confirmedFunds = args.confirmedFunds;
                 ctrl.confirmedWalletsCount = args.confirmedWallets;
+                ctrl.allTxInfo = true;
+            });
+        });
+        
+        ipcRenderer.on('claimedFundsInfo', (event, args) => {
+            ctrl.claimedFunds = 0;
+            ctrl.claimedWalletsCount = 0;
+
+            $scope.$apply(function() {
+                ctrl.progressSpinner[3] = false;
+                ctrl.claimedFunds = args.claimedFunds;
+                ctrl.claimedWalletsCount = args.claimedWallets;
             });
         });
         
@@ -121,6 +119,7 @@
             ctrl.sweptWalletsCount = 0;
 
             $scope.$apply(function() {
+                ctrl.progressSpinner[4] = false;
                 ctrl.sweptFunds = args.sweptFunds;
                 ctrl.sweptWalletsCount = args.sweptWalletsCount;
             });
@@ -128,11 +127,11 @@
         
         /* The total project funds that have yet to be sent to another wallet (all projects). */
         function availableFunds() {
-            ctrl.showSpinner = true;
+            ctrl.progressSpinner[0] = true;
             ipcRenderer.send('checkAvailProjectBalances');
             
             // status checking
-            ctrl.taskStatusCheck = $interval(function() {
+            /*ctrl.taskStatusCheck = $interval(function() {
                 ipcRenderer.send('taskStatusCheck', 'checkAvailProjectBalances');
             }, 5000);
             
@@ -145,21 +144,25 @@
                     else
                         ctrl.showSpinner = true;
                 });
-            });
+            });*/
         }
         
         /* Funds that have been transferred from a promotional wallet to a different wallet (all projects). */
         function claimedFunds() {
+            ctrl.progressSpinner[3] = true;
             ipcRenderer.send('getClaimedFundsInfo');
         }
         
         /* Funds that have been swept back to a project address (all projects). */
         function sweptFunds() {
+            ctrl.progressSpinner[4] = true;
             ipcRenderer.send('getSweptFundsInfo');
         }
         
         /* The pending/confirmed state of all promotional wallets (all projects). */
         function txInfo() {
+            ctrl.progressSpinner[1] = true;
+            ctrl.progressSpinner[2] = true;
             ipcRenderer.send('getWalletTxStatus');
         }
         

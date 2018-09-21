@@ -28,7 +28,7 @@ Releases are forthcoming.
 
 
 ### Installation
-Download a release and run the installer.
+Download a release and run the installer. You may need to run SmartSweeper as an administrator.
 
 ### Running from source
 ##### Additional Requirements
@@ -64,7 +64,7 @@ smartcashPath=C:\Program Files\SmartCash\
 * smartcashPath is the full path to your SmartCash Node Client installation. You must include a trailing slash.
 
 
-Your SmartCash node client must be started with the following arguments:
+Your SmartCash Node Client must be started with the following arguments:
 ```
 -txindex=1 (if SmartCash Node Client is < v1.2.3)
 -server
@@ -74,7 +74,7 @@ Your SmartCash node client must be started with the following arguments:
 -rpcpassword=rpcpassword
 ```
 
-If it isn't running, SmartSweeper will start it for you with the above arguments. You can also [edit your node client's smartcash.conf file](https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file). Please don't do this with your client running.
+If it isn't running, SmartSweeper will attempt to start it for you with the above arguments. You can also [edit your node client's smartcash.conf file](https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file). Please don't do this with your client running.
 
 ```
 txindex=1 (if SmartCash Node Client is < v1.2.3)
@@ -93,13 +93,13 @@ The database (smart-sweeper.json), the app config file (smart-sweeper-config.jso
 
 * **Windows**: %APPDATA%/SmartSweeper
 
-**It is recommended that you back up smart-sweeper.json to a safe place.**
+**It is strongly recommended that you back up smart-sweeper.json to a safe place.**
 
 The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). The user logs record user actions while the system logs record errors (and may include transaction ids and public keys).
 
 ### Known issues
 * electron-store error: "EPERM operation not permitted" sometimes occurs on Windows when reading a config file. SmartSweeper will exit when it does.
-* Can't connect to the node client when it's syncing.
+* Can't connect to the node client when it's syncing (SmartSweeper will display the "Can't connect to SmartCash Node Client." error).
 
 ### Other software used
 Software | License
@@ -108,6 +108,7 @@ Software | License
 [AngularUI Bootstrap](https://github.com/angular-ui/bootstrap) | MIT
 [Bootstrap](https://getbootstrap.com/docs/3.3/) | MIT
 [clipboard.js](https://clipboardjs.com) | MIT
+[delayed-call](https://github.com/finnolav/delayed-call) | MIT
 [devtron](https://github.com/electron/devtron) | MIT
 [electron](https://github.com/electron/electron) | MIT
 [electron-builder](https://github.com/electron-userland/electron-builder) | MIT
@@ -128,4 +129,4 @@ Software | License
 [winston](https://github.com/winstonjs/winston) | MIT
 
 
-[The SmartCash Insight Explorer API](https://insight.smartcash.cc) is used to check the current block count and to get information about project addresses.
+[The SmartCash Insight Explorer](https://insight.smartcash.cc) is used to check the current block count and to get information about project addresses.

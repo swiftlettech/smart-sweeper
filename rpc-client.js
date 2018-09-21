@@ -11,8 +11,21 @@ init()
 
 function init() {    
     // check for default config file, create an empty one if it doesn't exist
-    if (!fs.existsSync('config'))
-        fs.mkdirSync('config')
+    if (!fs.existsSync('config')) {
+        try {
+            fs.mkdirSync('config')
+        }
+        catch(err) {
+            var content = {
+                text: {
+                    title: 'Error',
+                    body: 'SmartSweeper has encountered a fatal error. The app will now close.'
+                },
+                fatal: true
+            };
+            ipcRenderer.send('showErrorDialog', content);
+        }
+    }
 
     var defaultConfigPath = path.join('config', 'development.json')
     try {

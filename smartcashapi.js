@@ -97,20 +97,21 @@ function checkBalance(projectInfo, callback) {
         json: true
     }, function (err, resp, body) {
         //console.log('checkBalance')
-        //console.log(projectInfo.address)
         //console.log(err)
-        //console.log(resp.body)
+        //console.log(body)
         
-        if ((resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
+        if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
             body = JSON.parse(body)
         
-        if (resp && err == null && resp.body.error === undefined) {
+        if (resp && err == null && body.error === undefined) {
             var balance
             
-            if (resp.body.transactions && resp.body.transactions.length > 0)
-                balance = resp.body.balance
-            else
+            if (body.transactions && body.transactions.length > 0)
+                balance = body.balance
+            else if (body.balance !== undefined)
                 balance = 0
+            else
+                balance = null
             
             callback({type: 'data', msg: balance}, 'checkBalance', projectInfo)
         }
@@ -134,6 +135,7 @@ function checkBalance(projectInfo, callback) {
 
 /* Check the status of a transaction. */
 function checkTransaction(projectInfo, callback) {
+    //console.log('checkTransaction')
     //console.log('PROJECT INFO: ', projectInfo)
     
     var txArray = []
@@ -177,7 +179,6 @@ function checkTransaction(projectInfo, callback) {
         //console.log('cmd: ', cmd)
         
         rpc.sendCmd(cmd, function(err, resp) {
-            //console.log('checkTransaction')
             //console.log(err)
             //console.log(resp)
             //console.log('txid: ', cmd.params[0])
@@ -189,13 +190,16 @@ function checkTransaction(projectInfo, callback) {
 
             /*if (err) {
                 // ignore the unknown transaction error for promotional wallet txids because it's probably not in the blockchain yet
-                callback({type: 'error', msg: err}, 'checkTransaction', projectInfo)
+                callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
             }*/
             if (!err) {
                 if (resp.confirmations !== undefined)
                     callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
                 /*else
                     callback({type: 'error', msg: 'Invalid transaction id.' + util.format(' (%s)', txid)}, 'checkTransaction', projectInfo)*/
+            }
+            else {
+                callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
             }
         })
     })
@@ -325,10 +329,10 @@ function getAddressInfo(projectInfo, callback) {
         //console.log(err)
         //console.log(body)
         
-        if ((resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
+        if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
             body = JSON.parse(body)
         
-        if (body && err == null && body.error === undefined) {
+        if (resp && err == null && body.error === undefined) {
             callback({type: 'data', msg: body}, 'getAddressInfo', projectInfo)
         }
         else {
@@ -362,7 +366,7 @@ function sendFunds(projectInfo, callback) {
         //console.log(err)
         //console.log(resp.body)
         
-        if ((resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
+        if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
             body = JSON.parse(body)
         
         if (resp && err == null && resp.body.error === undefined) {
@@ -426,7 +430,7 @@ function sendFunds(projectInfo, callback) {
                                             callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
                                         }
                                         else if (resp.complete) {
-                                            var sendTxCmd = {
+                                            /*var sendTxCmd = {
                                                 method: 'sendrawtransaction',
                                                 params: [resp.hex]
                                             }
@@ -441,7 +445,7 @@ function sendFunds(projectInfo, callback) {
                                                 else {
                                                     callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
                                                 }
-                                            })
+                                            })*/
                                         }
                                     })
                                 }
@@ -493,7 +497,7 @@ function sweepFunds(projectInfo, callback) {
             method: 'GET',
             json: true
         }, function (err, resp, body) {            
-            if ((resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
+            if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
                 body = JSON.parse(body)
             
             if (resp && err == null && resp.body.error === undefined) {
