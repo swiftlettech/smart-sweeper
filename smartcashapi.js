@@ -21,10 +21,11 @@ function init() {
 let smartcashCallback = function(resp, functionName, projectInfo, callback = null) {
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.smartcashCallbackInfo.get(referrer+projectInfo.projectID)
-    //console.log('smartcashCallback referrer: ', referrer)
-    //console.log('apiCallbackInfo ID: ', referrer+projectInfo.projectID)
-    //console.log('apiCallbackInfo: ', apiCallbackInfo)
-    //console.log('resp: ', resp.msg.body)
+    
+    console.log('smartcashCallback referrer: ', referrer)
+    console.log('apiCallbackInfo ID: ', referrer+projectInfo.projectID)
+    console.log('apiCallbackInfo: ', apiCallbackInfo)
+    //console.log('resp: ', resp)
     //console.log()
     
     if (resp.type === "data") {
@@ -45,7 +46,75 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
         apiCallbackInfo.apiCallbackCounter++
         var apiCallbackCounter = apiCallbackInfo.apiCallbackCounter
         
-        if (functionName === "sweepFunds") {
+        if (functionName === "sendFunds") {
+            if (referrer === "checkTransaction") {
+                global.sharedObject.rpcError = false
+                
+                var receivers = projectInfo.toAddr
+                var transactions = apiCallbackInfo.transactions
+                var outputs = {}                
+                
+                console.log('inputs: ', transactions)
+            
+                // add outputs
+                receivers.forEach(function(address, key) {
+                    outputs[address] = projectInfo.amtPerWallet
+                })
+            
+                var createTxCmd = {
+                    method: 'createrawtransaction',
+                    params: [transactions, outputs]
+                }
+                
+                rpc.sendCmd(createTxCmd, function(err, resp) {
+                    if (err) {
+                        callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
+                    }
+                    else {
+                        var decodeTxCmd = {
+                            method: 'decoderawtransaction',
+                            params: [resp]
+                        }
+
+                        rpc.sendCmd(decodeTxCmd, function(err, resp) {
+                            console.log("decoderawtransaction resp: ", resp)
+                            console.log("decoderawtransaction resp vin: ", resp.vin)
+                        })
+
+
+                        /*var signTxCmd = {
+                            method: 'signrawtransaction',
+                            params: [resp, null, [projectInfo.fromPK]]
+                        }
+
+                        rpc.sendCmd(signTxCmd, function(err, resp) {
+                            if (err) {
+                                callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
+                            }
+                            else if (resp.complete) {
+                                var sendTxCmd = {
+                                    method: 'sendrawtransaction',
+                                    params: [resp.hex]
+                                }
+
+                                rpc.sendCmd(sendTxCmd, function(err, resp) {
+                                    console.log(err)
+                                    console.log(resp)
+
+                                    if (err) {
+                                        callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
+                                    }
+                                    else {
+                                        callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
+                                    }
+                                })
+                            }
+                        })*/
+                    }
+                })
+            }
+        }
+        else if (functionName === "sweepFunds") {
             if ((referrer === "getAddressBalance") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                 global.availableProjects.list[projectInfo.projectIndex] = apiCallbackInfo.project // update project info
                 db.set('projects', global.availableProjects)
@@ -57,11 +126,16 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
         //console.log('smartcashapi.js error block')
         //console.log('error msg: ', resp.msg)
         
-        if (referrer === "getAddressBalance") {
+        if (referrer === "checkTransaction") {
+            global.sharedObject.rpcError = true
+        }
+        else if (referrer === "getAddressBalance") {
             global.sharedObject.blockExplorerError = true
         }
         
-        if (projectInfo.projectName) {
+        callback({type: 'error', msg: resp.msg}, functionName, projectInfo)
+        
+        /*if (projectInfo.projectName) {
             var address = ""
             if (projectInfo.address)
                 address = ", wallet address: " + projectInfo.address
@@ -73,7 +147,9 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
         }
         else {
             global.sharedObject.sysLogger.error(functionName + ': ' + resp.msg)
-        }
+        }*/
+        
+        
     }
 }
 
@@ -112,6 +188,9 @@ function checkBalance(projectInfo, callback) {
                 balance = 0
             else
                 balance = null
+            
+            if (typeof body === "string" && body.indexOf('Bitcoin') != -1)
+                console.log(resp.body)
             
             callback({type: 'data', msg: balance}, 'checkBalance', projectInfo)
         }
@@ -200,6 +279,51 @@ function checkTransaction(projectInfo, callback) {
             }
             else {
                 callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
+            }
+        })
+    })
+}
+
+/* Create transaction inputs from 1 or more project funding transactions. */
+function createSendInputs(txArray, projectInfo, callback) {
+    var transaction
+    
+    global.smartcashCallbackInfo.set('checkTransaction'+projectInfo.projectID, {
+        apiCallbackCounter: 0,
+        transactions: []
+    })
+    //global.smartcashCallbackInfo.get('checkTransaction')
+    
+    projectInfo.referrer = "checkTransaction"
+    
+    txArray.forEach(function(txid, txIndex) {
+        var getTxInfoCmd = {
+            method: 'getrawtransaction',
+            params: [txid, 1]
+        }
+
+        rpc.sendCmd(getTxInfoCmd, function(err, resp) {
+            //console.log('sendFunds')
+            //console.log(err)
+            //console.log(resp)
+
+            if (err) {
+                smartcashCallback({type: 'error', msg: resp}, 'sendFunds', projectInfo, callback)
+            }
+            else {
+                // add inputs
+                resp.vout.forEach(function(vout, voutIndex) {                                
+                    if (vout.scriptPubKey.addresses.includes(projectInfo.fromAddr)) {
+                        transaction = {
+                            'txid': txid,
+                            'vout': vout.n
+                        }
+                        
+                        global.smartcashCallbackInfo.get(projectInfo.referrer+projectInfo.projectID).transactions.push(transaction)
+                    }
+                })
+                
+                smartcashCallback({type: 'data', msg: transaction}, 'sendFunds', projectInfo, callback)
             }
         })
     })
@@ -354,9 +478,8 @@ function getAddressInfo(projectInfo, callback) {
 }
 
 /* Send funds from one address to another. */
-function sendFunds(projectInfo, callback) {
-    var receivers = projectInfo.toAddr
-    
+function sendFunds(projectInfo, callback) {    
+    // get all transactions associated with the project address
     request({
         url: smartcashExplorer + '/addr/' + projectInfo.fromAddr,
         method: 'GET',
@@ -364,99 +487,26 @@ function sendFunds(projectInfo, callback) {
     }, function (err, resp, body) {
         //console.log('sendFunds')
         //console.log(err)
-        //console.log(resp.body)
+        //console.log(body)
         
         if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
             body = JSON.parse(body)
         
-        if (resp && err == null && resp.body.error === undefined) {
+        if (resp && err == null && body.error === undefined) {
             // check to see if there is enough in the balance to cover the amount to send
-            if (resp.body.balance >= projectInfo.total) {
+            //if (body.balance >= projectInfo.amtToSend) {
                 var txArray = []
                 var newTx
-                var transactions = []
-                var outputs = {}
                 
                 resp.body.transactions.forEach(function(tx, n) {
-                    //if (tx.type === "vout")
-                        txArray.push(tx)
+                    txArray.push(tx)
                 })
                 
-                txArray.forEach(function(txid, txIndex) {
-                    var getTxInfoCmd = {
-                        method: 'getrawtransaction',
-                        params: [txid, 1]
-                    }
-                    
-                    rpc.sendCmd(getTxInfoCmd, function(err, resp) {
-                        //console.log('sendFunds')
-                        //console.log(err)
-                        //console.log(resp)
-
-                        if (err) {
-                            callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
-                        }
-                        else {
-                            resp.vout.forEach(function(vout, voutIndex) {
-                                if (vout.scriptPubKey.addresses.includes(projectInfo.fromAddr)) {
-                                    transactions.push({
-                                        'txid': txid,
-                                        'vout': vout.n
-                                    })
-                                }
-                            })
-
-                            receivers.forEach(function(address, key) {
-                                outputs[address] = projectInfo.amount
-                            })
-                            
-                            var createTxCmd = {
-                                method: 'createrawtransaction',
-                                params: [transactions, outputs]
-                            }
-                            
-                            rpc.sendCmd(createTxCmd, function(err, resp) {
-                                if (err) {
-                                    callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
-                                }
-                                else {
-                                    var signTxCmd = {
-                                        method: 'signrawtransaction',
-                                        params: [resp, null, [projectInfo.fromPK]]
-                                    }
-                                    
-                                    rpc.sendCmd(signTxCmd, function(err, resp) {
-                                        if (err) {
-                                            callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
-                                        }
-                                        else if (resp.complete) {
-                                            /*var sendTxCmd = {
-                                                method: 'sendrawtransaction',
-                                                params: [resp.hex]
-                                            }
-                                            
-                                            rpc.sendCmd(sendTxCmd, function(err, resp) {
-                                                console.log(err)
-                                                console.log(resp)
-                                                
-                                                if (err) {
-                                                    callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
-                                                }
-                                                else {
-                                                    callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
-                                                }
-                                            })*/
-                                        }
-                                    })
-                                }
-                            })
-                        }
-                    })
-                })
-            }
+                createSendInputs(txArray, projectInfo, callback)
+            /*}
             else {
                 callback({type: 'error', msg: "Insufficient funds."}, 'sendFunds', projectInfo)
-            }
+            }*/
         }
         else {
             var error

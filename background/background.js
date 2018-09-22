@@ -145,7 +145,11 @@
                 // get the transaction status of all projects
                 ipcRenderer.send('getProjectTxStatus');
             }
-            else if (functionName === "checkBlockchain") {
+            else if (functionName === "checkBlockchain1") {
+                remote.getGlobal('sharedObject').rpcConnected = true;
+                remote.getGlobal('sharedObject').rpcError = false;
+            }
+            else if (functionName === "checkBlockchain2") {
                 remote.getGlobal('sharedObject').blockExplorerError = false;
                 
                 // automatically sweep funds if necessary if the blockchain is up-to-date
@@ -160,11 +164,11 @@
             console.log('resp.msg: ', resp.msg)*/
             remote.getGlobal('sharedObject').sysLogger.error(functionName + ': ' + resp.msg);
 
-            if (functionName === "rpcCheck") {
+            if (functionName === "rpcCheck" || functionName === "checkBlockchain1") {
                 remote.getGlobal('sharedObject').rpcError = true;
                 remote.getGlobal('sharedObject').rpcConnected = false;
             }
-            else if (functionName === "checkBlockchain") {
+            else if (functionName === "checkBlockchain2") {
                 remote.getGlobal('sharedObject').blockExplorerError = true;
             }
         }
@@ -196,7 +200,7 @@
             //console.log(resp)
             
             if (err) {
-                apiCallback({type: 'error', msg: resp}, 'checkBlockchain');
+                apiCallback({type: 'error', msg: resp}, 'checkBlockchain1');
             }
             else {
                 var localHeaderCount = parseInt(resp.headers);
@@ -259,7 +263,7 @@
                                 error = body
                             
                             remote.getGlobal('sharedObject').blockExplorerError = true;
-                            apiCallback({type: 'error', msg: error}, 'checkBlockchain');
+                            apiCallback({type: 'error', msg: error}, 'checkBlockchain2');
                         }
                     });
                 }

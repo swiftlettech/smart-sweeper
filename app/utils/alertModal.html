@@ -1,6 +1,7 @@
 <div id="modalMsg" role="alert">
     <div class="modal-body">
         <div class="modal-close"><button class="btn btn-default" ng-click="$modalCtrl.close()"><i class="fa fa-fw fa-times"></i></button></div>
-        <i class="fa fa-fw fa-exclamation-circle" ng-class="{modalAlertSucess: $modalCtrl.alertSuccess, modalAlertError: !$modalCtrl.alertSuccess}"></i> <span ng-show="$modalCtrl.alertSuccess">Success!</span><span ng-show="!$modalCtrl.alertSuccess">Error!</span> {{$modalCtrl.modalMsg}}
+        <i class="fa fa-fw fa-exclamation-circle" ng-class="{modalAlertSucess: $modalCtrl.alertSuccess, modalAlertError: !$modalCtrl.alertSuccess}"></i>
+        <span ng-show="$modalCtrl.alertSuccess">Success!</span><span ng-show="!$modalCtrl.alertSuccess">Error!</span> {{$modalCtrl.modalMsg}}
     </div>
 </div>
