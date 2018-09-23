@@ -4,7 +4,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div>Available Balance (<span ng-bind="$dashboardCtrl.projectCount"></span> <span ng-show="$dashboardCtrl.projectCount == 1">project</span><span ng-show="$dashboardCtrl.projectCount != 1">projects</span>)</div>
-                    <div class="spinner" ng-show="$dashboardCtrl.spinner[0]"><img src="images/spinner.gif" alt="Progress spinner" /></div>
+                    <div class="spinner" ng-show="$dashboardCtrl.progressSpinner[0]"><img src="images/spinner.gif" alt="Progress spinner" /></div>
                 </div>
                 <div class="panel-body">
                     <span ng-bind="$dashboardCtrl.availableBalance | toFixedNum: 8"></span>
@@ -13,8 +13,8 @@
             
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div>Pending Transactions (<span ng-bind="$dashboardCtrl.pendingWalletsCount"></span> promotional <span ng-show="$dashboardCtrl.pendingWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.pendingWalletsCount != 1">wallets</span>)</div>
-                    <div class="spinner" ng-show="$dashboardCtrl.spinner[1]"><img src="images/spinner.gif" alt="Progress spinner" /></div>
+                    <div>Pending Transactions (<span ng-bind="$dashboardCtrl.pendingWalletsCount"></span> promo <span ng-show="$dashboardCtrl.pendingWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.pendingWalletsCount != 1">wallets</span>)</div>
+                    <div class="spinner" ng-show="$dashboardCtrl.progressSpinner[1]"><img src="images/spinner.gif" alt="Progress spinner" /></div>
                 </div>
                 <div class="panel-body">
                     <span ng-bind="$dashboardCtrl.pendingFunds | toFixedNum: 8"></span>
@@ -23,8 +23,8 @@
             
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div>Confirmed Transactions (<span ng-bind="$dashboardCtrl.confirmedWalletsCount"></span> promotional <span ng-show="$dashboardCtrl.confirmedWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.confirmedWalletsCount != 1">wallets</span>)</div>
-                    <div class="spinner" ng-show="$dashboardCtrl.spinner[2]"><img src="images/spinner.gif" alt="Progress spinner" /></div>
+                    <div>Confirmed Transactions (<span ng-bind="$dashboardCtrl.confirmedWalletsCount"></span> promo <span ng-show="$dashboardCtrl.confirmedWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.confirmedWalletsCount != 1">wallets</span>)</div>
+                    <div class="spinner" ng-show="$dashboardCtrl.progressSpinner[2]"><img src="images/spinner.gif" alt="Progress spinner" /></div>
                 </div>
                 <div class="panel-body">
                     <span ng-bind="$dashboardCtrl.confirmedFunds | toFixedNum: 8"></span>
@@ -33,8 +33,8 @@
             
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div>Claimed Funds (<span ng-bind="$dashboardCtrl.claimedWalletsCount"></span> promotional <span ng-show="$dashboardCtrl.claimedWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.claimedWalletsCount != 1">wallets</span>)</div>
-                    <div class="spinner" ng-show="$dashboardCtrl.spinner[3]"><img src="images/spinner.gif" alt="Progress spinner" /></div>
+                    <div>Claimed Funds (<span ng-bind="$dashboardCtrl.claimedWalletsCount"></span> promo <span ng-show="$dashboardCtrl.claimedWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.claimedWalletsCount != 1">wallets</span>)</div>
+                    <div class="spinner" ng-show="$dashboardCtrl.progressSpinner[3]"><img src="images/spinner.gif" alt="Progress spinner" /></div>
                 </div>
                 <div class="panel-body">
                     <span ng-bind="$dashboardCtrl.claimedFunds | toFixedNum: 8"></span>
@@ -43,8 +43,8 @@
             
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div>Swept Funds (<span ng-bind="$dashboardCtrl.sweptWalletsCount"></span> promotional <span ng-show="$dashboardCtrl.sweptWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.sweptWalletsCount != 1">wallets</span>)</div>
-                    <div class="spinner" ng-show="$dashboardCtrl.spinner[4]"><img src="images/spinner.gif" alt="Progress spinner" /></div>
+                    <div>Swept Funds (<span ng-bind="$dashboardCtrl.sweptWalletsCount"></span> promo <span ng-show="$dashboardCtrl.sweptWalletsCount == 1">wallet</span><span ng-show="$dashboardCtrl.sweptWalletsCount != 1">wallets</span>)</div>
+                    <div class="spinner" ng-show="$dashboardCtrl.progressSpinner[4]"><img src="images/spinner.gif" alt="Progress spinner" /></div>
                 </div>
                 <div class="panel-body">
                     <span ng-bind="$dashboardCtrl.sweptFunds | toFixedNum: 8"></span>

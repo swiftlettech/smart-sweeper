@@ -7,6 +7,7 @@ const http = require('http')
 const util = require('util')
 const {watch} = require('melanke-watchjs')
 const Store = require('electron-store')
+const delayedCall = require('delayed-call')
 const smartcashExplorer = "https://insight.smartcash.cc/api"
 
 let db = new Store({name: "smart-sweeper"})
@@ -22,15 +23,15 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.smartcashCallbackInfo.get(referrer+projectInfo.projectID)
     
-    console.log('smartcashCallback referrer: ', referrer)
-    console.log('apiCallbackInfo ID: ', referrer+projectInfo.projectID)
-    console.log('apiCallbackInfo: ', apiCallbackInfo)
+    //console.log('smartcashCallback referrer: ', referrer)
+    //console.log('apiCallbackInfo ID: ', referrer+projectInfo.projectID)
+    //console.log('apiCallbackInfo: ', apiCallbackInfo)
     //console.log('resp: ', resp)
     //console.log()
     
     if (resp.type === "data") {
         if (functionName === "sweepFunds") {
-            if (referrer === "getAddressBalance") {
+            if (referrer === "sweepFundsAddrBalance") {
                 global.sharedObject.blockExplorerError = false
                 
                 if (resp.msg.body.balance == 0) {
@@ -47,78 +48,18 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
         var apiCallbackCounter = apiCallbackInfo.apiCallbackCounter
         
         if (functionName === "sendFunds") {
-            if (referrer === "checkTransaction") {
+            if ((referrer === "sendFundsCheck") && (apiCallbackCounter == apiCallbackInfo.totalTxs)) {
                 global.sharedObject.rpcError = false
-                
-                var receivers = projectInfo.toAddr
-                var transactions = apiCallbackInfo.transactions
-                var outputs = {}                
-                
-                console.log('inputs: ', transactions)
-            
-                // add outputs
-                receivers.forEach(function(address, key) {
-                    outputs[address] = projectInfo.amtPerWallet
-                })
-            
-                var createTxCmd = {
-                    method: 'createrawtransaction',
-                    params: [transactions, outputs]
-                }
-                
-                rpc.sendCmd(createTxCmd, function(err, resp) {
-                    if (err) {
-                        callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
-                    }
-                    else {
-                        var decodeTxCmd = {
-                            method: 'decoderawtransaction',
-                            params: [resp]
-                        }
-
-                        rpc.sendCmd(decodeTxCmd, function(err, resp) {
-                            console.log("decoderawtransaction resp: ", resp)
-                            console.log("decoderawtransaction resp vin: ", resp.vin)
-                        })
-
-
-                        /*var signTxCmd = {
-                            method: 'signrawtransaction',
-                            params: [resp, null, [projectInfo.fromPK]]
-                        }
-
-                        rpc.sendCmd(signTxCmd, function(err, resp) {
-                            if (err) {
-                                callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
-                            }
-                            else if (resp.complete) {
-                                var sendTxCmd = {
-                                    method: 'sendrawtransaction',
-                                    params: [resp.hex]
-                                }
-
-                                rpc.sendCmd(sendTxCmd, function(err, resp) {
-                                    console.log(err)
-                                    console.log(resp)
-
-                                    if (err) {
-                                        callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
-                                    }
-                                    else {
-                                        callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
-                                    }
-                                })
-                            }
-                        })*/
-                    }
-                })
+                doSend(apiCallbackInfo.transactions, projectInfo, callback)
+                global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
             }
         }
         else if (functionName === "sweepFunds") {
-            if ((referrer === "getAddressBalance") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
+            if ((referrer === "sweepFundsAddrBalance") && (apiCallbackCounter == apiCallbackInfo.totalAddrs)) {
                 global.availableProjects.list[projectInfo.projectIndex] = apiCallbackInfo.project // update project info
                 db.set('projects', global.availableProjects)
                 doSweep(projectInfo, callback)
+                global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
             }
         }
     }
@@ -126,10 +67,10 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
         //console.log('smartcashapi.js error block')
         //console.log('error msg: ', resp.msg)
         
-        if (referrer === "checkTransaction") {
+        if (referrer === "sendFundsCheck") {
             global.sharedObject.rpcError = true
         }
-        else if (referrer === "getAddressBalance") {
+        else if (referrer === "sweepFundsAddrBalance") {
             global.sharedObject.blockExplorerError = true
         }
         
@@ -189,9 +130,6 @@ function checkBalance(projectInfo, callback) {
             else
                 balance = null
             
-            if (typeof body === "string" && body.indexOf('Bitcoin') != -1)
-                console.log(resp.body)
-            
             callback({type: 'data', msg: balance}, 'checkBalance', projectInfo)
         }
         else {
@@ -208,6 +146,72 @@ function checkBalance(projectInfo, callback) {
                 error = body
             
             callback({type: 'error', msg: error}, 'checkBalance', projectInfo)
+        }
+    })
+}
+
+/* Check all project transactions and get the vouts. */
+function checkSendInputs(txid, projectInfo, callback) {
+    var getTxInfoCmd = {
+        method: 'getrawtransaction',
+        params: [txid, 1]
+    }
+
+    rpc.sendCmd(getTxInfoCmd, function(err, resp) {
+        //console.log('sendFunds')
+        //console.log(err)
+        //console.log(resp)
+
+        if (err) {
+            smartcashCallback({type: 'error', msg: resp}, 'sendFunds', projectInfo, callback)
+        }
+        else {
+            var newTx
+            
+            // add inputs
+            resp.vout.forEach(function(vout, voutIndex) {
+                if (vout.scriptPubKey.addresses.includes(projectInfo.fromAddr)) {
+                    newTx = {
+                        'txid': txid,
+                        'vout': vout.n
+                    }
+                    
+                    console.log('global: ', global)
+                    //console.log('global.smartcashCallbackInfo: ', global.smartcashCallbackInfo.get(projectInfo.referrer+projectInfo.projectID))
+
+                    global.smartcashCallbackInfo.get(projectInfo.referrer+projectInfo.projectID).transactions.push(newTx)
+                }
+            })
+
+            smartcashCallback({type: 'data', msg: ''}, 'sendFunds', projectInfo, callback)
+        }
+    })
+}
+
+/* Check the balance of each promo wallet to sweep to make sure it's not zero. */
+function checkSweepInputs(address, projectInfo, callback) {
+    request({
+        url: smartcashExplorer + '/addr/' + address.publicKey,
+        method: 'GET',
+        json: true
+    }, function (err, resp, body) {            
+        if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
+            body = JSON.parse(body)
+
+        if (resp && err == null && resp.body.error === undefined) {
+            smartcashCallback({type: 'data', msg: resp}, 'sweepFunds', projectInfo, callback)
+        }
+        else {
+            var error
+
+            if (err)
+                error = err
+            else if (body.error)
+                error = body.error
+            else
+                error = body
+
+            callback({type: 'error', msg: error}, 'sweepFunds', projectInfo)
         }
     })
 }
@@ -284,54 +288,72 @@ function checkTransaction(projectInfo, callback) {
     })
 }
 
-/* Create transaction inputs from 1 or more project funding transactions. */
-function createSendInputs(txArray, projectInfo, callback) {
-    var transaction
-    
-    global.smartcashCallbackInfo.set('checkTransaction'+projectInfo.projectID, {
-        apiCallbackCounter: 0,
-        transactions: []
+/* Actually fund the promo wallets. */
+function doSend(transactions, projectInfo, callback) {
+    var receivers = projectInfo.toAddr
+    var outputs = {}
+
+    // add outputs
+    receivers.forEach(function(address, key) {
+        outputs[address] = projectInfo.amtPerWallet
     })
-    //global.smartcashCallbackInfo.get('checkTransaction')
-    
-    projectInfo.referrer = "checkTransaction"
-    
-    txArray.forEach(function(txid, txIndex) {
-        var getTxInfoCmd = {
-            method: 'getrawtransaction',
-            params: [txid, 1]
+
+    var createTxCmd = {
+        method: 'createrawtransaction',
+        params: [transactions, outputs]
+    }
+
+    rpc.sendCmd(createTxCmd, function(err, resp) {
+        if (err) {
+            callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
         }
-
-        rpc.sendCmd(getTxInfoCmd, function(err, resp) {
-            //console.log('sendFunds')
-            //console.log(err)
-            //console.log(resp)
-
-            if (err) {
-                smartcashCallback({type: 'error', msg: resp}, 'sendFunds', projectInfo, callback)
+        else {
+            /*var decodeTxCmd = {
+                method: 'decoderawtransaction',
+                params: [resp]
             }
-            else {
-                // add inputs
-                resp.vout.forEach(function(vout, voutIndex) {                                
-                    if (vout.scriptPubKey.addresses.includes(projectInfo.fromAddr)) {
-                        transaction = {
-                            'txid': txid,
-                            'vout': vout.n
-                        }
-                        
-                        global.smartcashCallbackInfo.get(projectInfo.referrer+projectInfo.projectID).transactions.push(transaction)
+
+            rpc.sendCmd(decodeTxCmd, function(err, resp) {
+                console.log("decoderawtransaction resp: ", resp)
+                console.log("decoderawtransaction resp vin: ", resp.vin)
+            })*/
+
+
+            var signTxCmd = {
+                method: 'signrawtransaction',
+                params: [resp, null, [projectInfo.fromPK]]
+            }
+
+            rpc.sendCmd(signTxCmd, function(err, resp) {
+                if (err) {
+                    callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
+                }
+                else if (resp.complete) {
+                    var sendTxCmd = {
+                        method: 'sendrawtransaction',
+                        params: [resp.hex]
                     }
-                })
-                
-                smartcashCallback({type: 'data', msg: transaction}, 'sendFunds', projectInfo, callback)
-            }
-        })
+
+                    rpc.sendCmd(sendTxCmd, function(err, resp) {
+                        console.log(err)
+                        console.log(resp)
+
+                        if (err) {
+                            callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
+                        }
+                        else {
+                            callback({type: 'data', msg: resp}, 'sendFunds', projectInfo)
+                        }
+                    })
+                }
+            })
+        }
     })
 }
 
 /* Actually sweep the funds. */
 function doSweep(projectInfo, callback) {
-    var referrer = "getAddressBalance"
+    var referrer = "sweepFundsAddrBalance"
     var project = projectInfo.project
     projectInfo.referrer = "sweepFunds"
     
@@ -387,16 +409,16 @@ function doSweep(projectInfo, callback) {
                     callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
                 }
                 else {
-                    /*var decodeTxCmd = {
+                    var decodeTxCmd = {
                         method: 'decoderawtransaction',
                         params: [resp]
                     }
                     
                     rpc.sendCmd(decodeTxCmd, function(err, resp) {
                         console.log("decoderawtransaction resp: ", resp)
-                    })*/
+                    })
                     
-                    var signTxCmd = {
+                    /*var signTxCmd = {
                         method: 'signrawtransaction',
                         params: [resp, null, unclaimedWalletsPKs]
                     }
@@ -426,7 +448,7 @@ function doSweep(projectInfo, callback) {
                                 }
                             })
                         }
-                    })
+                    })*/
                 }
             })
         }
@@ -478,7 +500,7 @@ function getAddressInfo(projectInfo, callback) {
 }
 
 /* Send funds from one address to another. */
-function sendFunds(projectInfo, callback) {    
+function sendFunds(projectInfo, callback) {
     // get all transactions associated with the project address
     request({
         url: smartcashExplorer + '/addr/' + projectInfo.fromAddr,
@@ -494,19 +516,27 @@ function sendFunds(projectInfo, callback) {
         
         if (resp && err == null && body.error === undefined) {
             // check to see if there is enough in the balance to cover the amount to send
-            //if (body.balance >= projectInfo.amtToSend) {
+            if (body.balance >= projectInfo.amtToSend) {
                 var txArray = []
-                var newTx
                 
                 resp.body.transactions.forEach(function(tx, n) {
                     txArray.push(tx)
                 })
-                
-                createSendInputs(txArray, projectInfo, callback)
-            /*}
+            
+                global.smartcashCallbackInfo.set('sendFundsCheck'+projectInfo.projectID, {
+                    apiCallbackCounter: 0,
+                    totalTxs: txArray.length,
+                    transactions: []
+                })
+                projectInfo.referrer = "sendFundsCheck"
+
+                txArray.forEach(function(txid, txIndex) {
+                    delayedCall.create(global.rpcFunctionDelay, checkSendInputs, txid, projectInfo, callback)
+                })
+            }
             else {
                 callback({type: 'error', msg: "Insufficient funds."}, 'sendFunds', projectInfo)
-            }*/
+            }
         }
         else {
             var error
@@ -529,8 +559,8 @@ function sweepFunds(projectInfo, callback) {
     projectInfo.projectName = project.name
     var receiver = project.sweepAddr
     
-    if (global.smartcashCallbackInfo.get('getAddressBalance'+project.id) === undefined) {
-        global.smartcashCallbackInfo.set('getAddressBalance'+project.id, {
+    if (global.smartcashCallbackInfo.get('sweepFundsAddrBalance'+project.id) === undefined) {
+        global.smartcashCallbackInfo.set('sweepFundsAddrBalance'+project.id, {
             apiCallbackCounter: 0,
             totalAddrs: project.recvAddrs.length,
             project: project
@@ -540,32 +570,9 @@ function sweepFunds(projectInfo, callback) {
     //console.log(global.smartcashCallbackInfo)
     
     // check the balance of each "unclaimed" promotional wallet to make sure they're still unclaimed
-    projectInfo.referrer = "getAddressBalance"
+    projectInfo.referrer = "sweepFundsAddrBalance"
     project.recvAddrs.forEach(function(address, key) {
-        request({
-            url: smartcashExplorer + '/addr/' + address.publicKey,
-            method: 'GET',
-            json: true
-        }, function (err, resp, body) {            
-            if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
-                body = JSON.parse(body)
-            
-            if (resp && err == null && resp.body.error === undefined) {
-                smartcashCallback({type: 'data', msg: resp}, 'sweepFunds', projectInfo, callback)
-            }
-            else {
-                var error
-                            
-                if (err)
-                    error = err
-                else if (body.error)
-                    error = body.error
-                else
-                    error = body
-                
-                callback({type: 'error', msg: error}, 'sweepFunds', projectInfo)
-            }
-        })
+        delayedCall.create(global.explorerFunctionDelay, checkSweepInputs, address, projectInfo, callback)
     })
 }
 

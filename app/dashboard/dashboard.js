@@ -58,8 +58,6 @@
                     //sweptFunds();
                 });
             });
-            
-            //$mainCtrl.setPageHeight();
         };
         
         // reload projects when there have been changes
@@ -72,7 +70,6 @@
                 });
 
                 ctrl.projectCount = ctrl.availableProjects.length;
-                console.log(ctrl.availableProjects);
             });
         });
         
@@ -125,41 +122,59 @@
             });
         });
         
+        ipcRenderer.on('toggleDashboardSpinner', (event, args) => {            
+            $scope.$apply(function() {
+                var toggle = args.status
+                
+                if (args.type === "getWalletTxStatus") {
+                    ctrl.progressSpinner[1] = toggle;
+                    ctrl.progressSpinner[2] = toggle;
+                }
+                else if (args.type === "getClaimedFundsInfo") {
+                    ctrl.progressSpinner[3] = toggle;
+                }
+                else if (args.type === "getSweptFundsInfo") {
+                    ctrl.progressSpinner[4] = toggle;
+                }
+            });
+        });
+        
         /* The total project funds that have yet to be sent to another wallet (all projects). */
         function availableFunds() {
             ctrl.progressSpinner[0] = true;
             ipcRenderer.send('checkAvailProjectBalances');
             
             // status checking
-            /*ctrl.taskStatusCheck = $interval(function() {
+            ctrl.taskStatusCheck = $interval(function() {
                 ipcRenderer.send('taskStatusCheck', 'checkAvailProjectBalances');
             }, 5000);
             
             ipcRenderer.on('taskStatusCheckDone', (event, args) => {
                 ipcRenderer.removeAllListeners('taskStatusCheckDone');
                 $scope.$apply(function() {
-                    if (args.function === "checkAvailProjectBalances" && (args.status == true || args.error == true)) {
+                    if (args.function === "checkAvailProjectBalances" && args.status == true) {
                         $interval.cancel(ctrl.taskStatusCheck);
+                        ctrl.progressSpinner[0] = false;
                     }
                     else
-                        ctrl.showSpinner = true;
+                        ctrl.progressSpinner[0] = true;
                 });
-            });*/
+            });
         }
         
-        /* Funds that have been transferred from a promotional wallet to a different wallet (all projects). */
+        /* Funds that have been transferred from a promotional wallet to a different wallet (all projects). - NOT USED */
         function claimedFunds() {
             ctrl.progressSpinner[3] = true;
             ipcRenderer.send('getClaimedFundsInfo');
         }
         
-        /* Funds that have been swept back to a project address (all projects). */
+        /* Funds that have been swept back to a project address (all projects). - NOT USED */
         function sweptFunds() {
             ctrl.progressSpinner[4] = true;
             ipcRenderer.send('getSweptFundsInfo');
         }
         
-        /* The pending/confirmed state of all promotional wallets (all projects). */
+        /* The pending/confirmed state of all promotional wallets (all projects). - NOT USED */
         function txInfo() {
             ctrl.progressSpinner[1] = true;
             ctrl.progressSpinner[2] = true;

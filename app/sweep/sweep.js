@@ -51,7 +51,7 @@
                 ipcRenderer.removeAllListeners('taskStatusCheckDone');
                 $scope.$apply(function() {
                     console.log(args);
-                    if (args.function === "sweepFunds" && (args.status == true || args.error == true)) {
+                    if (args.function === "sweepFunds" && args.status == true) {
                         $interval.cancel(ctrl.taskStatusCheck);
                     }
                 });
