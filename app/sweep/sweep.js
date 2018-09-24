@@ -57,6 +57,16 @@
                 });
             });
             
+            ipcRenderer.on('toggleProgressSpinner', (event, args) => {
+                $scope.$apply(function() {
+                    var toggle = args.status;
+
+                    if (args.function === "fundsSwept") {
+
+                    }
+                });
+            });
+            
             ipcRenderer.on('fundsSwept', (event, args) => {
                 $scope.$apply(function() {
                     // reset form

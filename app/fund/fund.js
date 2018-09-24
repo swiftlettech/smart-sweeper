@@ -44,6 +44,16 @@
             });
         });
         
+        ipcRenderer.on('toggleProgressSpinner', (event, args) => {
+            $scope.$apply(function() {
+                var toggle = args.status;
+                
+                if (args.function === "promotionalFundsSent") {
+                    $scope.sendFundsSpinner = toggle;
+                }
+            });
+        });
+        
         /* Load a modal used to edit a project. */
         ctrl.edit = function(id) {
             ctrl.activeProjectID = id;

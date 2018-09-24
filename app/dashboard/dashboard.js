@@ -11,8 +11,7 @@
         var ctrl = this;
 
         $scope.init = function() {
-            resetDashboardVals();            
-            ctrl.progressSpinner = ['false', 'false', 'false', 'false', 'false'];
+            resetDashboardVals();
             
             $scope.$on('onlineCheck', function(event, args) {
                 resetDashboardVals();
@@ -48,10 +47,8 @@
             if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
             
-            ipcRenderer.on('rpcConnected', (event, args) => {
+            ipcRenderer.on('coreSynced', (event, args) => {
                 $scope.$apply(function() {
-                    ctrl.projectCount = ctrl.availableProjects.length;
-
                     availableFunds();
                     //txInfo();
                     //claimedFunds();
@@ -64,6 +61,7 @@
         ipcRenderer.on('projectsReady', (event, args) => {            
             $scope.$apply(function() {
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
+                ctrl.projectCount = ctrl.availableProjects.length;
                 
                 angular.forEach(ctrl.availableProjects, function(project, key) {
                     project.showPrivateKey = false;
@@ -77,8 +75,28 @@
             ctrl.availableBalance = 0;
             
             $scope.$apply(function() {
-                ctrl.progressSpinner[0] = false;
+                $mainCtrl.setProgressSpinner('dashboardSpinner', false, 0);
                 ctrl.availableBalance = $filter('toFixedNum')(args.availableBalance, 8);
+            });
+        });
+        
+        /* Show/hide various progress spinners. */
+        ipcRenderer.on('toggleProgressSpinner', (event, args) => {
+            $scope.$apply(function() {
+                var toggle = args.status;
+                
+                if (args.function === "getWalletTxStatus") {
+                    $scope.dashboardSpinner[1] = toggle;
+                    $scope.dashboardSpinner[2] = toggle;
+                }
+                else if (args.function === "getClaimedFundsInfo") {
+                    $scope.dashboardSpinner[3] = toggle;
+                }
+                else if (args.function === "getSweptFundsInfo") {
+                    $scope.dashboardSpinner[4] = toggle;
+                }
+                
+                ctrl.dashboardSpinner = $scope.dashboardSpinner;
             });
         });
         
@@ -89,8 +107,8 @@
             ctrl.confirmedWalletsCount = 0;
             
             $scope.$apply(function() {
-                ctrl.progressSpinner[1] = false;
-                ctrl.progressSpinner[2] = false;
+                $mainCtrl.setProgressSpinner('dashboardSpinner', false, 1);
+                $mainCtrl.setProgressSpinner('dashboardSpinner', false, 2);
                 
                 ctrl.pendingFunds = args.pendingFunds;
                 ctrl.pendingWalletsCount = args.pendingWallets;
@@ -105,7 +123,7 @@
             ctrl.claimedWalletsCount = 0;
 
             $scope.$apply(function() {
-                ctrl.progressSpinner[3] = false;
+                $mainCtrl.setProgressSpinner('dashboardSpinner', false, 3);
                 ctrl.claimedFunds = args.claimedFunds;
                 ctrl.claimedWalletsCount = args.claimedWallets;
             });
@@ -116,36 +134,19 @@
             ctrl.sweptWalletsCount = 0;
 
             $scope.$apply(function() {
-                ctrl.progressSpinner[4] = false;
+                $mainCtrl.setProgressSpinner('dashboardSpinner', false, 4);
                 ctrl.sweptFunds = args.sweptFunds;
                 ctrl.sweptWalletsCount = args.sweptWalletsCount;
             });
         });
         
-        ipcRenderer.on('toggleDashboardSpinner', (event, args) => {            
-            $scope.$apply(function() {
-                var toggle = args.status
-                
-                if (args.type === "getWalletTxStatus") {
-                    ctrl.progressSpinner[1] = toggle;
-                    ctrl.progressSpinner[2] = toggle;
-                }
-                else if (args.type === "getClaimedFundsInfo") {
-                    ctrl.progressSpinner[3] = toggle;
-                }
-                else if (args.type === "getSweptFundsInfo") {
-                    ctrl.progressSpinner[4] = toggle;
-                }
-            });
-        });
-        
         /* The total project funds that have yet to be sent to another wallet (all projects). */
         function availableFunds() {
-            ctrl.progressSpinner[0] = true;
+            $mainCtrl.setProgressSpinner('dashboardSpinner', true, 0);
             ipcRenderer.send('checkAvailProjectBalances');
             
             // status checking
-            ctrl.taskStatusCheck = $interval(function() {
+            /*ctrl.taskStatusCheck = $interval(function() {
                 ipcRenderer.send('taskStatusCheck', 'checkAvailProjectBalances');
             }, 5000);
             
@@ -154,30 +155,30 @@
                 $scope.$apply(function() {
                     if (args.function === "checkAvailProjectBalances" && args.status == true) {
                         $interval.cancel(ctrl.taskStatusCheck);
-                        ctrl.progressSpinner[0] = false;
+                        $mainCtrl.setProgressSpinner('dashboardSpinner', false, 0);
                     }
                     else
-                        ctrl.progressSpinner[0] = true;
+                        $mainCtrl.setProgressSpinner('dashboardSpinner', true, 0);
                 });
-            });
+            });*/
         }
         
         /* Funds that have been transferred from a promotional wallet to a different wallet (all projects). - NOT USED */
         function claimedFunds() {
-            ctrl.progressSpinner[3] = true;
+            $mainCtrl.setProgressSpinner('dashboardSpinner', true, 3);
             ipcRenderer.send('getClaimedFundsInfo');
         }
         
         /* Funds that have been swept back to a project address (all projects). - NOT USED */
         function sweptFunds() {
-            ctrl.progressSpinner[4] = true;
+            $mainCtrl.setProgressSpinner('dashboardSpinner', true, 4);
             ipcRenderer.send('getSweptFundsInfo');
         }
         
         /* The pending/confirmed state of all promotional wallets (all projects). - NOT USED */
         function txInfo() {
-            ctrl.progressSpinner[1] = true;
-            ctrl.progressSpinner[2] = true;
+            $mainCtrl.setProgressSpinner('dashboardSpinner', true, 1);
+            $mainCtrl.setProgressSpinner('dashboardSpinner', true, 2);
             ipcRenderer.send('getWalletTxStatus');
         }
         

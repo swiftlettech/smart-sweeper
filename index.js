@@ -1008,23 +1008,32 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 }
                 
                 if ((referrer === "getWalletTxStatus") || (referrer === "getClaimedFundsInfo") || (referrer === "getSweptFundsInfo")) {
-                    global.sharedObject.win.webContents.send('toggleDashboardSpinner', {msgType: referrer, msg: false})
+                    if (global.sharedObject.win)
+                        global.sharedObject.win.webContents.send('toggleProgressSpinner', {function: referrer, status: false})
                 }
 
                 if (functionName === "checkBalance") {
                     global.sharedObject.blockExplorerError = true
                 }
 
-                if (referrer === "sendPromotionalFunds" && global.sharedObject.win) {
-                    var reason = ""
+                if ((referrer === "sendPromotionalFunds" || referrer === "sweepFunds") && global.sharedObject.win) {
+                    if (global.sharedObject.win)
+                        global.sharedObject.win.webContents.send('toggleProgressSpinner', {function: referrer, status: false})
                     
+                    var reason = ""                    
                     if (resp.msg.indexOf('Error') == -1)
                         reason = " Reason: " + resp.msg
                     
-                    global.sharedObject.win.webContents.send('promotionalFundsSent', {msgType: 'error', msg: 'Promotional funds could not be sent for project "' + projectInfo.projectName + '".' + reason})
-                }
-                else if (referrer === "sweepFunds" && global.sharedObject.win) {
-                    global.sharedObject.win.webContents.send('fundsSwept', {msgType: 'error', msg: 'Funds could not be swept for project "' + projectInfo.projectName + '".'})
+                    if (referrer === "sendPromotionalFunds") {
+                        if (global.sharedObject.win) {
+                            global.sharedObject.win.webContents.send('promotionalFundsSent', {msgType: 'error', msg: 'Promotional funds could not be sent for project "' + projectInfo.projectName + '".' + reason})
+                        }
+                    }
+                    else if (referrer === "sweepFunds") {
+                        if (global.sharedObject.win) {
+                            global.sharedObject.win.webContents.send('fundsSwept', {msgType: 'error', msg: 'Funds could not be swept for project "' + projectInfo.projectName + '".' + reason})
+                        }
+                    }
                 }
             }
             else if (projectInfo.projectID) {
@@ -1423,7 +1432,8 @@ ipcMain.on('fundProject', (event, args) => {
 
 // get the total amount of gift funds that have been claimed
 ipcMain.on('getClaimedFundsInfo', (event, args) => {
-    global.sharedObject.win.webContents.send('toggleDashboardSpinner', {msgType: 'getClaimedFundsInfo', msg: true})
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('toggleProgressSpinner', {function: 'getClaimedFundsInfo', status: true})
     
     var index
     var project
@@ -1528,7 +1538,8 @@ ipcMain.on('getSavedAppData', (event, args) => {
 
 // get information about funds that have been swept
 ipcMain.on('getSweptFundsInfo', (event, args) => {
-    global.sharedObject.win.webContents.send('toggleDashboardSpinner', {msgType: 'getSweptFundsInfo', msg: true})
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('toggleProgressSpinner', {function: 'getSweptFundsInfo', status: true})
     
     var totalAddrs = 0
     
@@ -1589,7 +1600,8 @@ ipcMain.on('getSweptTxStatus', (event, args) => {
 
 // get pending/confirmed status for all promotional wallet transactions
 ipcMain.on('getWalletTxStatus', (event, args) => {
-    global.sharedObject.win.webContents.send('toggleDashboardSpinner', {msgType: 'getWalletTxStatus', msg: true})
+    if (global.sharedObject.win)
+        global.sharedObject.win.webContents.send('toggleProgressSpinner', {function: 'getWalletTxStatus', status: true})
     
     if (global.availableProjects === undefined)
         loadProjects()

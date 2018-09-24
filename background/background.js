@@ -30,22 +30,7 @@
     
     init();
     
-    function init() {
-        /*request({
-            url: smartcashExplorer + '/addr',
-            method: 'GET'
-        }, function (err, resp, body) {
-            console.log('err: ', err)
-            console.log('resp: ', resp)
-            console.log('body: ', body)
-            
-            console.log(resp.headers['content-type'])
-            console.log("typeof resp.body: ", typeof body)
-            body = JSON.parse(body)
-            console.log('body: ', body)
-            console.log('body.error: ', body.error)
-        })*/
-        
+    function init() {        
         // catch unhandled exceptions
         unhandled({
             logger: function(err) {
@@ -121,8 +106,8 @@
                 // check address balances once per minute to try to avoid block explorer connection issues
                 setInterval(() => {
                     ipcRenderer.send('getClaimedFundsInfo');
-                    ipcRenderer.send('getWalletTxStatus');
                     ipcRenderer.send('getSweptTxStatus');
+                    ipcRenderer.send('getWalletTxStatus');
                 }, 60000);
             }
         })
@@ -226,7 +211,7 @@
                         //console.log('resp.body: ', resp.body)
                         //console.log('body: ', body)
                         
-                        if ((resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
+                        if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
                             body = JSON.parse(body)
 
                         if (resp && err == null && body.error === undefined) {

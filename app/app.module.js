@@ -26,6 +26,13 @@
             //$document.find('#appAlert, .formAlert').addClass('hide');
             ctrl.taskStatusData = new Map();
             
+            $scope.dashboardSpinner = [false, false, false, false, false];
+            $scope.sendFundsSpinner = false;
+            $scope.sweepFundsSpinner = [];
+            for (var i=0; i<electron.remote.getGlobal('availableProjects').list.length; i++) {
+                $scope.sweepFundsSpinner.push(false);
+            }
+            
             isOnline().then(online => {
                 ctrl.isOnline = online;
                 electron.remote.getGlobal('sharedObject').isOnline = online;
@@ -41,8 +48,6 @@
             
             ctrl.setActivePage('dashboard');
             ctrl.sortOptions = {property: 'name', reverse: false};
-            
-            //ctrl.setModalMsg('data', 'test');
             
             // catch unhandled exceptions
             unhandled({
@@ -245,6 +250,19 @@
                     }
                 }
             });
+        };
+        
+        /* Sets the progress spinner for long-running tasks. */
+        ctrl.setProgressSpinner = function(type, value, index=null) {            
+            if (type === "dashboardSpinner") {
+                $scope.dashboardSpinner[index] = value;
+            }
+            else if (type === "sendFundsSpinner") {
+                
+            }
+            else if (type === "sweepFundsSpinner") {
+                $scope.sweepFundsSpinner[index] = value;
+            }
         };
         
         /* Set API task data to be reloaded in the event the user browses away from a page. */

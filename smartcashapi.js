@@ -409,16 +409,16 @@ function doSweep(projectInfo, callback) {
                     callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
                 }
                 else {
-                    var decodeTxCmd = {
+                    /*var decodeTxCmd = {
                         method: 'decoderawtransaction',
                         params: [resp]
                     }
                     
                     rpc.sendCmd(decodeTxCmd, function(err, resp) {
                         console.log("decoderawtransaction resp: ", resp)
-                    })
+                    })*/
                     
-                    /*var signTxCmd = {
+                    signTxCmd = {
                         method: 'signrawtransaction',
                         params: [resp, null, unclaimedWalletsPKs]
                     }
@@ -448,7 +448,7 @@ function doSweep(projectInfo, callback) {
                                 }
                             })
                         }
-                    })*/
+                    })
                 }
             })
         }
