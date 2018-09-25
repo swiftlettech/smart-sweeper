@@ -4,20 +4,17 @@
 SmartSweeper is currently in beta. You fund projects at your own risk.
 
 ### Description
-Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow easy retrieval of gift funds. Runs only on Windows at the moment. It isn't necessary to input your wallet passphrase to use SmartSweeper.
+Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow easy retrieval of gift funds. Runs only on Windows 7, 8, and 10 at the moment. It isn't necessary to input your wallet passphrase to use SmartSweeper.
 
 ### Features
 * Create projects to organize promotions
-* Send funds to multiple promotional wallets (1-500 wallets, inclusive)
+* Send funds to promotional wallets (1-500 wallets, inclusive)
 * Retrieve promotional funds from wallets that were not redeemed
 * Print paper wallets
 * User action logs and system logs
 
 ### Base Requirement
 * [SmartCash Node Client](https://smartcash.cc/wallets/) for Windows - 1.2.3+ (excluding 1.2.4) ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
-
-### Releases
-Releases are forthcoming.
 
 ### Table of Contents
 * [Installation](#installation)
@@ -58,7 +55,7 @@ smartcashPath=C:\Program Files\SmartCash\
 ```
 
 * rpc.host is the IP address that the SmartCash Node Client RPC server is bound to.
-* rpc.port is the port that the SmartCash node client RPC server is listening on.
+* rpc.port is the port that the SmartCash Node Client RPC server is listening on.
 * rpc.username is the SmartCash Node Client RPC server username.
 * rpc.password is the SmartCash Node Client RPC server password.
 * smartcashPath is the full path to your SmartCash Node Client installation. You must include a trailing slash.
@@ -89,17 +86,21 @@ The values of rpc.host, rpc.port, rpc.username, and rpc.password in .env must ma
 
 
 ##### User files
-The database (smart-sweeper.json), the app config file (smart-sweeper-config.json), and the log files are saved in the following folder:
+The database (smart-sweeper.json), the app config file (smart-sweeper-config.json), the saved dashboard data file (smart-sweeper-data.json) and the log files are saved in the following folder:
 
 * **Windows**: %APPDATA%/SmartSweeper
 
-**It is strongly recommended that you back up smart-sweeper.json to a safe place.**
+**It is strongly recommended that you regularly back up smart-sweeper.json to a safe place.**
 
-The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). The user logs record user actions while the system logs record errors (and may include transaction ids and public keys).
+The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). The user logs record user actions while the system logs record system actions and errors (and includes transaction ids and public keys).
 
 ### Known issues
-* electron-store error: "EPERM operation not permitted" sometimes occurs on Windows when reading a config file. SmartSweeper will exit when it does.
-* Can't connect to the node client when it's syncing (SmartSweeper will display the "Can't connect to SmartCash Node Client." error).
+* electron-store error "EPERM operation not permitted" sometimes occurs on Windows when reading a config file. SmartSweeper will exit when it does.
+* Can't connect to the node client via RPC when it's syncing (SmartSweeper will display the "Can't connect to SmartCash Node Client." error). This will cause some actions to fail.
+* Claimed funds info on the dashboard and the sweep funds page become inaccurate after one or more projects have been swept.
+* SmartCash node client isn't loaded by SmartSweeper.
+* Log files are sometimes created in the wrong folder.
+* There is lag when typing in the project name in the "create a project" form.
 
 ### Other software used
 Software | License
@@ -130,3 +131,7 @@ Software | License
 
 
 [The SmartCash Insight Explorer](https://insight.smartcash.cc) is used to check the current block count and to get information about project addresses.
+
+## Icons and graphics
+* Basic app icons: [Font Awesome](http://fontawesome.io)
+* Progress spinner: [preloaders.net](https://preloaders.net)

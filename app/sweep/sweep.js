@@ -29,30 +29,31 @@
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                 //ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
                 
-                ctrl.showSpinner = new Array(ctrl.availableProjects.length);
-                angular.forEach(ctrl.showSpinner, function(spinner, key) {
-                    spinner = false;
-                });
+                ctrl.showSpinner = []
+                for (var i=0; i<ctrl.availableProjects.length; i++) {
+                    ctrl.showSpinner.push(false);
+                }
             }
             
             // reload status spinners if a sweep is already in progress
             ctrl.taskStatusData = $mainCtrl.getTaskStatusData('sweepFunds');
             if (ctrl.taskStatusData) {
-                
-                
-                /* for multi-sweep
                 angular.forEach(ctrl.taskStatusData, function(checkedProject, key) {
                     if (checkedProject)
                         ctrl.showSpinner[parseInt(key)] = true;
-                });*/
+                });
             }
             
             ipcRenderer.on('taskStatusCheckDone', (event, args) => {
                 ipcRenderer.removeAllListeners('taskStatusCheckDone');
                 $scope.$apply(function() {
                     console.log(args);
-                    if (args.function === "sweepFunds" && args.status == true) {
+                    if (args.function === "sweepFunds" && (args.status == true || args.error == true)) {
                         $interval.cancel(ctrl.taskStatusCheck);
+                        
+                        for (var i=0; i<ctrl.showSpinner.length; i++) {
+                            ctrl.showSpinner[i] = false;
+                        }
                     }
                 });
             });
@@ -75,9 +76,9 @@
                     ctrl.projectsToSweep = [];
                     
                     ctrl.disableChecks = false;
-                    angular.forEach(ctrl.showSpinner, function(spinner, key) {
-                        spinner = false;
-                    });
+                    for (var i=0; i<ctrl.showSpinner.length; i++) {
+                        ctrl.showSpinner[i] = false;
+                    }
                     $mainCtrl.setTaskStatusData(null);
                     $mainCtrl.setModalMsg(args.msgType, args.msg);
                 });
@@ -89,7 +90,6 @@
             $scope.$apply(function() {
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
                 //ctrl.availableProjectsCopy = angular.copy(ctrl.availableProjects);
-                console.log(ctrl.availableProjects);
                 // display the project list as 10 per page?
             });
         });
@@ -111,24 +111,32 @@
         };
         
         /* Return funds back to project address manually after expiration date. (single project sweeping) */
-        ctrl.sweep = function(projectID) {            
-            var projectIDs = [];
-            projectIDs.push(projectID);
-            ctrl.projectsToSweep = [];
+        ctrl.sweep = function(projectID) { 
+            ipcRenderer.send('setReferrer', {referrer: 'sweepFunds'});
+            ipcRenderer.send('showConfirmationDialog', {title: 'Sweep funds?', body: 'Are you sure you want to sweep promo funds back to the project wallet?'});
             
-            var obj = {};
-            obj[projectID] = true;
-            ctrl.projectsToSweep.push(obj);
-            ctrl.showSpinner[projectID] = true;
-            
-            $mainCtrl.setTaskStatusData('sweepFunds', ctrl.projectsToSweep);
-            ipcRenderer.send('sweepFunds', {projectIDs: projectIDs});
-            
-            // status checking
-            ctrl.taskStatusCheck = $interval(function() {
-                console.log('checking task status');
-                ipcRenderer.send('taskStatusCheck', 'sweepFunds');
-            }, 5000);
+            ipcRenderer.on('dialogYes', (event, arg) => {
+                if (electron.remote.getGlobal('referrer') !== "sweepFunds")
+                    return;
+                
+                var projectIDs = [];
+                projectIDs.push(projectID);
+                ctrl.projectsToSweep = [];
+
+                var obj = {};
+                obj[projectID] = true;
+                ctrl.projectsToSweep.push(obj);
+                ctrl.showSpinner[projectID] = true;
+
+                $mainCtrl.setTaskStatusData('sweepFunds', ctrl.projectsToSweep);
+                ipcRenderer.send('sweepFunds', {projectIDs: projectIDs});
+
+                // status checking
+                ctrl.taskStatusCheck = $interval(function() {
+                    console.log('checking task status');
+                    ipcRenderer.send('taskStatusCheck', 'sweepFunds');
+                }, 5000);
+            });
         };
         
         /* Return funds back to project address manually after expiration date. (multi-project sweeping) */

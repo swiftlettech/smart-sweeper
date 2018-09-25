@@ -1002,7 +1002,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 
                 if ((referrer === "checkAvailProjectBalances") || (referrer === "sweepFunds")) {
                     var obj = global.taskStatus.get(referrer)
-                    obj.status = true
+                    obj.status = false
                     obj.error = true
                     global.taskStatus.set(referrer, obj)
                 }
@@ -1309,7 +1309,8 @@ ipcMain.on('checkAvailProjectBalances', (event, args) => {
         loadProjects()
     
     global.availableProjects.list.forEach(function(project, projectKey) {
-        totalTxs += project.txid.length
+        if (project.txid !== undefined)
+            totalTxs += project.txid.length
     })
     
     if (totalTxs > 0) {
@@ -1320,7 +1321,9 @@ ipcMain.on('checkAvailProjectBalances', (event, args) => {
         })
 
         global.availableProjects.list.forEach(function(project, projectKey) {
-            delayedCall.create(global.rpcFunctionDelay, smartcashapi.checkTransaction, {referrer: "checkAvailProjectBalances", projectName: project.name, projectIndex: projectKey, fundsSent: project.fundsSent, address: project.addressPair.publicKey, txid: project.txid}, apiCallback)
+            if (project.txid !== undefined) {
+                delayedCall.create(global.rpcFunctionDelay, smartcashapi.checkTransaction, {referrer: "checkAvailProjectBalances", projectName: project.name, projectIndex: projectKey, fundsSent: project.fundsSent, address: project.addressPair.publicKey, txid: project.txid}, apiCallback)
+            }
         })
     }
     else {
@@ -1773,7 +1776,7 @@ ipcMain.on('smartcashLaunch', (event, args) => {
 })
 
 // sweep project funds
-ipcMain.on('sweepFunds', (event, args) => {
+ipcMain.on('sweepFunds', (event, args) => {    
     global.taskStatus.set('sweepFunds', {status: false, error: false})
     global.apiCallbackInfo.set('sweepFunds', {
         apiCallbackCounter: 0,

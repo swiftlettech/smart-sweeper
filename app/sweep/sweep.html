@@ -38,8 +38,8 @@
                         <table class="innerTable">
                             <tr>
                                 <td class="sweepCol">
-                                    <!--<input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="$sweepCtrl.disableChecks || project.fundsSwept || !project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || !$mainCtrl.coreSynced || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError" />-->
-                                    <button class="btn btn-link" title="Sweep project" ng-click="$sweepCtrl.sweep(project.id)" ng-disabled="!project.fundsSent || project.fundsSwept || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || !$mainCtrl.coreSynced || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError"><i class="fa fa-fw fa-reply"></i></button>
+                                    <!--<input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="$sweepCtrl.disableChecks || !project.fundsSent || project.allClaimed || project.fundsSwept || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || !$mainCtrl.coreSynced || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError" />-->
+                                    <button class="btn btn-link" title="Sweep project" ng-click="$sweepCtrl.sweep(project.id)" ng-disabled="!project.fundsSent || project.allClaimed || project.fundsSwept || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || !$mainCtrl.coreSynced || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError"><i class="fa fa-fw fa-reply"></i></button>
                                 </td>
                                 
                                 <td class="nameCol">{{project.name}} 
@@ -64,7 +64,7 @@
                                 <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$sweepCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
                             </tr>
                             <tr>
-                                <td><div class="spinner" ng-show="$sweepCtrl.showSpinner[project.id]"></div></td>
+                                <td><div class="spinner" ng-show="$sweepCtrl.showSpinner[project.id]" ng-hide="!$sweepCtrl.showSpinner[project.id]"></div></td>
                                 <td colspan="8" class="addrCol">
                                     <strong>Project Address:</strong> {{project.addressPair.publicKey}}<br />
                                     <strong>Private Key:</strong> <button class="btn btn-link" title="Show/hide private key" ng-click="$mainCtrl.showPK(project.id)"><i class="fa fa-fw fa-eye" aria-hidden="false" title="Show private key" ng-show="!project.showPrivateKey"></i> <i class="fa fa-fw fa-eye-slash" aria-hidden="false" title="Hide private key" ng-show="project.showPrivateKey"></i></button> 
