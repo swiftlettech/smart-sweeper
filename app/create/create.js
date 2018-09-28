@@ -48,19 +48,14 @@
             // load all projects
             if (angular.isArray(electron.remote.getGlobal('availableProjects').list))
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-            
-            //$mainCtrl.setPageHeight();
         };
         
         // reload projects when there have been changes
         ipcRenderer.on('projectsReady', (event, args) => {            
             $scope.$apply(function() {
                 ctrl.availableProjects = electron.remote.getGlobal('availableProjects').list;
-                console.log(ctrl.availableProjects);
 
                 // display the project list as 10 per page?
-
-                //$mainCtrl.setPageHeight();
             });
         });
         
@@ -196,11 +191,6 @@
         /* Called when the "create project" button is clicked. */
         ctrl.showAddForm = function() {
             ctrl.showAddNewProject = !ctrl.showAddNewProject;
-            
-            if (ctrl.showAddNewProject)
-                $document.find('#page-wrapper').css('height', '');
-            //else
-                //$mainCtrl.setPageHeight();
         };
 
         /* Sort the project list. */

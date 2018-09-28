@@ -95,12 +95,12 @@ The database (smart-sweeper.json), the app config file (smart-sweeper-config.jso
 The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). The user logs record user actions while the system logs record system actions and errors (and includes transaction ids and public keys).
 
 ### Known issues
+* SmartSweeper may not open the SmartCash Node Client. If smartcash.conf hasn't been modified with the info above, SmartSweeper won't work if the node client is run manually.
 * electron-store error "EPERM operation not permitted" sometimes occurs on Windows when reading a config file. SmartSweeper will exit when it does.
-* Can't connect to the node client via RPC when it's syncing (SmartSweeper will display the "Can't connect to SmartCash Node Client." error). This will cause some actions to fail.
-* Claimed funds info on the dashboard and the sweep funds page become inaccurate after one or more projects have been swept.
-* SmartCash node client isn't loaded by SmartSweeper.
-* Log files are sometimes created in the wrong folder.
-* There is lag when typing in the project name in the "create a project" form.
+* Can't connect to the node client via RPC when it's syncing (SmartSweeper will display the "Can't connect to SmartCash Node Client." error). This will cause some actions to fail and some project data updates to not occur.
+* Claimed funds info on the dashboard and the sweep funds page becomes inaccurate after one or more projects have been swept.
+* Empty log files are sometimes created in the root SmartSweeper data folder.
+* There is lag when entering text into input fields.
 
 ### Other software used
 Software | License

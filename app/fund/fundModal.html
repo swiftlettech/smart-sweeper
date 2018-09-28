@@ -27,13 +27,13 @@
                 <div uib-accordion-group id="calculator" class="panel-default" heading="Project Funding Calculator" is-open="$fundCtrl.isOpen[0]" style="margin-top:20px;">
                     <div class="form-group">
                         <label for="txFee" class="control-label">Transaction Fee</label>
-                        <input name="txFee" type="text" class="form-control" ng-model="$fundCtrl.txFee" />
+                        <input name="txFee" type="text" class="form-control" ng-model="$fundCtrl.txFee" ng-change="$fundCtrl.calcTotalFunds()" />
                         <p>The minimum SmartCash transaction fee is Σ0.001 or Σ0.002 in most cases, but the fee for the wallet/exchange you use to fund the project may vary.</p>
                     </div>
 
                     <div class="form-group">
                         <label for="walletAmt" class="control-label">SMART per Wallet</label>
-                        <input name="walletAmt" type="text" class="form-control" ng-model="$fundCtrl.walletAmt" calc-number />
+                        <input name="walletAmt" type="text" class="form-control" ng-model="$fundCtrl.walletAmt" ng-change="$fundCtrl.calcTotalFunds()" />
                     </div>
 
                     <div class="form-group" style="margin-bottom:0;">
@@ -44,7 +44,7 @@
 
                         <div>
                             <label for="projectTotal" class="control-label">Total Project Funds: </label>
-                            <span>{{ ($fundCtrl.walletAmt * $fundCtrl.activeProject.numAddr) + $fundCtrl.txFee}}</span>
+                            <span>{{$fundCtrl.totalFunds | number: 8}}</span>
                         </div>
                         
                         <p style="margin:12px 0 0 0; color:#FF0000;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Funds will be divided equally between all of the promo wallets.</p>

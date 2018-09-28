@@ -11,10 +11,31 @@
         var ctrl = this;
 
         $scope.init = function() {
-            resetDashboardVals();
+            //resetDashboardVals();
+            
+            // load the last saved dashboard values from the app config file
+            ipcRenderer.send('getSavedAppData');
+            ipcRenderer.on('savedAppData', (event, args) => {
+                $scope.$apply(function() {
+                    var savedAppData = args.savedAppData;
+
+                    ctrl.availableBalance = savedAppData.availableBalanceTotal;
+                    ctrl.claimedFunds = savedAppData.claimedFundsTotal;
+                    ctrl.claimedWalletsCount = savedAppData.claimedWalletsTotal;
+                    ctrl.pendingFunds = savedAppData.pendingFundsTotal;
+                    ctrl.pendingWalletsCount = savedAppData.pendingWalletsTotal;
+                    ctrl.confirmedFunds = savedAppData.confirmedFundsTotal;
+                    ctrl.confirmedWalletsCount = savedAppData.confirmedWalletsTotal;
+                    ctrl.sweptFunds = savedAppData.sweptFundsTotal;
+                    ctrl.sweptWalletsCount = savedAppData.sweptWalletsTotal;
+                });
+            });
+            
+            // load spinner statuses from $mainCtrl
+            ctrl.dashboardSpinner = $scope.dashboardSpinner;
             
             $scope.$on('onlineCheck', function(event, args) {
-                resetDashboardVals();
+                //resetDashboardVals();
                 
                 if (ctrl.availableProjects.length === undefined || ctrl.availableProjects.length == 0) {
                     ctrl.availableBalance = "n/a";
@@ -23,24 +44,6 @@
                     ctrl.claimedFunds = "n/a";
                     ctrl.sweptFunds = "n/a";
                 }
-                
-                // load the last saved dashboard values from the app config file
-                ipcRenderer.send('getSavedAppData');
-                ipcRenderer.on('savedAppData', (event, args) => {
-                    $scope.$apply(function() {
-                        var savedAppData = args.savedAppData;
-
-                        ctrl.availableBalance = savedAppData.availableBalanceTotal;
-                        ctrl.claimedFunds = savedAppData.claimedFundsTotal;
-                        ctrl.claimedWalletsCount = savedAppData.claimedWalletsTotal;
-                        ctrl.pendingFunds = savedAppData.pendingFundsTotal;
-                        ctrl.pendingWalletsCount = savedAppData.pendingWalletsTotal;
-                        ctrl.confirmedFunds = savedAppData.confirmedFundsTotal;
-                        ctrl.confirmedWalletsCount = savedAppData.confirmedWalletsTotal;
-                        ctrl.sweptFunds = savedAppData.sweptFundsTotal;
-                        ctrl.sweptWalletsCount = savedAppData.sweptWalletsTotal;
-                    });
-                });
             });
             
             // load all projects
@@ -85,15 +88,15 @@
             $scope.$apply(function() {
                 var toggle = args.status;
                 
-                if (args.function === "getWalletTxStatus") {
-                    $scope.dashboardSpinner[1] = toggle;
-                    $scope.dashboardSpinner[2] = toggle;
+                if (args.function === "getWalletTxStatus") {                    
+                    $mainCtrl.setProgressSpinner('dashboardSpinner', toggle, 1);
+                    $mainCtrl.setProgressSpinner('dashboardSpinner', toggle, 2);
                 }
                 else if (args.function === "getClaimedFundsInfo") {
-                    $scope.dashboardSpinner[3] = toggle;
+                    $mainCtrl.setProgressSpinner('dashboardSpinner', toggle, 3);
                 }
                 else if (args.function === "getSweptFundsInfo") {
-                    $scope.dashboardSpinner[4] = toggle;
+                    $mainCtrl.setProgressSpinner('dashboardSpinner', toggle, 4);
                 }
                 
                 ctrl.dashboardSpinner = $scope.dashboardSpinner;

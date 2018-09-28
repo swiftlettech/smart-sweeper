@@ -26,13 +26,12 @@
         return {
             require: 'ngModel',
             link: function(scope, element, attrs, ngModel) {                
-                ngModel.$parsers.push(function(val) {                    
-                    if (val.indexOf('.') != -1)
+                ngModel.$parsers.push(function(val) {
+                    if (val === "")
+                        val = 0;
+                    else if (val.indexOf('.') != -1)
                         return parseFloat(val);
                     else {
-                        if (val === "")
-                            val = 0;
-                        
                         return parseInt(val);
                     }
                 });

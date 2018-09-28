@@ -40,8 +40,6 @@
             console.log($document.find('#logHeader').outerHeight(true))*/
             
             $document.find('#log textarea').css('height', (window.innerHeight - window.innerHeight * 0.55) + 'px');
-            
-            //$mainCtrl.setPageHeight();
         };
         
         ctrl.openLogFolder = function() {

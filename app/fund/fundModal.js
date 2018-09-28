@@ -27,6 +27,7 @@
             ctrl.originalFunds = 0;
             ctrl.txFee = electron.remote.getGlobal('sharedObject').txBaseFee;
             ctrl.walletAmt = 1;
+            ctrl.totalFunds = (ctrl.walletAmt * ctrl.activeProject.numAddr) + parseFloat(ctrl.txFee);
             
             ctrl.calcCollapsed = true;
             ctrl.projectTxCollapsed = true;
@@ -125,6 +126,14 @@
                 ctrl.showTxEntry = false;
                 $document.find('#fundProjectForm').removeClass('hide');
             }
+        };
+        
+        /* Calculate the total funds necessary for a project. */
+        ctrl.calcTotalFunds = function() {
+            if (ctrl.walletAmt > 0)
+                ctrl.totalFunds = (ctrl.walletAmt * ctrl.activeProject.numAddr) + parseFloat(ctrl.txFee);
+            else
+                ctrl.totalFunds = 0;
         };
     }
     

@@ -115,7 +115,6 @@
             $scope.$apply(function() {
                 if (args.blockExplorerError !== undefined) {
                     ctrl.blockExplorerError = args.blockExplorerError;
-                    //ctrl.setPageHeight();
                 }
             });
         });
@@ -134,57 +133,6 @@
                 $document.find('#page-wrapper').css('background-image', 'none');
             else
                 $document.find('#page-wrapper').css('background-image', 'url("images/SmartSweeper-logo.png")');
-        };
-
-        ctrl.setPageHeight = function() {
-            var projectInfoHeight = 96; // pixels per project info area
-            /*var projectSpaceRatio = (projectInfoHeight * electron.remote.getGlobal('availableProjects').list.length) / screen.height;
-            var spaceRatioMax = electron.remote.getGlobal('availableProjects').list.length * 0.1;
-            console.log('projectSpaceRatio: ', projectSpaceRatio);*/
-            
-            var statusMsgs = 0;
-            
-            if (!ctrl.isOnline)
-                statusMsgs++;
-            if (!ctrl.coreRunning)
-                statusMsgs++;
-            if (!ctrl.rpcConnected)
-                statusMsgs++;
-            if (!ctrl.coreSynced)
-                statusMsgs++;
-            if (ctrl.blockExplorerError)
-                statusMsgs++;
-            
-            //console.log(ctrl.activePage)
-            
-            if ((ctrl.activePage === "dashboard" && statusMsgs > 2) ||
-                ((ctrl.activePage === "create" || ctrl.activePage === "fund" || ctrl.activePage === "sweep") && (electron.remote.getGlobal('availableProjects').list.length > 4)))
-            {
-                //projectSpaceRatio <= spaceRatioMax
-                //electron.remote.getGlobal('availableProjects').list.length > 4
-                // the page should scroll
-                //console.log('this page should scroll');
-                $document.find('#page-wrapper').css('height', '');
-            }
-            else {
-                // the page shouldn't scroll
-                //console.log('test')
-
-                if (window.innerWidth >= 700 && window.innerHeight >= 600) {
-                    //console.log('this page should not scroll');
-                    $document.find('#page-wrapper').css({
-                        height: function() {
-                            return window.innerHeight - (parseInt($document.find('body').css('margin-top'))*2);
-                        }
-                    });
-                }
-                
-                if (ctrl.activePage === "logs") {
-                    var buttonHeight = 22 + parseInt($document.find('#log button').css('margin-bottom'));                    
-                    var logboxHeight = $document.find('#page-wrapper').height() - $document.find('#statusMsgs').height() - buttonHeight - $document.find('#log h5').outerHeight(true) - 30;
-                    $document.find('#log textarea').css('height', logboxHeight + 'px');
-                }
-            }
         };
         
         /* Return the index of a project in the database. */

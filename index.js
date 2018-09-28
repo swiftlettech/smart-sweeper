@@ -585,7 +585,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
     else
         apiCallbackInfo = global.apiCallbackInfo.get(referrer+projectInfo.projectID)
     
-    /*if (referrer === "getClaimedFundsInfo") {
+    /*if (referrer === "getSweptTxStatus") {
         console.log('apiCallbackInfo: ', apiCallbackInfo)
         console.log('projectInfo: ', projectInfo)
         console.log(resp.type)
