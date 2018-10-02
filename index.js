@@ -1706,7 +1706,7 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
         apiCallbackCounter: 0
     })
     
-    delayedCall.create(global.explorerFunctionDelay, smartcashapi.sendFunds, {referrer: "sendPromotionalFunds", projectIndex: index, projectID: global.availableProjects.list[index].id, projectName: global.availableProjects.list[index].name, amtToSend: totalAmtToSend, amtPerWallet: amtPerWallet, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback)
+    smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectID: global.availableProjects.list[index].id, projectName: global.availableProjects.list[index].name, amtToSend: totalAmtToSend, amtPerWallet: amtPerWallet, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback)
 })
 
 // set which function opened a modal/dialog
