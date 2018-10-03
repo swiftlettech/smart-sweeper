@@ -61,10 +61,10 @@ function init() {
 
             if (os.platform() === "win32")
                 defaultSmartcashPath = "C:\\Program Files\\SmartCash\\"
-            else if (os.platform() === "linux")
-                defaultSmartcashPath = ""
             else if (os.platform() === "darwin")
                 defaultSmartcashPath = "//Applications//"
+            else if (os.platform() === "linux")
+                defaultSmartcashPath = ""
 
             content += "smartcashPath=" + defaultSmartcashPath
 

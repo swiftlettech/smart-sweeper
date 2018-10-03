@@ -1,6 +1,7 @@
 /* Main app logic. */
 const electron = require('electron')
 const {app, BrowserWindow, dialog, ipcMain, shell} = electron
+const os = require('os')
 const path = require('path')
 const url = require('url')
 const fs = require('fs')
@@ -269,8 +270,17 @@ function appInit() {
             global.sharedObject.exceptionLogger.error(err.stack)
             
             // the "EPERM operation not permitted error" is fatal (https://github.com/sindresorhus/electron-store/issues/31)
-            if (err.message.indexOf('EPERM') != -1)
-                createDialog(null, global.sharedObject.win, "error", "SmartSweeper has encountered a fatal error. The app will now close.", true)
+            if (err.message.indexOf('EPERM') != -1) {
+                var content = {
+                    text: {
+                        title: 'Error',
+                        body: 'SmartSweeper has encountered a fatal error. The app will now close.'
+                    },
+                    fatal: true
+                }
+                
+                createDialog(null, global.sharedObject.win, "error", content.text, content.fatal)
+            }
         },
         showDialog: true
     })
@@ -401,6 +411,15 @@ function createBgWindow() {
 
 // create the main window
 function createWindow() {
+    var icon
+    
+    if (os.platform() === "win32")
+        icon = 'icon.ico'
+    else if (os.platform() === "darwin")
+        icon = 'icon.icns'
+    else if (os.platform() === "linux")
+        icon = 'icon512x512.png'
+    
     const {width, height} = electron.screen.getPrimaryDisplay().workAreaSize    
     const windowConfig = {
         title: "SmartSweeper",
@@ -411,6 +430,7 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js'),
             devTools: true
         },
+        icon: path.join(__dirname, 'images', 'icons', icon),
         show: false
     }
     
@@ -536,8 +556,6 @@ function createModal(type, text) {
 function createDialog(event, window, type, text, fatal = false) {
     var buttons
     
-    console.log('dialog text: ', text)
-    
     if (type === 'question')
         buttons = ['OK', 'Cancel']
     else if (type === 'info' || type === 'error')
@@ -564,8 +582,6 @@ function createDialog(event, window, type, text, fatal = false) {
                     window.webContents.send('dialogNo')
             }
         }
-        
-        console.log('fatal: ', fatal)
         
         if (fatal)
             app.quit()
@@ -1723,7 +1739,7 @@ ipcMain.on('showConfirmationDialog', (event, text) => {
 })
 
 // load an error dialog
-ipcMain.on('showErrorDialog', (event, content) => {
+ipcMain.on('showErrorDialog', (event, content) => {    
     var fatal = false
     
     if (content.fatal) {
@@ -1732,9 +1748,9 @@ ipcMain.on('showErrorDialog', (event, content) => {
     }
     
     if (modal === undefined || modal == null)
-        createDialog(event, global.sharedObject.win, 'error', content.text, fatal)
+        createDialog(event, global.sharedObject.win, 'error', content, fatal)
     else
-        createDialog(event, modal, 'error', content.text, fatal)
+        createDialog(event, modal, 'error', content, fatal)
 })
 
 // open a modal for the user to enter the information necessary to fund a project

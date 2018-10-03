@@ -14,7 +14,7 @@ Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow
 * User action logs and system logs
 
 ### Base Requirement
-* [SmartCash Node Client](https://smartcash.cc/wallets/) for Windows - 1.2.3+ (excluding 1.2.4) ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
+* [SmartCash Node Client](https://smartcash.cc/wallets/) for Windows - 1.2.6+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
 
 ### Table of Contents
 * [Installation](#installation)
@@ -63,7 +63,6 @@ smartcashPath=C:\Program Files\SmartCash\
 
 Your SmartCash Node Client must be started with the following arguments:
 ```
--txindex=1 (if SmartCash Node Client is < v1.2.3)
 -server
 -rpcbind=127.0.0.1
 -rpcport=9678
@@ -74,7 +73,6 @@ Your SmartCash Node Client must be started with the following arguments:
 If it isn't running, SmartSweeper will attempt to start it for you with the above arguments. You can also [edit your node client's smartcash.conf file](https://smartcash.freshdesk.com/support/solutions/articles/35000038702-smartcash-conf-configuration-file). Please don't do this with your client running.
 
 ```
-txindex=1 (if SmartCash Node Client is < v1.2.3)
 server=1
 rpcbind=127.0.0.1
 rpcport=9678
