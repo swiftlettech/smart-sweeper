@@ -22,29 +22,32 @@ Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow
 * [Configuration](#configuration)
 * [Known issues](#known-issues)
 * [Other software used](#other-software-used)
+* [Contributing to SmartSweeper development](#contributing)
 
 
-### Installation
+## Installation
 Download a release and run the installer. You may need to run SmartSweeper as an administrator.
 
-### Running from source
-##### Additional Requirements
+
+## Running from source
+#### Additional Requirements
 * [Node.js](http://nodejs.org) - 8.9.0+
 * [npm](http://npmjs.com) - 5.6.0+
 
 Run ```node -v``` and ```npm -v``` from a command prompt to make sure both are in your PATH. Open your SmartCash node client to make sure it is synchronized before launching SmartSweeper.
 
-##### Installation
+#### Installation
 ``` bash
 npm install
 ```
 
-##### To run
+#### To run
 ``` bash
 npm start
 ```
 
-### Configuration
+
+## Configuration
 SmartSweeper can be configured by modifying .env in the root directory. The app will create it for you the first time you load it, but you can create the file yourself prior to that, which will help if you didn't use the default SmartCash installation path. The default values for Windows are shown below.
 ```
 rpc.host=127.0.0.1
@@ -83,7 +86,7 @@ rpcpassword=rpcpassword
 The values of rpc.host, rpc.port, rpc.username, and rpc.password in .env must match those in the program arguments or the smartcash.conf file.
 
 
-##### User files
+#### User files
 The database (smart-sweeper.json), the app config file (smart-sweeper-config.json), the saved dashboard data file (smart-sweeper-data.json) and the log files are saved in the following folder:
 
 * **Windows**: %APPDATA%/SmartSweeper
@@ -92,7 +95,8 @@ The database (smart-sweeper.json), the app config file (smart-sweeper-config.jso
 
 The log files are also in JSON format and can be viewed with a general log viewer such as [glogg](https://github.com/nickbnf/glogg). The user logs record user actions while the system logs record system actions and errors (and includes transaction ids and public keys).
 
-### Known issues
+
+## Known issues
 * SmartSweeper may not open the SmartCash Node Client. If smartcash.conf hasn't been modified with the info above, SmartSweeper won't work if the node client is run manually.
 * electron-store error "EPERM operation not permitted" sometimes occurs on Windows when reading a config file. SmartSweeper will exit when it does.
 * Can't connect to the node client via RPC when it's syncing (SmartSweeper will display the "Can't connect to SmartCash Node Client." error). This will cause some actions to fail and some project data updates to not occur.
@@ -100,7 +104,8 @@ The log files are also in JSON format and can be viewed with a general log viewe
 * Empty log files are sometimes created in the root SmartSweeper data folder.
 * There is lag when entering text into input fields.
 
-### Other software used
+
+## Other software used
 Software | License
 -------- | --------
 [AngularJS](http://angularjs.org) | MIT
@@ -130,6 +135,10 @@ Software | License
 
 [The SmartCash Insight Explorer](https://insight.smartcash.cc) is used to check the current block count and to get information about project addresses.
 
-## Icons and graphics
+### Icons and graphics
 * Basic app icons: [Font Awesome](http://fontawesome.io)
 * Progress spinner: [preloaders.net](https://preloaders.net)
+
+
+## Contributing
+You can [contribute to the development of SmartSweeper](CONTRIBUTING.md) by filing a bug report or by submitting a pull request. All contributors must follow our [code of conduct](docs/CODE_OF_CONDUCT.md).

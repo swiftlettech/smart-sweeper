@@ -15,7 +15,6 @@ let reqPerMin
 global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per function call
 
 function init() {
-    //reqPerMin = parseInt(60 / global.sharedObject.explorerCheckInterval)
 }
 
 /* Generic API callback function. */
@@ -75,22 +74,6 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
         }
         
         callback({type: 'error', msg: resp.msg}, functionName, projectInfo)
-        
-        /*if (projectInfo.projectName) {
-            var address = ""
-            if (projectInfo.address)
-                address = ", wallet address: " + projectInfo.address
-            
-            global.sharedObject.sysLogger.error('project ' + projectInfo.projectName + ', functionName' + functionName + ': ' + resp.msg)
-        }
-        else if (projectInfo.projectID) {
-            global.sharedObject.sysLogger.info(functionName + ', project #' + projectInfo.projectID)
-        }
-        else {
-            global.sharedObject.sysLogger.error(functionName + ': ' + resp.msg)
-        }*/
-        
-        
     }
 }
 

@@ -26,7 +26,6 @@
     let apiCallbackCounter;
     let smartcashProg, smartcashPath, smartcash;
     let db = new Store({name: "smart-sweeper"});
-    //global.bgApiCallbackInfo = new Map(); // keeps track of API callback vars per function call
     
     init();
     
