@@ -1,0 +1,92 @@
+<div id="fund" ng-init="init()">
+    <div class="infoBlock">
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i> Fund is disabled if the promo wallets have been funded.</p>
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i> Send is disabled if promo wallet addresses haven't been created yet, if funds have already been sent, or if the project hasn't been funded.</p>
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i> Print is disabled if funds haven't been sent to the promo wallets and if the funds have been swept.</p>
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i> SMART per wallet is 0 if funds haven't been sent.</p>
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i><i class="fa fa-fw fa-question" title="Pending"></i> = pending funding transaction(s), <i class="fa fa-fw fa-check" title="Confirmed"></i> = all funding transaction(s) are confirmed</p>
+    </div>
+    
+    <div class="importantInfoBlock">
+        <p><i class="fa fa-fw fa-exclamation-circle bullet" aria-hidden="true"></i> SmartSweeper is configured to include a transaction fee between Σ0.001 and Σ0.06 when funding the promotional wallets, which depends on the total number of wallets. The SMART per wallet listed is minus the fee.</p>
+    </div>
+    
+    <div id="projectList">
+        <h4>Projects</h4>
+        
+        <table id="tableHeading" class="table">
+            <tr>
+                <td class="nameCol">
+                    <strong>Name</strong>
+                    <i class="fa fa-fw fa-sort-alpha-asc" title="Sort A to Z" ng-show="$mainCtrl.nameSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('name')"></i>
+                    <i class="fa fa-fw fa-sort-alpha-desc" title="Sort Z to A" ng-show="$mainCtrl.nameSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('name', true)"></i>
+                </td>
+                <td class="numAddrCol text-center"><strong>Total Wallets</strong></td>
+                <td class="totalFundsCol text-center">
+                    <strong>Total SMART</strong>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.totalFundsSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('totalFunds')"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.totalFundsSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('totalFunds', true)"></i>
+                </td>
+                <td class="addrAmtCol text-center">
+                    <strong>SMART per Wallet</strong>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.addrAmtSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('addrAmt')"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.addrAmtSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('addrAmt', true)"></i>
+                </td>
+                <td class="expCol text-center">
+                    <strong>Use By Date</strong>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.expDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('expDate')"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.expDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('expDate', true)"></i>
+                </td>
+                <!--<td class="autoSweepCol text-center">
+                    <strong>Auto Sweep Date</strong>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.sweepDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('sweepDate')"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.sweepDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('sweepDate', true)"></i>
+                </td>-->
+                <td class="fundCol text-center"><strong>Fund</strong></td>
+                <td class="sendCol text-center"><strong>Send</strong></td>
+                <td class="printCol text-center"><strong>Print Wallets</strong></td>
+                <td class="editCol text-center"><strong>Edit</strong></td>
+            </tr>
+
+            <tr id="{{project.id}}" class="projectRow" ng-class="{active: $fundCtrl.activeProjectID == project.id}" ng-model="$fundCtrl.availableProjects" ng-repeat="project in $fundCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
+                <td colspan="9" style="padding:0;">                    
+                    <table class="innerTable">
+                        <tr>
+                            <td class="nameCol">{{project.name}} 
+                                <span ng-hide="project.txConfirmed === undefined">
+                                    <i class="fa fa-fw fa-question" title="Pending" ng-show="!project.txConfirmed"></i>
+                                    <i class="fa fa-fw fa-check" title="Confirmed" ng-show="project.txConfirmed"></i>
+                                </span>
+                            </td>
+                            
+                            <td class="numAddrCol text-center">{{project.numAddr}}</td>
+                            
+                            <td class="totalFundsCol text-center">{{project.originalFunds || 0 | toFixedNum: 8}}</td>
+                            
+                            <td class="addrAmtCol text-center">{{project.addrAmt || 0 | toFixedNum: 8}}</td>
+                            
+                            <td class="expCol text-center">{{project.expDate | date: 'mediumDate'}}</td>
+                            
+                            <!--<td class="autoSweepCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>-->
+                            
+                            <td class="fundCol text-center"><button class="btn btn-link" title="Fund project" ng-disabled="project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || !$mainCtrl.coreSynced || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError" ng-click="$fundCtrl.fundProject(project)"><i class="fa fa-fw sigma">Σ</i></button></td>
+                            
+                            <td class="sendCol text-center"><button class="btn btn-link" title="Send funds to wallets" ng-click="$fundCtrl.sendFunds(project)" ng-disabled="project.recvAddrs.length == 0 || project.fundsSent || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || !$mainCtrl.coreSynced || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError"><i class="fa fa-fw fa-share"></i></button></td>
+                            
+                            <td class="printCol text-center"><button class="btn btn-link" title="Print paper wallets" ng-click="$fundCtrl.createPaperWallets(project.id)" ng-disabled="!project.fundsSent || project.fundsSwept"><i class="fa fa-fw fa-print"></i></button></td>
+                            
+                            <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$fundCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td colspan="9" class="addrCol">
+                                <strong>Project Address:</strong> {{project.addressPair.publicKey}}<br />
+                                <strong>Private Key:</strong> <button class="btn btn-link" title="Show/hide private key" ng-click="$mainCtrl.showPK(project.id)"><i class="fa fa-fw fa-eye" aria-hidden="false" title="Show private key" ng-show="!project.showPrivateKey"></i> <i class="fa fa-fw fa-eye-slash" aria-hidden="false" title="Hide private key" ng-show="project.showPrivateKey"></i></button> 
+                                {{project.addressPair.privateKey | hidePrivateKey: project.showPrivateKey}}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

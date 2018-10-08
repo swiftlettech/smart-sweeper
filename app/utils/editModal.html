@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html ng-app="SmartSweeper.edit" lang="en-US">
+    <head>
+        <meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+        <title></title>
+        
+        <link type="text/css" rel="stylesheet" href="../../css/bootstrap-3.3.7.min.css" />
+        <link type="text/css" rel="stylesheet" href="../../css/sb-admin.css">
+        <link type="text/css" rel="stylesheet" href="../../css/font-awesome-4.7.0.min.css" />
+		<link type="text/css" rel="stylesheet" href="../../css/styles.css" />
+    </head>
+    
+    <body class="modalBody" ng-controller="EditController as $editCtrl" ng-init="init()">
+        <div id="page-wrapper" style="padding:15px;">
+            <form id="editProjectForm" name="editProjectForm" ng-submit="$editCtrl.update(editProjectForm)">
+                <div class="form-group">
+                    <label for="name" class="control-label">Project name<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <input name="name" type="text" class="form-control" ng-model="$editCtrl.activeProject.name" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="numAddr" class="control-label">Number of addresses to create<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <input name="numAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.numAddr" ng-change="$editCtrl.updateAddrAmt()" ng-disabled="$editCtrl.addressesCreated || $editCtrl.activeProject.recvAddrs.length > 0" required />
+
+                    <div ng-show="editProjectForm.numAddr.$error.invalidNumAddresses" role="alert">
+                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Must be between 1 and 500.</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="addrAmt" class="control-label">SMART per address</label>
+                    <p>{{$editCtrl.activeProject.addrAmt | toFixedNum: 8}}</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="originalFunds" class="control-label">Total SMART to be sent</label>
+                    <p>{{$editCtrl.activeProject.originalFunds | toFixedNum: 8}}</p>
+                    
+                    <div ng-show="$editCtrl.activeProject.originalFunds == 0" role="alert">
+                        <span class="error"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Funds have not been sent to the project address.</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sweepAddr" class="control-label">Sweep address<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                    <input name="sweepAddr" type="text" class="form-control" ng-model="$editCtrl.activeProject.sweepAddr" addr-validation required />
+                    <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This is the address that unclaimed funds will be swept to.</p>
+
+                    <div ng-show="editProjectForm.sweepAddr.$error.required" role="alert">
+                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Required.</span>
+                    </div>
+                    
+                    <div ng-show="editProjectForm.sweepAddr.$error.addrvalidation && !editProjectForm.sweepAddr.$error.required" role="alert">
+                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Not a valid SmartCash address.</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="expDate" class="control-label">"Use by" date</label>
+                    <div id="expDateGroup" class="input-group">
+                        <input type="text" name="expDate" class="form-control" ng-model="$editCtrl.expDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$editCtrl.datepickerFormat}}" is-open="$editCtrl.expCalendar.opened" datepicker-options="$editCtrl.datepickerOptions" close-text="Close" ng-change="$editCtrl.checkCalendarDate('expCalendar')" ng-required="false" />
+
+                        <span class="input-group-btn">
+                            <button id="expCalendarBtn" type="button" class="btn btn-default" ng-click="$editCtrl.openCalendar('expCalendar')"><i class="fa fa-fw fa-calendar" title="Calendar"></i></button>
+                        </span>
+                    </div>
+
+                    <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This will be listed on each promotional wallet.</p>
+
+                    <div ng-show="editProjectForm.expDate.$error.required" role="alert">
+                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Required.</span>
+                    </div>
+
+                    <div ng-show="$editCtrl.expDate && editProjectForm.expDate.$error.invalidDate" role="alert">
+                        <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> "Use by" date must be in the future.</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="options" class="control-label">Options</label>
+
+                    <div class="checkbox">
+                        <label><input type="checkbox" ng-model="$editCtrl.activeProject.qrCode">Add QR code to paper wallet</label>
+                    </div>
+
+                    <div class="checkbox">
+                        <label><input type="checkbox" ng-model="$editCtrl.activeProject.walletIns">Add instructions to paper wallet</label>
+                    </div>
+
+                    <div class="form-group hide">
+                        <div class="checkbox">
+                            <label><input type="checkbox" ng-model="$editCtrl.activeProject.sweep">Set automatic sweep date (midnight on that date)</label>
+                        </div>
+
+                        <div id="sweepDateGroup" class="input-group">
+                            <input type="text" name="sweepDate" class="form-control" ng-model="$editCtrl.sweepDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$editCtrl.datepickerFormat}}" is-open="$editCtrl.sweepCalendar.opened" datepicker-options="$editCtrl.datepickerOptions" ng-required="$editCtrl.activeProject.sweep" close-text="Close" ng-change="$editCtrl.checkCalendarDate('sweepCalendar')" ng-disabled="!$editCtrl.activeProject.sweep" />
+
+                            <span class="input-group-btn">
+                                <button class="calendarBtn" type="button" class="btn btn-default" ng-disabled="!$editCtrl.activeProject.sweep" ng-click="$editCtrl.openCalendar('sweepCalendar')"><i class="fa fa-fw fa-calendar" title="Calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="padding-top:10px; padding-right:0; clear:both;">
+                    <p ng-hide="$editCtrl.hasRecvAddrs"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Creating receiver addresses will also automatically update the project info.</p>
+                    <p ng-show="$editCtrl.hasRecvAddrs"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Receiver addresses have already been created.</p>
+                    
+                    <button id="createAddrBtn" type="button" class="btn btn-default" ng-disabled="$editCtrl.hasRecvAddrs || editProjectForm.$invalid" ng-click="$editCtrl.createAddresses(editProjectForm)">Create Addresses</button>
+                    <button id="submitBtn" type="submit" class="btn btn-primary" ng-disabled="editProjectForm.$invalid">Update Project</button>
+                    <button id="cancelBtn" type="button" class="btn btn-default" ng-click="$editCtrl.cancel()">Cancel</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- libraries -->
+        <script type="text/javascript" src="../../js/jquery-3.3.1.js"></script>
+        <script type="text/javascript" src="../../js/angular-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/angular-animate-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/angular-route-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/angular-touch-1.6.9.js"></script>
+        <script type="text/javascript" src="../../js/ui-bootstrap-tpls-2.5.0.min.js"></script>
+        
+        <!-- bootstrapping -->
+        <script type="text/javascript" src="../app.module.js"></script>
+        <script type="text/javascript" src="editModal.js"></script>
+        
+        <!-- utilities -->
+        <script type="text/javascript" src="../utils/app.module.js"></script>
+        <script type="text/javascript" src="../utils/constants.js"></script>
+        <script type="text/javascript" src="../utils/utils.js"></script>
+    </body>
+</html>

@@ -1,0 +1,82 @@
+<div id="sweepTab" ng-init="init()">
+    <div class="infoBlock" style="margin-bottom:0;">
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i> "Claimed Addresses", "% Claimed", and "Swept?" will show "n/a" if funds have not been sent to the promo wallets or the transaction has less than 6 confirmations.</p>
+        <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i><i class="fa fa-fw fa-question" title="Pending"></i> = pending sweep transaction, <i class="fa fa-fw fa-check" title="Confirmed"></i> = confirmed sweep transaction</p>
+    </div>
+    
+    <div id="projectList">
+        <h4>Projects</h4>
+        
+        <form id="sweepForm" name="sweepForm">
+            <table class="table">
+                <tr>
+                    <td class="sweepCol text-center"><strong>Sweep</strong></td>
+                    <td class="nameCol">
+                        <strong>Name</strong>
+                        <i class="fa fa-fw fa-sort-alpha-asc" title="Sort A to Z" ng-show="$mainCtrl.nameSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('name', false)"></i>
+                        <i class="fa fa-fw fa-sort-alpha-desc" title="Sort Z to A" ng-show="$mainCtrl.nameSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('name', true)"></i>
+                    </td>
+                    <td class="addrAmtCol text-center"><strong>SMART per Wallet</strong></td>
+                    <td class="numAddrCol text-center"><strong>Total Wallets</strong></td>
+                    <td class="claimedAddrCol text-center"><strong>Claimed Wallets</strong></td>
+                    <td class="perClaimedCol text-center">
+                        <strong>% Claimed</strong>
+                        <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.percentClaimedSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('percentClaimed', false)"></i>
+                        <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.percentClaimedSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('percentClaimed', true)"></i>
+                    </td>
+                    <!--<td class="expCol text-center">
+                        <strong>Auto Sweep Date</strong>
+                        <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.sweepDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('sweepDate', false)"></i>
+                        <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.sweepDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('sweepDate', true)"></i>
+                    </td>-->
+                    <td class="sweepCol text-center"><strong>Swept?</strong></td>
+                    <td class="editCol text-center"><strong>Edit</strong></td>
+                </tr>
+
+                <tr id="{{project.id}}" class="projectRow" ng-class="{active: $sweepCtrl.activeProjectID == project.id}" ng-model="$sweepCtrl.availableProjects" ng-repeat="project in $sweepCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
+                    <td colspan="9" style="padding:0;">
+                        <table class="innerTable">
+                            <tr>
+                                <td class="sweepCol">
+                                    <!--<input type="checkbox" class="center-block" ng-model="$sweepCtrl.projectsToSweep[project.id]" name="projectsToSweep" ng-change="$sweepCtrl.checkboxChanged()" ng-disabled="$sweepCtrl.disableChecks || !project.fundsSent || project.allClaimed || project.fundsSwept || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || !$mainCtrl.coreSynced || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError" />-->
+                                    <button class="btn btn-link" title="Sweep project" ng-click="$sweepCtrl.sweep(project.id)" ng-disabled="!project.fundsSent || project.allClaimed || project.fundsSwept || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || !$mainCtrl.coreSynced || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError"><i class="fa fa-fw fa-reply"></i></button>
+                                </td>
+                                
+                                <td class="nameCol">{{project.name}} 
+                                    <span ng-hide="project.sweepTxConfirmed === undefined">
+                                        <i class="fa fa-fw fa-question" title="Pending" ng-show="!project.sweepTxConfirmed"></i>
+                                        <i class="fa fa-fw fa-check" title="Confirmed" ng-show="project.sweepTxConfirmed"></i>
+                                    </span>
+                                </td>
+                                
+                                <td class="addrAmtCol text-center">{{project.addrAmt | toFixedNum: 8}}</td>
+                                
+                                <td class="numAddrCol text-center">{{project.numAddr}}</td>
+                                
+                                <td class="claimedAddrCol text-center"><span ng-show="project.fundsSent">{{project.claimedAddr}}</span><span ng-show="!project.fundsSent">n/a</span></td>
+                                
+                                <td class="perClaimedCol text-center"><span ng-show="project.fundsSent">{{(project.claimedAddr / project.numAddr)*100 || 0}}%</span><span ng-show="!project.fundsSent">n/a</span></td>
+                                
+                                <!--<td class="expCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>-->
+                                
+                                <td class="sweepCol text-center"><span ng-show="project.fundsSent && project.recvAddrs[0].txConfirmed"><span ng-show="project.fundsSwept">Yes</span><span ng-show="!project.fundsSwept">No</span></span><span ng-show="!project.fundsSent">n/a</span></td>
+                                
+                                <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$sweepCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
+                            </tr>
+                            <tr>
+                                <td><div class="spinner" ng-show="$sweepCtrl.showSpinner[project.id]" ng-hide="!$sweepCtrl.showSpinner[project.id]"></div></td>
+                                <td colspan="8" class="addrCol">
+                                    <strong>Project Address:</strong> {{project.addressPair.publicKey}}<br />
+                                    <strong>Private Key:</strong> <button class="btn btn-link" title="Show/hide private key" ng-click="$mainCtrl.showPK(project.id)"><i class="fa fa-fw fa-eye" aria-hidden="false" title="Show private key" ng-show="!project.showPrivateKey"></i> <i class="fa fa-fw fa-eye-slash" aria-hidden="false" title="Hide private key" ng-show="project.showPrivateKey"></i></button> 
+                                    {{project.addressPair.privateKey | hidePrivateKey: project.showPrivateKey}}
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        
+            <button type="button" class="btn btn-primary" ng-disabled="$sweepCtrl.projectsToSweepCount == 0 || $sweepCtrl.disableChecks || !$mainCtrl.isOnline || !$mainCtrl.coreRunning || $mainCtrl.coreError || !$mainCtrl.rpcConnected || $mainCtrl.rpcError || $mainCtrl.blockExplorerError" ng-click="$sweepCtrl.sweep()" ng-show="false">Sweep selected projects</button>
+        </form>
+    </div>
+</div>

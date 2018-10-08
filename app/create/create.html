@@ -1,0 +1,162 @@
+<div id="create" ng-init="init()">
+    <div id="newProject">
+        <button id="newProjectShowBtn" type="button" class="btn btn-primary" ng-class="{active: $createCtrl.showAddNewProject}" ng-click="$createCtrl.showAddForm()">Create Project</button>
+        
+        <form id="addNewProjectForm" name="addNewProjectForm" ng-show="$createCtrl.showAddNewProject" class="ng-hide" ng-submit="$createCtrl.new(addNewProjectForm)">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="name" class="control-label">Project name<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                        <input name="name" type="text" class="form-control" ng-model="$createCtrl.newProject.name" required />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="numAddr" class="control-label">Number of addresses to create<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                        <input name="numAddr" type="text" class="form-control" ng-model="$createCtrl.newProject.numAddr" ng-change="$createCtrl.checkNumAddresses()" required />
+                        
+                        <div ng-show="addNewProjectForm.numAddr.$error.invalidNumAddresses" role="alert">
+                            <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Must be between 1 and 500.</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sweepAddr" class="control-label">Sweep address<i class="fa fa-fw fa-asterisk" title="Required"></i></label>
+                        <input name="sweepAddr" type="text" class="form-control" ng-model="$createCtrl.newProject.sweepAddr" addr-validation required />
+                        
+                        <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This is the address that unclaimed funds will be swept to.</p>
+                        
+                        <div ng-show="addNewProjectForm.sweepAddr.$error.required" role="alert">
+                            <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Required.</span>
+                        </div>
+                        
+                        <div ng-show="addNewProjectForm.sweepAddr.$error.addrvalidation && !addNewProjectForm.sweepAddr.$error.required" role="alert">
+                            <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Not a valid SmartCash address.</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expDate" class="control-label">"Use by" date</label>
+                        <div id="expDateGroup" class="input-group">
+                            <input type="text" name="expDate" class="form-control" ng-model="$createCtrl.newProject.expDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$createCtrl.datepickerFormat}}" is-open="$createCtrl.expCalendar.opened" datepicker-options="$createCtrl.datepickerOptions" close-text="Close" ng-change="$createCtrl.checkCalendarDate('expCalendar')" />
+
+                            <span class="input-group-btn">
+                                <button id="expCalendarBtn" type="button" class="btn btn-default" ng-click="$createCtrl.openCalendar('expCalendar')"><i class="fa fa-fw fa-calendar" title="Calendar"></i></button>
+                            </span>
+                        </div>
+
+                        <p style="margin-bottom:0;"><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> This will be listed on each promotional wallet.</p>
+
+                        <div ng-show="addNewProjectForm.expDate.$error.required" role="alert">
+                            <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Required.</span>
+                        </div>
+
+                        <div ng-show="addNewProjectForm.expDate.$error.invalidDate" role="alert">
+                            <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> "Use by" date must be in the future.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="options" class="control-label">Options</label>
+
+                        <div class="checkbox">
+                            <label><input type="checkbox" ng-model="$createCtrl.newProject.qrCode">Add QR code to paper wallet</label>
+                        </div>
+
+                        <div class="checkbox">
+                            <label><input type="checkbox" ng-model="$createCtrl.newProject.walletIns">Add instructions to paper wallet</label>
+                        </div>
+
+                        <div class="form-group hide">
+                            <div class="checkbox">
+                                <label><input type="checkbox" ng-model="$createCtrl.newProject.sweep">Set automatic sweep date (midnight on that date)</label>
+                            </div>
+
+                            <div id="sweepDateGroup" class="input-group">
+                                <input type="text" name="sweepDate" class="form-control" ng-model="$createCtrl.newProject.sweepDate" ng-model-options="{allowInvalid: true}" uib-datepicker-popup="{{$createCtrl.datepickerFormat}}" is-open="$createCtrl.sweepCalendar.opened" datepicker-options="$createCtrl.datepickerOptions" ng-required="$createCtrl.newProject.sweep" close-text="Close" ng-change="$createCtrl.checkCalendarDate('sweepCalendar')" ng-disabled="!$createCtrl.newProject.sweep" />
+
+                                <span class="input-group-btn">
+                                    <button class="sweepCalendarBtn" type="button" class="btn btn-default" ng-disabled="!$createCtrl.newProject.sweep" ng-click="$createCtrl.openCalendar('sweepCalendar')"><i class="fa fa-fw fa-calendar" title="Calendar"></i></button>
+                                </span>
+                            </div>
+                                
+                            <div style="margin-top:15px;" ng-show="addNewProjectForm.sweepDate.$error.invalidDate" role="alert">
+                                <span class="error"><i class="fa fa-fw fa-exclamation-circle" aria-hidden="true"></i> Sweep date must be in the future.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="padding-top:10px; padding-right:0; clear:both;">
+                        <p><i class="fa fa-fw fa-info-circle" aria-hidden="true"></i> Creating addresses will automatically create the project.</p>
+                        
+                        <button id="createAddrBtn" type="button" class="btn btn-default" ng-disabled="addNewProjectForm.$pristine || addNewProjectForm.$invalid" ng-click="$createCtrl.createAddresses(addNewProjectForm)">Create Addresses</button>
+                        <button id="submitBtn" type="submit" class="btn btn-primary" ng-disabled="addNewProjectForm.$pristine || addNewProjectForm.$invalid">Create Project</button>
+                    </div>
+                </div>
+                
+                <div class="clearfix"></div>
+            </div>
+        </form>
+    </div>
+
+    <div id="projectList">
+        <div class="infoBlock">
+            <p><i class="fa fa-fw fa-info-circle bullet" aria-hidden="true"></i> A project can't be deleted if it has been funded and there are still funds associated with the project address or any of the promo wallets.</p>
+        </div>
+        
+        <h4>Projects</h4>
+        
+        <table id="tableHeading" class="table">
+            <tr>
+                <td class="nameCol">
+                    <strong>Name</strong>
+                    <i class="fa fa-fw fa-sort-alpha-asc" title="Sort A to Z" ng-show="$mainCtrl.nameSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('name')"></i>
+                    <i class="fa fa-fw fa-sort-alpha-desc" title="Sort Z to A" ng-show="$mainCtrl.nameSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('name', true)"></i>
+                </td>
+                <td class="totalFundsCol text-center">
+                    <strong>Total SMART</strong>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.totalFundsSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('totalFunds')"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.totalFundsSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('totalFunds', true)"></i>
+                </td>
+                <td class="numAddrCol text-center"><strong>Total Addresses</strong></td>
+                <td class="addrCol text-center"><strong>Addresses created?</strong></td>
+                <td class="expCol text-center"><strong>Use By Date</strong>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.expDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('expDate')"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.expDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('expDate', true)"></i>
+                </td>
+                <!--<td class="autoSweepCol text-center">
+                    <strong>Auto Sweep Date</strong>
+                    <i class="fa fa-fw fa-sort-numeric-asc" title="Sort 0 to 9" ng-show="$mainCtrl.sweepDateSortFlag == -1" ng-click="$mainCtrl.updateSortOptions('sweepDate')"></i>
+                    <i class="fa fa-fw fa-sort-numeric-desc" title="Sort 9 to 0" ng-show="$mainCtrl.sweepDateSortFlag == 1" ng-click="$mainCtrl.updateSortOptions('sweepDate', true)"></i>
+                </td>-->
+                <td class="editCol text-center"><strong>Edit</strong></td>
+                <td class="deleteCol text-center"><strong>Delete</strong></td>
+            </tr>
+            
+            <tr id="{{project.id}}" ng-class="{active: $createCtrl.activeProjectID == project.id}" ng-model="$createCtrl.availableProjects" ng-repeat="project in $createCtrl.availableProjects | orderBy: $mainCtrl.sortOptions.property : $mainCtrl.sortOptions.reverse : $mainCtrl.naturalSort track by project.id">
+                <td colspan="7" style="padding:0;">
+                    <table class="innerTable">
+                        <tr>
+                            <td class="nameCol">{{project.name}}</td>
+                            <td class="totalFundsCol text-center">{{project.originalFunds | toFixedNum: 8}}</td>
+                            <td class="numAddrCol text-center">{{project.numAddr}}</td>
+                            <td class="addrCol text-center"><i class="fa fa-fw fa-check" aria-hidden="false" title="yes" ng-show="project | hasAddresses"></i></td>
+                            <td class="expCol text-center"><span ng-show="project.expDate">{{project.expDate | date: 'mediumDate'}}</span><span ng-show="!project.expDate">n/a</span></td>
+                            <!--<td class="autoSweepCol text-center"><span ng-show="project.sweepDate">{{project.sweepDate | date: 'mediumDate'}}</span><span ng-show="!project.sweepDate">n/a</span></td>-->
+                            <td class="editCol text-center"><button class="btn btn-link" title="Edit project" ng-click="$createCtrl.edit(project.id)"><i class="fa fa-fw fa-cog"></i></button></td>
+                            <td class="deleteCol text-center"><button class="btn btn-link" title="Delete project" ng-click="$createCtrl.delete(project)" ng-disabled="true" enable-delete-btn="{{project}}"><i class="fa fa-fw fa-trash"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td colspan="7" class="addrCol">
+                                <strong>Project Address:</strong> {{project.addressPair.publicKey}}<br />
+                                <strong>Private Key:</strong> <button class="btn btn-link" title="Show/hide private key" ng-click="$mainCtrl.showPK(project.id)"><i class="fa fa-fw fa-eye" aria-hidden="false" title="Show private key" ng-show="!project.showPrivateKey"></i> <i class="fa fa-fw fa-eye-slash" aria-hidden="false" title="Hide private key" ng-show="project.showPrivateKey"></i></button> 
+                                {{project.addressPair.privateKey | hidePrivateKey: project.showPrivateKey}}
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

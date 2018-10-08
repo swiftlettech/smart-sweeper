@@ -1,0 +1,13 @@
+<div id="log" ng-init="init()">
+    <div id="logHeader">
+        <button id="refreshLog" type="button" class="btn btn-primary pull-left hide" style="margin-right: 10px;" ng-click="$logCtrl.refreshLog()">Refresh log</button>
+        <button id="openLogFolder" type="button" class="btn btn-primary pull-left" ng-click="$logCtrl.openLogFolder()">Open log folder</button>
+
+        <h5 style="clear:both"><strong>Most recent user action log:</strong>
+            <span ng-bind="$logCtrl.logDate" ng-hide="$logCtrl.mostRecentLog.content.length == 0"></span>
+            <span ng-show="$logCtrl.mostRecentLog.content.length == 0">No logs found.</span>
+        </h5>
+    </div>
+    
+    <textarea class="form-control" ng-bind="$logCtrl.logContent" readonly></textarea>
+</div>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+    <head>
+        <style type="text/css">
+            body {
+                background-image: url('../../images/SmartSweeper-logo.png');
+                background-repeat: no-repeat;
+                background-position: 50% 50%;
+                margin: 0;
+            }
+            
+            body div {
+                text-align: center;
+                font-family: sans-serif;
+            }
+            
+            #textArea {
+                padding: 5px 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+            
+            #loadingMsg {
+                font-size: 1.1em;
+            }
+            
+            #versionNum {
+                font-size: 0.9em;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <div id="textArea">
+            <div id="loadingMsg">Loading...</div>
+            <div id="versionNum">v0.9.1</div>
+        </div>
+        
+        <script>
+            (function() {
+                'use strict';
+                
+                // get version number from package.json
+                const fs = window.nodeRequire('fs');
+                var appVersion;
+                try {
+                    var fileContents = fs.readFileSync('package.json')
+                    var jsonFileContents = JSON.parse(fileContents)
+                    appVersion = jsonFileContents.version
+                    document.getElementById('versionNum').innerHTML = "v"+appVersion;
+                }
+                catch(err) {}
+                
+                document.body.style.height = window.innerHeight + 'px';
+                document.getElementById('textArea').style.height = (window.innerHeight-10) + 'px';
+            })();
+        </script>
+    </body>
+</html>

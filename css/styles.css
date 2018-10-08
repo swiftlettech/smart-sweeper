@@ -1,0 +1,400 @@
+/* General */
+body {
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-top: 20px solid #222;
+}
+
+body.modalBody {
+    margin: 10px 0;
+    background-color: #FFF;
+    background-image: none;
+    border-top: none;
+}
+
+a,
+a:hover,
+a:focus {
+  color: #FFF;
+}
+
+#page-wrapper a,
+#page-wrapper a:hover,
+#page-wrapper a:focus {
+    color: #23527C;
+}
+
+.btn-link,
+.btn-link:hover,
+.btn-link:focus {
+    color: inherit;
+}
+
+.panel-heading a,
+.panel-heading a:hover,
+.panel-heading a:focus {
+  color: #000!important;
+}
+
+a.disabled {
+    cursor: not-allowed;
+}
+
+.side-nav li {
+    border-top: 1px solid #222;
+    border-bottom: 1px solid #222;
+}
+
+.active {
+    background-color: #111;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #333;
+}
+
+.fa-sort-alpha-asc, .fa-sort-alpha-desc, .fa-sort-numeric-asc, .fa-sort-numeric-desc, .fa-eye, .fa-eye-slash {
+    cursor: pointer;
+}
+
+.error .fa-exclamation-circle {
+    color: #FF0000;
+}
+
+.success .fa-check {
+    color: #00FF00;
+}
+
+#statusMsgs div {
+    margin-bottom: 8px;
+}
+
+.spinner {
+    background: transparent url('../images/spinner.gif') center center no-repeat;
+    background-size: 15px 15px;
+    height: 20px;
+}
+
+.infoBlock {
+    margin-bottom: 20px;
+}
+
+.infoBlock p, .importantInfoBlock p {
+    display: flex;
+    align-items: baseline;
+}
+
+.infoBlock .bullet, .importantInfoBlock .bullet {
+    margin: 0 3px 0 0;
+}
+
+.importantInfoBlock {
+    font-weight: bold;
+}
+
+.infoBlock p, .importantInfoBlock p {
+    margin-bottom: 0;
+}
+
+/* from: https://stackoverflow.com/a/35693444/7843806 */
+.modal {
+    text-align: center;
+    padding: 0!important;
+}
+.modal::before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+    margin-right: -4px;
+}
+.modal-dialog {
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.modalAlertSucess {
+    color: #00CC00;
+}
+
+.modalAlertError {
+    color: #FF0000;
+}
+
+#modalMsg .alertModalBg {
+    background-color: #A8A8A8;
+}
+
+#modalMsg .modal-close {
+    float: right;
+    z-index: 2000;
+}
+
+#modalMsg .modal-close i {
+    vertical-align: text-top;
+}
+
+#modalMsg .modal-close .btn {
+    padding: 1px 6px;
+    border: none;
+}
+
+#modalMsg .modal-close .btn-default {
+    background-color: transparent;
+}
+
+input[disabled] {
+    background-color: transparent;
+    width: 25%;
+    border: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+button, .btn, .form-control, .input-group-addon {
+    border-radius: 0;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #333;
+  border-color: #333;
+}
+.btn-primary:focus,
+.btn-primary.focus {
+  color: #fff;
+  background-color: #333;
+  border-color: #3e4245;
+}
+.btn-primary:hover {
+  color: #fff;
+  background-color: #000;
+  border-color: #3e4245;
+}
+.btn-primary:active,
+.btn-primary.active,
+.open > .dropdown-toggle.btn-primary {
+  color: #fff;
+  background-color: #000;
+  border-color: #3e4245;
+}
+.btn-primary:active:hover,
+.btn-primary.active:hover,
+.open > .dropdown-toggle.btn-primary:hover,
+.btn-primary:active:focus,
+.btn-primary.active:focus,
+.open > .dropdown-toggle.btn-primary:focus,
+.btn-primary:active.focus,
+.btn-primary.active.focus,
+.open > .dropdown-toggle.btn-primary.focus {
+  color: #fff;
+  background-color: #000;
+  border-color: #3e4245;
+}
+
+#page-wrapper {
+    background-repeat: no-repeat;
+    background-size: 35%;
+    background-position: 85% 50%; 
+    image-rendering: auto;
+}
+
+@media(min-width:992px) {
+    #page-wrapper {
+        background-size: 25%;
+        background-position: 75% 50%;
+    }
+}
+
+#projectList {
+    padding-top: 15px;
+    clear:both;
+}
+
+#projectList #tableHeading {
+    margin-bottom: 0;
+    border: none;
+}
+
+#projectList #tableHeading .scrollCol {
+    width: 1px;
+    display:none;
+}
+
+#projectList .innerTable {
+    width: 100%;
+}
+
+#projectList .innerTable td {
+    padding: 8px;
+}
+
+#projectList .btn-link {
+    padding:0;
+    color:inherit;
+}
+
+#projectList .addrCol, #projectList .addrAmtCol {
+    width: 175px;
+}
+
+#projectList .totalFundsCol, #projectList .numAddrCol, #projectList .printCol {
+    width: 125px;
+}
+
+#projectList .expCol {
+    width: 130px;
+}
+
+#projectList .autoSweepCol {
+    width: 150px;
+}
+
+#projectList .editCol, #projectList .deleteCol, #projectList .fundCol, #projectList .sendCol, #projectList .sweepCol {
+    width: 65px;
+}
+
+
+/* Dashboard */
+
+#dashboard .panel-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#dashboard .panel-heading .spinner {
+    background: none;
+    background-size: auto;
+}
+
+#dashboard .panel:last-child {
+    margin-bottom: 0;
+}
+
+
+/* Create/Edit */
+#addNewProjectForm {
+    margin-top: 15px;
+}
+
+#addNewProjectForm input[name='name'], #addNewProjectForm input[name='sweepAddr'] {
+    width: 60%;
+}
+
+#addNewProjectForm input[name='numAddr'] {
+    width: 15%;
+}
+
+#addNewProjectForm #expDateGroup, #addNewProjectForm #sweepDateGroup {
+    width: 45%;
+}
+
+#addNewProjectForm .uib-datepicker-popup.dropdown-menu {
+    padding: 5px;
+    border-radius: 0;
+}
+
+#addNewProjectForm .uib-button-bar .btn {
+    color: #000;
+    font-weight: 700;
+}
+
+#editProjectForm input[name='name'] {
+    width: 40%;
+}
+
+#editProjectForm input[name='numAddr'] {
+    width: 15%;
+}
+
+#editProjectForm input[name='sweepAddr'] {
+    width: 70%;
+}
+
+#editProjectForm input[name='addrAmt'], #editProjectForm input[name='originalFunds'] {
+    width: 25%;
+}
+
+#editProjectForm #expDateGroup, #editProjectForm  #sweepDateGroup {
+    width: 35%;
+}
+
+#editProjectForm #expCalendarBtn, #editProjectForm #sweepCalendarBtn {
+    cursor: pointer;
+}
+
+#editProjectForm #expCalendarBtn:hover, #editProjectForm #sweepCalendarBtn:hover {
+    color: inherit;
+}
+
+
+/* Fund & Fund Modal */
+
+.fundInstr #projectAddress {
+    font-weight: bold;
+}
+
+.fundInstr button {
+    padding: 0 0 0 5px;
+    border: none;
+}
+
+.fundInstr .fa-clone {
+    cursor: pointer;
+}
+
+#calculator input[name='txFee'], #calculator input[name='walletAmt'] {
+    width: 25%;
+}
+
+#fundProjectForm input[name='name'] {
+    width: 60%;
+}
+
+#fundProjectForm input[name='originalFunds'] {
+    width: 25%;
+}
+
+/*#fundProjectForm input[name='fundingAddr'] {
+    width: 65%;
+}
+
+#fundProjectForm input[name='fundingPK'] {
+    width: 75%;
+}*/
+
+
+/* Sweep */
+
+#sweepForm input[type=checkbox] {
+    margin:0 auto;
+}
+
+#projectList .sweepCol {
+    text-align: center;
+}
+
+#projectList .perClaimedCol {
+    width: 125px;
+}
+
+#projectList .claimedAddrCol {
+    width: 150px;
+}
+
+
+/* Log */
+
+#log button {
+    margin-bottom:15px;
+}
+
+#log textarea {
+    
+}
+
+
+/* Help */
+#help .panel-heading {
+    font-weight: bold;
+}
