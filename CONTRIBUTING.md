@@ -15,7 +15,7 @@ We ask that all contributors follow our [code of conduct](CODE_OF_CONDUCT.md). P
 ### Suggesting Enhancements
 
 1. Please check [existing issues](/issues) to make sure that no one else has suggested the same enhancement. If someone has and the issue is still open, please add a new comment to the existing issue.
-1. If the suggestion hasn't already been made, please follow [these guidelines](docs/enhancement_suggestion.md).
+1. If the suggestion hasn't already been made, please follow [these guidelines](docs/pull_request_guidelines.md).
 
 ## Style Guidelines
 
