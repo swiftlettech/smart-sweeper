@@ -142,3 +142,5 @@ Software | License
 
 ## Contributing
 You can [contribute to the development of SmartSweeper](CONTRIBUTING.md) by filing a bug report or by submitting a pull request. All contributors must follow our [code of conduct](CODE_OF_CONDUCT.md).
+
+**Note:** Some commits reference incorrect issue numbers because the project used to be hosted in a private repo. The old issues were recreated in GitHub and they reference the original issue numbers. The issues that the commits link to reference the recreated issues.
