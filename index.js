@@ -25,6 +25,7 @@ const isDev = require('electron-is-dev')
 require('electron-debug')({showDevTools: true})
 
 let splashScreen, bgWin, modal, modalType, logFile, db, savedAppData
+const DEBUG = false
 
 // create a custom transport to save winston logs into a json database using electron store
 module.exports = {
@@ -287,6 +288,15 @@ function appInit() {
     
     //if (isDev)
         //global.sharedObject.logger.add(new transports.Console({format: format.simple()}))
+}
+
+// saves debug info to a file
+function debugSave(msg) {
+    var expandedMsg = util.inspect(msg, {showHidden: true, depth: null})
+    
+    fs.appendFile('debug.txt', expandedMsg + "\n", (err) => {
+      if (err) console.log(err)
+    })
 }
 
 // load the project db or create it if it doesn't exist
@@ -593,21 +603,22 @@ let apiCallback = function(resp, functionName, projectInfo) {
     var referrer = projectInfo.referrer
     var apiCallbackInfo
     
-    //console.log('functionName: ', functionName)
-    //console.log('referrer: ', referrer)
+    if (DEBUG) {
+        console.log('functionName: ', functionName)
+        console.log('referrer: ', referrer)
+    }
     
     if ((referrer.indexOf('getProjectAddressInfo') == -1) && (referrer.indexOf('getProjectTxStatus') == -1))
         apiCallbackInfo = global.apiCallbackInfo.get(referrer)
     else
         apiCallbackInfo = global.apiCallbackInfo.get(referrer+projectInfo.projectID)
     
-    /*if (referrer === "getSweptTxStatus") {
-        console.log('apiCallbackInfo: ', apiCallbackInfo)
-        console.log('projectInfo: ', projectInfo)
-        console.log(resp.type)
-        console.log(resp.msg)
-        console.log()
-    }*/
+    if (DEBUG && referrer.indexOf('getProjectAddressInfo') != -1 && projectInfo.projectID == 18) {
+        debugSave('apiCallbackInfo: ' + util.inspect(apiCallbackInfo, {depth: null}))
+        debugSave('projectInfo: ' + util.inspect(projectInfo, {depth: null}))
+        debugSave(resp.type)
+        debugSave(resp.msg)
+    }
     
     if (apiCallbackInfo !== undefined) {
         if (resp.type === "data") {            
@@ -628,13 +639,6 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 global.sharedObject.sysLogger.info(referrer + ' - ' + functionName + ', project #' + projectInfo.projectID)
             else
                 global.sharedObject.sysLogger.info(referrer + ' - ' + functionName)
-            
-            /*if (referrer === "getWalletTxStatus") {
-                console.log('projectInfo: ', projectInfo)
-                //console.log('from ' + functionName)
-                //console.log(resp.msg)
-                console.log()
-            }*/
 
             if (functionName === "checkBalance") {
                 global.sharedObject.blockExplorerError = false
@@ -897,7 +901,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     if (global.sharedObject.win)
                         global.sharedObject.win.webContents.send('projectsReady')
                     
-                    global.apiCallbackInfo.delete(referrer)
+                    global.apiCallbackInfo.delete(referrer+projectInfo.projectID)
                 }
                 else if (referrer === "getSweptTxStatus" && (apiCallbackCounter == apiCallbackInfo.totalSweptProjects)) {
                     db.set('projects', global.availableProjects)
@@ -937,7 +941,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                         delayedCall.create(global.rpcFunctionDelay, smartcashapi.checkTransaction, {referrer: "getProjectTxStatus", projectName: projectInfo.projectName, projectID: projectInfo.projectID, projectIndex: projectInfo.projectIndex, address: projectInfo.address, txid: txid}, apiCallback)
                     })
                     
-                    global.apiCallbackInfo.delete(referrer)
+                    global.apiCallbackInfo.delete(referrer+projectInfo.projectID)
                 }
             }
             else if (functionName === "sendFunds") {
@@ -1253,16 +1257,16 @@ app.on('ready', () => {
     createWindow()
     
     // extras for dev mode
-    if (isDev) {
+    /*if (isDev) {
         const elemon = require('elemon')
         elemon({
             app: app,
             mainFile: 'index.js',
             bws: [
-              {bw: global.sharedObject.win, res: []}
+              {bw: global.sharedObject.win}
             ]
         })
-    }
+    }*/
 })
 
 // quit when all windows are closed.
@@ -1534,17 +1538,20 @@ ipcMain.on('getProjectTxStatus', (event, args) => {
             totalProjects++
     })
 
-    if (totalProjects > 0 && global.sharedObject.rpcConnected) {
+    if (totalProjects > 0) {
         var index
         
         global.availableProjects.list.forEach(function(project, projectKey) {
-            global.apiCallbackInfo.set('getProjectAddressInfo'+project.id, {
-                txs: []
-            })
-            
-            index = getDbIndex(project.id)
-            //smartcashapi.getAddressInfo({referrer: "getProjectAddressInfo", projectID: project.id, projectName: project.name, projectIndex: index, address: project.addressPair.publicKey}, apiCallback)
-            delayedCall.create(global.rpcFunctionDelay, smartcashapi.getAddressInfo, {referrer: "getProjectAddressInfo", projectID: project.id, projectName: project.name, projectIndex: index, address: project.addressPair.publicKey}, apiCallback)
+            if (global.sharedObject.rpcConnected) {
+                global.apiCallbackInfo.set('getProjectAddressInfo'+project.id, {
+                    apiCallbackCounter: 0,
+                    txs: []
+                })
+
+                index = getDbIndex(project.id)
+                
+                delayedCall.create(global.rpcFunctionDelay, smartcashapi.getAddressInfo, {referrer: "getProjectAddressInfo", projectID: project.id, projectName: project.name, projectIndex: index, address: project.addressPair.publicKey}, apiCallback)
+            }
         })
     }
 })
