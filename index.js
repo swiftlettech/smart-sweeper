@@ -16,6 +16,7 @@ const {combine, timestamp, prettyPrint} = format
 
 const Store = require('electron-store')
 const smartcashapi = require('./smartcashapi')
+const debugUtils = require('./debug-utils')
 const {watch} = require('melanke-watchjs')
 
 const baseLogPath = "logs"
@@ -25,7 +26,6 @@ const isDev = require('electron-is-dev')
 require('electron-debug')({showDevTools: true})
 
 let splashScreen, bgWin, modal, modalType, logFile, db, savedAppData
-const DEBUG = false
 
 // create a custom transport to save winston logs into a json database using electron store
 module.exports = {
@@ -288,15 +288,6 @@ function appInit() {
     
     //if (isDev)
         //global.sharedObject.logger.add(new transports.Console({format: format.simple()}))
-}
-
-// saves debug info to a file
-function debugSave(msg) {
-    var expandedMsg = util.inspect(msg, {showHidden: true, depth: null})
-    
-    fs.appendFile('debug.txt', expandedMsg + "\n", (err) => {
-      if (err) console.log(err)
-    })
 }
 
 // load the project db or create it if it doesn't exist
@@ -603,21 +594,18 @@ let apiCallback = function(resp, functionName, projectInfo) {
     var referrer = projectInfo.referrer
     var apiCallbackInfo
     
-    if (DEBUG) {
-        console.log('functionName: ', functionName)
-        console.log('referrer: ', referrer)
-    }
-    
     if ((referrer.indexOf('getProjectAddressInfo') == -1) && (referrer.indexOf('getProjectTxStatus') == -1))
         apiCallbackInfo = global.apiCallbackInfo.get(referrer)
     else
         apiCallbackInfo = global.apiCallbackInfo.get(referrer+projectInfo.projectID)
     
-    if (DEBUG && referrer.indexOf('getProjectAddressInfo') != -1 && projectInfo.projectID == 18) {
-        debugSave('apiCallbackInfo: ' + util.inspect(apiCallbackInfo, {depth: null}))
-        debugSave('projectInfo: ' + util.inspect(projectInfo, {depth: null}))
-        debugSave(resp.type)
-        debugSave(resp.msg)
+    if (debugUtils.DEBUG && referrer.indexOf('sendPromotionalFunds') != -1) {
+        debugUtils.debugSave('functionName: ' + functionName)
+        debugUtils.debugSave('referrer: ' + referrer)
+        debugUtils.debugSave('apiCallbackInfo: ' + util.inspect(apiCallbackInfo, {depth: null}))
+        debugUtils.debugSave('projectInfo: ' + util.inspect(projectInfo, {depth: null}))
+        debugUtils.debugSave(resp.type)
+        debugUtils.debugSave(resp.msg)
     }
     
     if (apiCallbackInfo !== undefined) {
@@ -928,7 +916,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 }
             }
             else if (functionName === "getAddressInfo") {
-                if (referrer === "getProjectAddressInfo") {
+                if (referrer === "getProjectAddressInfo" && apiCallbackInfo !== undefined) {
                     global.apiCallbackInfo.set('getProjectTxStatus'+projectInfo.projectID, {
                         apiCallbackCounter: 0,
                         totalTxs: apiCallbackInfo.txs.length,
@@ -1003,9 +991,11 @@ let apiCallback = function(resp, functionName, projectInfo) {
             }
         }
         else if (resp.type === "error") {
-            console.log('index.js error block: ')
-            console.log('functionName: ', functionName)
-            console.log('error msg: ', resp.msg)
+            if (debugUtils.DEBUG) {
+                console.log('index.js error block: ')
+                console.log('functionName: ', functionName)
+                console.log('error msg: ', resp.msg)
+            }
             
             // transaction's not in the blockchain yet
             if (functionName === "checkTransaction" && resp.msg === "Invalid transaction id.") {
@@ -1255,18 +1245,6 @@ app.on('ready', () => {
     appInit()    
     createBgWindow()
     createWindow()
-    
-    // extras for dev mode
-    /*if (isDev) {
-        const elemon = require('elemon')
-        elemon({
-            app: app,
-            mainFile: 'index.js',
-            bws: [
-              {bw: global.sharedObject.win}
-            ]
-        })
-    }*/
 })
 
 // quit when all windows are closed.
@@ -1709,10 +1687,12 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
     var totalAmtToSend = args.originalFunds - txFee
     var amtPerWallet = totalAmtToSend / numWallets
     
-    console.log('args.originalFunds: ', args.originalFunds)
-    console.log('txFee: ', txFee)
-    console.log('args.wallets.length: ', args.wallets.length)
-    console.log('amtPerWallet: ', amtPerWallet)
+    if (debugUtils.DEBUG) {        
+        debugUtils.debugSave('args.originalFunds: ' + args.originalFunds)
+        debugUtils.debugSave('txFee: ' + txFee)
+        debugUtils.debugSave('args.wallets.length: ' + args.wallets.length)
+        debugUtils.debugSave('amtPerWallet: ' + amtPerWallet)
+    }
     
     loadProjects()
     var index = getDbIndex(args.projectID)
@@ -1723,7 +1703,7 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
     args.wallets.forEach(function(wallet, key) {
         toAddr.push(wallet.publicKey)
     })
-    console.log('toAddr: ', toAddr)
+    if (debugUtils.DEBUG) debugUtils.debugSave('toAddr: ' + util.inspect(toAddr, {showHidden: true, depth: null}))
     
     global.apiCallbackInfo.set('sendPromotionalFunds', {
         apiCallbackCounter: 0
