@@ -5,8 +5,9 @@ const smartcash = require('smartcashjs-lib')
 const rpc = require('./rpc-client')
 const http = require('http')
 const util = require('util')
-const {watch} = require('melanke-watchjs')
 const Store = require('electron-store')
+const {watch} = require('melanke-watchjs')
+const debugUtils = require('./debug-utils')
 const delayedCall = require('delayed-call')
 const smartcashExplorer = "https://insight.smartcash.cc/api"
 
@@ -22,11 +23,13 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
     var referrer = projectInfo.referrer
     var apiCallbackInfo = global.smartcashCallbackInfo.get(referrer+projectInfo.projectID)
     
-    //console.log('smartcashCallback referrer: ', referrer)
-    //console.log('apiCallbackInfo ID: ', referrer+projectInfo.projectID)
-    //console.log('apiCallbackInfo: ', apiCallbackInfo)
-    //console.log('resp: ', resp)
-    //console.log()
+    if (debugUtils.DEBUG) {
+        console.log('smartcashCallback referrer: ', referrer)
+        console.log('apiCallbackInfo ID: ', referrer+projectInfo.projectID)
+        //console.log('apiCallbackInfo: ', apiCallbackInfo)
+        //console.log('resp: ', resp)
+        console.log()
+    }
     
     if (resp.type === "data") {
         if (functionName === "sweepFunds") {
@@ -63,8 +66,10 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
         }
     }
     else if (resp.type === "error") {
-        //console.log('smartcashapi.js error block')
-        //console.log('error msg: ', resp.msg)
+        if (debugUtils.DEBUG) {
+            console.log('smartcashapi.js error block')
+            console.log('error msg: ', resp.msg)
+        }
         
         if (referrer === "sendFundsCheck") {
             global.sharedObject.rpcError = true
@@ -96,9 +101,11 @@ function checkBalance(projectInfo, callback) {
         method: 'GET',
         json: true
     }, function (err, resp, body) {
-        //console.log('checkBalance')
-        //console.log(err)
-        //console.log(body)
+        /*if (debugUtils.DEBUG) {
+            console.log('checkBalance')
+            console.log(err)
+            console.log(body)
+        }*/
         
         if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
             body = JSON.parse(body)
@@ -116,8 +123,10 @@ function checkBalance(projectInfo, callback) {
             callback({type: 'data', msg: balance}, 'checkBalance', projectInfo)
         }
         else {
-            console.log('checkBalance')
-            console.log(err)
+            if (debugUtils.DEBUG) {
+                console.log('checkBalance')
+                console.log(err)
+            }
             
             var error
                             
@@ -141,9 +150,11 @@ function checkSendInputs(txid, projectInfo, callback) {
     }
 
     rpc.sendCmd(getTxInfoCmd, function(err, resp) {
-        //console.log('sendFunds')
-        //console.log(err)
-        //console.log(resp)
+        /*if (debugUtils.DEBUG) {
+            console.log('sendFunds')
+            console.log(err)
+            console.log(resp)
+        }*/
 
         if (err) {
             smartcashCallback({type: 'error', msg: resp}, 'sendFunds', projectInfo, callback)
@@ -159,9 +170,6 @@ function checkSendInputs(txid, projectInfo, callback) {
                         'vout': vout.n
                     }
                     
-                    console.log('global: ', global)
-                    //console.log('global.smartcashCallbackInfo: ', global.smartcashCallbackInfo.get(projectInfo.referrer+projectInfo.projectID))
-
                     global.smartcashCallbackInfo.get(projectInfo.referrer+projectInfo.projectID).transactions.push(newTx)
                 }
             })
@@ -201,8 +209,10 @@ function checkSweepInputs(address, projectInfo, callback) {
 
 /* Check the status of a transaction. */
 function checkTransaction(projectInfo, callback) {
-    //console.log('checkTransaction')
-    //console.log('PROJECT INFO: ', projectInfo)
+    /*if (debugUtils.DEBUG) {
+        console.log('checkTransaction')
+        console.log('PROJECT INFO: ', projectInfo)
+    }*/
     
     var txArray = []
     
@@ -229,11 +239,7 @@ function checkTransaction(projectInfo, callback) {
         })
     }
     
-    //console.log('txArray: ', txArray)
-    
-    txArray.forEach(function(tx, key) {
-        //console.log('TX KEYS: ', Object.keys(tx)[0])
-        
+    txArray.forEach(function(tx, key) {        
         confirmedTxFlag = 0
         txid = Object.keys(tx)[0]
         
@@ -245,19 +251,15 @@ function checkTransaction(projectInfo, callback) {
         //console.log('cmd: ', cmd)
         
         rpc.sendCmd(cmd, function(err, resp) {
-            //console.log(err)
-            //console.log(resp)
-            //console.log('txid: ', cmd.params[0])
-            //console.log('resp.confirmations: ', resp.confirmations)
+            /*if (debugUtils.DEBUG) {
+                console.log(err)
+                console.log(resp)
+                console.log('txid: ', cmd.params[0])
+                console.log('resp.confirmations: ', resp.confirmations)
+            }*/
             
             global.smartcashCallbackInfo.get(projectInfo.referrer).txCounter++
-            //console.log('txCounter: ', global.smartcashCallbackInfo.get(projectInfo.referrer).txCounter);
-            //console.log('txArray.length: ', txArray.length);
-
-            /*if (err) {
-                // ignore the unknown transaction error for promotional wallet txids because it's probably not in the blockchain yet
-                callback({type: 'error', msg: resp}, 'checkTransaction', projectInfo)
-            }*/
+            
             if (!err) {
                 if (resp.confirmations !== undefined)
                     callback({type: 'data', msg: resp}, 'checkTransaction', projectInfo)
@@ -273,6 +275,8 @@ function checkTransaction(projectInfo, callback) {
 
 /* Actually fund the promo wallets. */
 function doSend(transactions, projectInfo, callback) {
+    projectInfo.referrer = "sendPromotionalFunds"
+    
     var receivers = projectInfo.toAddr
     var outputs = {}
 
@@ -291,16 +295,17 @@ function doSend(transactions, projectInfo, callback) {
             callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
         }
         else {
-            /*var decodeTxCmd = {
-                method: 'decoderawtransaction',
-                params: [resp]
-            }
+            /*if (debugUtils.DEBUG) {
+                var decodeTxCmd = {
+                    method: 'decoderawtransaction',
+                    params: [resp]
+                }
 
-            rpc.sendCmd(decodeTxCmd, function(err, resp) {
-                console.log("decoderawtransaction resp: ", resp)
-                console.log("decoderawtransaction resp vin: ", resp.vin)
-            })*/
-
+                rpc.sendCmd(decodeTxCmd, function(err, resp) {
+                    console.log("decoderawtransaction resp: ", resp)
+                    console.log("decoderawtransaction resp vin: ", resp.vin)
+                })
+            }*/
 
             var signTxCmd = {
                 method: 'signrawtransaction',
@@ -318,8 +323,10 @@ function doSend(transactions, projectInfo, callback) {
                     }
 
                     rpc.sendCmd(sendTxCmd, function(err, resp) {
-                        console.log(err)
-                        console.log(resp)
+                        if (debugUtils.DEBUG) {
+                            console.log(err)
+                            console.log(resp)
+                        }
 
                         if (err) {
                             callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
@@ -360,9 +367,7 @@ function doSweep(projectInfo, callback) {
         params: [project.recvAddrs[0].sentTxid, 1]
     }
 
-    rpc.sendCmd(getTxInfoCmd, function(err, resp) {
-        //console.log("getrawtransaction resp: ", resp)
-        
+    rpc.sendCmd(getTxInfoCmd, function(err, resp) {        
         if (err) {
             callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
         }
@@ -385,30 +390,28 @@ function doSweep(projectInfo, callback) {
                 params: [transactions, outputs]
             }
             
-            rpc.sendCmd(createTxCmd, function(err, resp) {
-                //console.log("createrawtransaction resp: ", resp)
-                
+            rpc.sendCmd(createTxCmd, function(err, resp) {                
                 if (err) {
                     callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
                 }
                 else {
-                    /*var decodeTxCmd = {
-                        method: 'decoderawtransaction',
-                        params: [resp]
-                    }
-                    
-                    rpc.sendCmd(decodeTxCmd, function(err, resp) {
-                        console.log("decoderawtransaction resp: ", resp)
-                    })*/
+                    /*if (debugUtils.DEBUG) {
+                        var decodeTxCmd = {
+                            method: 'decoderawtransaction',
+                            params: [resp]
+                        }
+
+                        rpc.sendCmd(decodeTxCmd, function(err, resp) {
+                            console.log("decoderawtransaction resp: ", resp)
+                        })
+                    }*/
                     
                     signTxCmd = {
                         method: 'signrawtransaction',
                         params: [resp, null, unclaimedWalletsPKs]
                     }
 
-                    rpc.sendCmd(signTxCmd, function(err, resp) {
-                        //console.log("signrawtransaction resp: ", resp)
-                        
+                    rpc.sendCmd(signTxCmd, function(err, resp) {                        
                         if (err) {
                             callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
                         }
@@ -419,8 +422,10 @@ function doSweep(projectInfo, callback) {
                             }
 
                             rpc.sendCmd(sendTxCmd, function(err, resp) {
-                                console.log(err)
-                                console.log(resp)
+                                if (debugUtils.DEBUG) {
+                                    console.log(err)
+                                    console.log(resp)
+                                }
 
                                 if (err) {
                                     callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
@@ -454,9 +459,11 @@ function getAddressInfo(projectInfo, callback) {
         method: 'GET',
         json: true
     }, function (err, resp, body) {
-        //console.log('getAddressInfo')
-        //console.log(err)
-        //console.log(body)
+        /*if (debugUtils.DEBUG) {
+            console.log('getAddressInfo')
+            console.log(err)
+            console.log(body)
+        }*/
         
         if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
             body = JSON.parse(body)
@@ -465,8 +472,10 @@ function getAddressInfo(projectInfo, callback) {
             callback({type: 'data', msg: body}, 'getAddressInfo', projectInfo)
         }
         else {
-            //console.log('getAddressInfo')
-            //console.log(err)
+            /*if (debugUtils.DEBUG) {
+                console.log('getAddressInfo')
+                console.log(err)
+            }*/
             
             var error
                             
@@ -490,9 +499,10 @@ function sendFunds(projectInfo, callback) {
         method: 'GET',
         json: true
     }, function (err, resp, body) {
-        //console.log('sendFunds')
-        //console.log(err)
-        //console.log(body)
+        /*if (debugUtils.DEBUG) {
+            console.log('sendFunds')
+            console.log(body)
+        }*/
         
         if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
             body = JSON.parse(body)
@@ -522,6 +532,11 @@ function sendFunds(projectInfo, callback) {
             }
         }
         else {
+            if (debugUtils.DEBUG) {
+                console.log('sendFunds error: ')
+                console.log(err)
+            }
+            
             var error
                             
             if (err)

@@ -121,7 +121,6 @@ Software | License
 [electron-store](https://github.com/sindresorhus/electron-store) | MIT
 [electron-unhandled](https://github.com/sindresorhus/electron-unhandled) | MIT
 [electron-util](https://github.com/sindresorhus/electron-util) | MIT
-[elemon](https://github.com/manidlou/elemon) | MIT
 [exp-config](https://github.com/ExpressenAB/exp-config) | MIT
 [melanke-watchjs](https://github.com/melanke/Watch.JS) | MIT
 [Moment.js](https://github.com/moment/moment) | MIT

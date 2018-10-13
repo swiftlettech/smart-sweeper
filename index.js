@@ -16,6 +16,7 @@ const {combine, timestamp, prettyPrint} = format
 
 const Store = require('electron-store')
 const smartcashapi = require('./smartcashapi')
+const debugUtils = require('./debug-utils')
 const {watch} = require('melanke-watchjs')
 
 const baseLogPath = "logs"
@@ -593,21 +594,19 @@ let apiCallback = function(resp, functionName, projectInfo) {
     var referrer = projectInfo.referrer
     var apiCallbackInfo
     
-    //console.log('functionName: ', functionName)
-    //console.log('referrer: ', referrer)
-    
     if ((referrer.indexOf('getProjectAddressInfo') == -1) && (referrer.indexOf('getProjectTxStatus') == -1))
         apiCallbackInfo = global.apiCallbackInfo.get(referrer)
     else
         apiCallbackInfo = global.apiCallbackInfo.get(referrer+projectInfo.projectID)
     
-    /*if (referrer === "getSweptTxStatus") {
-        console.log('apiCallbackInfo: ', apiCallbackInfo)
-        console.log('projectInfo: ', projectInfo)
-        console.log(resp.type)
-        console.log(resp.msg)
-        console.log()
-    }*/
+    if (debugUtils.DEBUG && referrer.indexOf('sendPromotionalFunds') != -1) {
+        debugUtils.debugSave('functionName: ' + functionName)
+        debugUtils.debugSave('referrer: ' + referrer)
+        debugUtils.debugSave('apiCallbackInfo: ' + util.inspect(apiCallbackInfo, {depth: null}))
+        debugUtils.debugSave('projectInfo: ' + util.inspect(projectInfo, {depth: null}))
+        debugUtils.debugSave(resp.type)
+        debugUtils.debugSave(resp.msg)
+    }
     
     if (apiCallbackInfo !== undefined) {
         if (resp.type === "data") {            
@@ -628,13 +627,6 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 global.sharedObject.sysLogger.info(referrer + ' - ' + functionName + ', project #' + projectInfo.projectID)
             else
                 global.sharedObject.sysLogger.info(referrer + ' - ' + functionName)
-            
-            /*if (referrer === "getWalletTxStatus") {
-                console.log('projectInfo: ', projectInfo)
-                //console.log('from ' + functionName)
-                //console.log(resp.msg)
-                console.log()
-            }*/
 
             if (functionName === "checkBalance") {
                 global.sharedObject.blockExplorerError = false
@@ -897,7 +889,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                     if (global.sharedObject.win)
                         global.sharedObject.win.webContents.send('projectsReady')
                     
-                    global.apiCallbackInfo.delete(referrer)
+                    global.apiCallbackInfo.delete(referrer+projectInfo.projectID)
                 }
                 else if (referrer === "getSweptTxStatus" && (apiCallbackCounter == apiCallbackInfo.totalSweptProjects)) {
                     db.set('projects', global.availableProjects)
@@ -924,7 +916,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                 }
             }
             else if (functionName === "getAddressInfo") {
-                if (referrer === "getProjectAddressInfo") {
+                if (referrer === "getProjectAddressInfo" && apiCallbackInfo !== undefined) {
                     global.apiCallbackInfo.set('getProjectTxStatus'+projectInfo.projectID, {
                         apiCallbackCounter: 0,
                         totalTxs: apiCallbackInfo.txs.length,
@@ -937,7 +929,7 @@ let apiCallback = function(resp, functionName, projectInfo) {
                         delayedCall.create(global.rpcFunctionDelay, smartcashapi.checkTransaction, {referrer: "getProjectTxStatus", projectName: projectInfo.projectName, projectID: projectInfo.projectID, projectIndex: projectInfo.projectIndex, address: projectInfo.address, txid: txid}, apiCallback)
                     })
                     
-                    global.apiCallbackInfo.delete(referrer)
+                    global.apiCallbackInfo.delete(referrer+projectInfo.projectID)
                 }
             }
             else if (functionName === "sendFunds") {
@@ -999,9 +991,11 @@ let apiCallback = function(resp, functionName, projectInfo) {
             }
         }
         else if (resp.type === "error") {
-            console.log('index.js error block: ')
-            console.log('functionName: ', functionName)
-            console.log('error msg: ', resp.msg)
+            if (debugUtils.DEBUG) {
+                console.log('index.js error block: ')
+                console.log('functionName: ', functionName)
+                console.log('error msg: ', resp.msg)
+            }
             
             // transaction's not in the blockchain yet
             if (functionName === "checkTransaction" && resp.msg === "Invalid transaction id.") {
@@ -1251,18 +1245,6 @@ app.on('ready', () => {
     appInit()    
     createBgWindow()
     createWindow()
-    
-    // extras for dev mode
-    if (isDev) {
-        const elemon = require('elemon')
-        elemon({
-            app: app,
-            mainFile: 'index.js',
-            bws: [
-              {bw: global.sharedObject.win, res: []}
-            ]
-        })
-    }
 })
 
 // quit when all windows are closed.
@@ -1534,17 +1516,20 @@ ipcMain.on('getProjectTxStatus', (event, args) => {
             totalProjects++
     })
 
-    if (totalProjects > 0 && global.sharedObject.rpcConnected) {
+    if (totalProjects > 0) {
         var index
         
         global.availableProjects.list.forEach(function(project, projectKey) {
-            global.apiCallbackInfo.set('getProjectAddressInfo'+project.id, {
-                txs: []
-            })
-            
-            index = getDbIndex(project.id)
-            //smartcashapi.getAddressInfo({referrer: "getProjectAddressInfo", projectID: project.id, projectName: project.name, projectIndex: index, address: project.addressPair.publicKey}, apiCallback)
-            delayedCall.create(global.rpcFunctionDelay, smartcashapi.getAddressInfo, {referrer: "getProjectAddressInfo", projectID: project.id, projectName: project.name, projectIndex: index, address: project.addressPair.publicKey}, apiCallback)
+            if (global.sharedObject.rpcConnected) {
+                global.apiCallbackInfo.set('getProjectAddressInfo'+project.id, {
+                    apiCallbackCounter: 0,
+                    txs: []
+                })
+
+                index = getDbIndex(project.id)
+                
+                delayedCall.create(global.rpcFunctionDelay, smartcashapi.getAddressInfo, {referrer: "getProjectAddressInfo", projectID: project.id, projectName: project.name, projectIndex: index, address: project.addressPair.publicKey}, apiCallback)
+            }
         })
     }
 })
@@ -1702,10 +1687,12 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
     var totalAmtToSend = args.originalFunds - txFee
     var amtPerWallet = totalAmtToSend / numWallets
     
-    console.log('args.originalFunds: ', args.originalFunds)
-    console.log('txFee: ', txFee)
-    console.log('args.wallets.length: ', args.wallets.length)
-    console.log('amtPerWallet: ', amtPerWallet)
+    if (debugUtils.DEBUG) {        
+        debugUtils.debugSave('args.originalFunds: ' + args.originalFunds)
+        debugUtils.debugSave('txFee: ' + txFee)
+        debugUtils.debugSave('args.wallets.length: ' + args.wallets.length)
+        debugUtils.debugSave('amtPerWallet: ' + amtPerWallet)
+    }
     
     loadProjects()
     var index = getDbIndex(args.projectID)
@@ -1716,7 +1703,7 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
     args.wallets.forEach(function(wallet, key) {
         toAddr.push(wallet.publicKey)
     })
-    console.log('toAddr: ', toAddr)
+    if (debugUtils.DEBUG) debugUtils.debugSave('toAddr: ' + util.inspect(toAddr, {showHidden: true, depth: null}))
     
     global.apiCallbackInfo.set('sendPromotionalFunds', {
         apiCallbackCounter: 0
