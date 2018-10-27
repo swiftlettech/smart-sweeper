@@ -106,6 +106,7 @@
                 setInterval(() => {
                     ipcRenderer.send('getClaimedFundsInfo');
                     ipcRenderer.send('getSweptTxStatus');
+                    ipcRenderer.send('getSweptFundsInfo');
                     ipcRenderer.send('getWalletTxStatus');
                 }, 60000);
             }

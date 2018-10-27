@@ -1,7 +1,7 @@
 # SmartSweeper
 
 ### Note
-SmartSweeper is currently in beta. You fund projects at your own risk.
+SmartSweeper is currently in beta. You fund projects at your own risk. Bug fixes and new features will be added to the dev branch first.
 
 ### Description
 Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow easy retrieval of gift funds. Runs only on Windows 7, 8, and 10 at the moment. It isn't necessary to input your wallet passphrase to use SmartSweeper.
