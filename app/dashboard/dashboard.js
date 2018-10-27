@@ -53,9 +53,6 @@
             ipcRenderer.on('coreSynced', (event, args) => {
                 $scope.$apply(function() {
                     availableFunds();
-                    //txInfo();
-                    //claimedFunds();
-                    //sweptFunds();
                 });
             });
         };
@@ -147,45 +144,9 @@
         function availableFunds() {
             $mainCtrl.setProgressSpinner('dashboardSpinner', true, 0);
             ipcRenderer.send('checkAvailProjectBalances');
-            
-            // status checking
-            /*ctrl.taskStatusCheck = $interval(function() {
-                ipcRenderer.send('taskStatusCheck', 'checkAvailProjectBalances');
-            }, 5000);
-            
-            ipcRenderer.on('taskStatusCheckDone', (event, args) => {
-                ipcRenderer.removeAllListeners('taskStatusCheckDone');
-                $scope.$apply(function() {
-                    if (args.function === "checkAvailProjectBalances" && args.status == true) {
-                        $interval.cancel(ctrl.taskStatusCheck);
-                        $mainCtrl.setProgressSpinner('dashboardSpinner', false, 0);
-                    }
-                    else
-                        $mainCtrl.setProgressSpinner('dashboardSpinner', true, 0);
-                });
-            });*/
         }
         
-        /* Funds that have been transferred from a promotional wallet to a different wallet (all projects). - NOT USED */
-        function claimedFunds() {
-            $mainCtrl.setProgressSpinner('dashboardSpinner', true, 3);
-            ipcRenderer.send('getClaimedFundsInfo');
-        }
-        
-        /* Funds that have been swept back to a project address (all projects). - NOT USED */
-        function sweptFunds() {
-            $mainCtrl.setProgressSpinner('dashboardSpinner', true, 4);
-            ipcRenderer.send('getSweptFundsInfo');
-        }
-        
-        /* The pending/confirmed state of all promotional wallets (all projects). - NOT USED */
-        function txInfo() {
-            $mainCtrl.setProgressSpinner('dashboardSpinner', true, 1);
-            $mainCtrl.setProgressSpinner('dashboardSpinner', true, 2);
-            ipcRenderer.send('getWalletTxStatus');
-        }
-        
-        /* Resets all amounts/counts for dashboard variables. */
+        /* Resets all amounts/counts for dashboard variables. - NOT USED */
         function resetDashboardVals() {
             ctrl.availableBalance = 0;
             ctrl.claimedFunds = 0;
