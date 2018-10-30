@@ -1241,17 +1241,18 @@ function setActiveProject(projectID) {
 
 
 app.on('will-finish-launching', () => {
-    // app updater
 })
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-    createSplashScreen()
-    appInit()    
-    createBgWindow()
-    createWindow()
+    if (fs.existsSync('config')) {
+        createSplashScreen()
+        appInit()    
+        createBgWindow()
+        createWindow()
+    }
 })
 
 // quit when all windows are closed.

@@ -14,7 +14,7 @@ Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow
 * User action logs and system logs
 
 ### Base Requirement
-* [SmartCash Node Client](https://smartcash.cc/wallets/) for Windows - 1.2.6+ ([there is a bootstrap file to shorten sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
+* [SmartCash Node Client](https://smartcash.cc/wallets/) for Windows - 1.2.6+ ([there is a bootstrap file to reduce sync time](https://smartcash.freshdesk.com/support/solutions/articles/35000027174-using-the-bootstrap-to-speedup-sync-process))
 
 ### Table of Contents
 * [Installation](#installation)
@@ -100,7 +100,6 @@ The log files are also in JSON format and can be viewed with a general log viewe
 * SmartSweeper may not open the SmartCash Node Client. If smartcash.conf hasn't been modified with the info above, SmartSweeper won't work if the node client is run manually.
 * electron-store error "EPERM operation not permitted" sometimes occurs on Windows when reading a config file. SmartSweeper will exit when it does.
 * Can't connect to the node client via RPC when it's syncing (SmartSweeper will display the "Can't connect to SmartCash Node Client." error). This will cause some actions to fail and some project data updates to not occur.
-* Claimed funds info on the dashboard and the sweep funds page becomes inaccurate after one or more projects have been swept.
 * Empty log files are sometimes created in the root SmartSweeper data folder.
 * There is lag when entering text into input fields.
 

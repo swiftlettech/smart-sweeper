@@ -2,12 +2,14 @@ const fs = require('fs')
 const path = require('path')
 const os = require('os')
 const electron = require('electron')
-const {ipcRenderer} = electron
-const smartcash = require('node-smartcash')
+const {app, dialog, ipcRenderer} = electron
+const smartcashClient = require('node-smartcash')
 
 let config, client
 
-init()
+app.on('ready', () => {
+    init()
+})
 
 function init() {    
     // check for default config file, create an empty one if it doesn't exist
@@ -16,69 +18,34 @@ function init() {
             fs.mkdirSync('config')
         }
         catch(err) {
-            var content = {
-                text: {
-                    title: 'Error',
-                    body: 'SmartSweeper has encountered a fatal error. The app will now close.'
-                },
-                fatal: true
-            };
-            ipcRenderer.send('showErrorDialog', content);
+            dialog.showMessageBox({
+                type: 'error',
+                buttons: ['OK'],
+                title: 'Error',
+                message: 'You must run SmartSweeper as an Administrator.'
+            }, function(resp) {
+                app.quit()
+            })
         }
     }
 
-    var defaultConfigPath = path.join('config', 'development.json')
-    try {
-        fs.openSync(defaultConfigPath, 'r')
-    }
-    catch(err) {
-        if (err.code === "ENOENT")
-            fs.writeFileSync(defaultConfigPath, '{}')
-    }
+    if (fs.existsSync('config')) {
+        var defaultConfigPath = path.join('config', 'development.json')
+        try {
+            fs.openSync(defaultConfigPath, 'r')
+        }
+        catch(err) {
+            if (err.code === "ENOENT")
+                fs.writeFileSync(defaultConfigPath, '{}')
+        }
 
-    config = require("exp-config")
+        config = require("exp-config")
 
-    // check for the config file, create it if it doesn't exist
-    try {
-        fs.openSync('.env', 'r')
+        // check for the config file, create it if it doesn't exist
+        try {
+            fs.openSync('.env', 'r')
 
-        client = new smartcash.Client({
-            host: config.rpc.host,
-            port: config.rpc.port,
-            user: config.rpc.username,
-            pass: config.rpc.password,
-            timeout: 20000
-        })
-    }
-    catch(err) {
-        if (err.code === "ENOENT") {
-            var defaultSmartcashPath
-
-            var content = "rpc.host=127.0.0.1\n"
-            content += "rpc.port=9678\n"
-            content += "rpc.username=rpcusername\n"
-            content += "rpc.password=rpcpassword\n"
-
-            if (os.platform() === "win32")
-                defaultSmartcashPath = "C:\\Program Files\\SmartCash\\"
-            else if (os.platform() === "darwin")
-                defaultSmartcashPath = "//Applications//"
-            else if (os.platform() === "linux")
-                defaultSmartcashPath = ""
-
-            content += "smartcashPath=" + defaultSmartcashPath
-
-            fs.writeFileSync('.env', content)
-
-            config = { rpc: {} }
-
-            config.rpc.host = "127.0.0.1"
-            config.rpc.port = "9678"
-            config.rpc.username = "rpcusername"
-            config.rpc.password = "rpcpassword"
-            config.smartcashPath = defaultSmartcashPath
-
-            client = new smartcash.Client({
+            client = new smartcashClient.Client({
                 host: config.rpc.host,
                 port: config.rpc.port,
                 user: config.rpc.username,
@@ -86,15 +53,52 @@ function init() {
                 timeout: 20000
             })
         }
-        else {
-            var content = {
-                text: {
-                    title: 'Error',
-                    body: 'The configuration file cannot be loaded. SmartSweeper will now exit.'
-                },
-                fatal: true
-            }            
-            ipcRenderer.send('showErrorDialog', content)
+        catch(err) {
+            if (err.code === "ENOENT") {
+                var defaultSmartcashPath
+
+                var content = "rpc.host=127.0.0.1\n"
+                content += "rpc.port=9678\n"
+                content += "rpc.username=rpcusername\n"
+                content += "rpc.password=rpcpassword\n"
+
+                if (os.platform() === "win32")
+                    defaultSmartcashPath = "C:\\Program Files\\SmartCash\\"
+                else if (os.platform() === "darwin")
+                    defaultSmartcashPath = "//Applications//"
+                else if (os.platform() === "linux")
+                    defaultSmartcashPath = ""
+
+                content += "smartcashPath=" + defaultSmartcashPath
+
+                fs.writeFileSync('.env', content)
+
+                config = { rpc: {} }
+
+                config.rpc.host = "127.0.0.1"
+                config.rpc.port = "9678"
+                config.rpc.username = "rpcusername"
+                config.rpc.password = "rpcpassword"
+                config.smartcashPath = defaultSmartcashPath
+
+                client = new smartcashClient.Client({
+                    host: config.rpc.host,
+                    port: config.rpc.port,
+                    user: config.rpc.username,
+                    pass: config.rpc.password,
+                    timeout: 20000
+                })
+            }
+            else {
+                var content = {
+                    text: {
+                        title: 'Error',
+                        body: 'The configuration file cannot be loaded. SmartSweeper will now exit.'
+                    },
+                    fatal: true
+                }            
+                ipcRenderer.send('showErrorDialog', content)
+            }
         }
     }
 }
