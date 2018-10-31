@@ -26,7 +26,7 @@ Sweeper application for [SmartCash cryptocurrency](http://smartcash.cc) to allow
 
 
 ## Installation
-Download a release and run the installer. You may need to run SmartSweeper as an administrator.
+Download a release and run the installer. You will need to run SmartSweeper as an administrator if you install it in Program Files.
 
 
 ## Running from source
@@ -113,6 +113,7 @@ Software | License
 [clipboard.js](https://clipboardjs.com) | MIT
 [delayed-call](https://github.com/finnolav/delayed-call) | MIT
 [devtron](https://github.com/electron/devtron) | MIT
+[dialog](https://github.com/tomas/dialog) | MIT
 [electron](https://github.com/electron/electron) | MIT
 [electron-builder](https://github.com/electron-userland/electron-builder) | MIT
 [electron-debug](https://github.com/sindresorhus/electron-debug) | MIT

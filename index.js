@@ -355,7 +355,6 @@ function createSplashScreen() {
         slashes: true
     }))
     splashScreen.on("ready-to-show", () => {
-        //splashScreen.maximize()
         splashScreen.show()
     })
 }
@@ -377,7 +376,6 @@ function createBgWindow() {
         width: 800,
         height: 700,
         center: true,
-        //focusable: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             devTools: true
