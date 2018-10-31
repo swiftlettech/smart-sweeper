@@ -236,7 +236,7 @@
                         else {
                             console.log('checkBlockchain error');
                             console.log('err: ' + err);
-                            console.log('body.error: ' + body.error);
+                            console.log('body: ' + body);
                             
                             var error
                             
