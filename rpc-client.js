@@ -2,14 +2,13 @@ const fs = require('fs')
 const path = require('path')
 const os = require('os')
 const electron = require('electron')
-const {app, dialog, ipcRenderer} = electron
-const smartcashClient = require('node-smartcash')
+const {ipcRenderer} = electron
+const dialog = require('dialog')
+const smartcashNodeClient = require('node-smartcash')
 
 let config, client
 
-app.on('ready', () => {
-    init()
-})
+init()
 
 function init() {    
     // check for default config file, create an empty one if it doesn't exist
@@ -18,17 +17,10 @@ function init() {
             fs.mkdirSync('config')
         }
         catch(err) {
-            dialog.showMessageBox({
-                type: 'error',
-                buttons: ['OK'],
-                title: 'Error',
-                message: 'You must run SmartSweeper as an Administrator.'
-            }, function(resp) {
-                app.quit()
-            })
+            dialog.err('You must run SmartSweeper as an Administrator.', 'Error', function() { process.exit(1) })
         }
     }
-
+    
     if (fs.existsSync('config')) {
         var defaultConfigPath = path.join('config', 'development.json')
         try {
@@ -45,7 +37,7 @@ function init() {
         try {
             fs.openSync('.env', 'r')
 
-            client = new smartcashClient.Client({
+            client = new smartcashNodeClient.Client({
                 host: config.rpc.host,
                 port: config.rpc.port,
                 user: config.rpc.username,
@@ -81,7 +73,7 @@ function init() {
                 config.rpc.password = "rpcpassword"
                 config.smartcashPath = defaultSmartcashPath
 
-                client = new smartcashClient.Client({
+                client = new smartcashNodeClient.Client({
                     host: config.rpc.host,
                     port: config.rpc.port,
                     user: config.rpc.username,
@@ -99,6 +91,8 @@ function init() {
                 }            
                 ipcRenderer.send('showErrorDialog', content)
             }
+
+            console.log(client)
         }
     }
 }
