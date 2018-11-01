@@ -53,7 +53,6 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
             if ((referrer === "sendFundsCheck") && (apiCallbackCounter == apiCallbackInfo.totalTxs)) {
                 global.sharedObject.rpcError = false
                 doSend(apiCallbackInfo.transactions, projectInfo, callback)
-                global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
             }
         }
         else if (functionName === "sweepFunds") {
@@ -61,7 +60,6 @@ let smartcashCallback = function(resp, functionName, projectInfo, callback = nul
                 global.availableProjects.list[projectInfo.projectIndex] = apiCallbackInfo.project // update project info
                 db.set('projects', global.availableProjects)
                 doSweep(projectInfo, callback)
-                global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
             }
         }
     }
@@ -338,6 +336,8 @@ function doSend(transactions, projectInfo, callback) {
                 }
             })
         }
+        
+        global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
     })
 }
 
@@ -367,7 +367,7 @@ function doSweep(projectInfo, callback) {
         params: [project.recvAddrs[0].sentTxid, 1]
     }
 
-    rpc.sendCmd(getTxInfoCmd, function(err, resp) {        
+    rpc.sendCmd(getTxInfoCmd, function(err, resp) {
         if (err) {
             callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
         }
@@ -431,7 +431,6 @@ function doSweep(projectInfo, callback) {
                                     callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
                                 }
                                 else {
-                                    global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
                                     callback({type: 'data', msg: resp}, 'sweepFunds', projectInfo)
                                 }
                             })
@@ -440,6 +439,8 @@ function doSweep(projectInfo, callback) {
                 }
             })
         }
+        
+        global.smartcashCallbackInfo.delete(referrer+projectInfo.projectID)
     })
 }
 
