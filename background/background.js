@@ -4,7 +4,7 @@
     const config = window.nodeRequire("exp-config");
     const electron = window.nodeRequire('electron');
     const remote = electron.remote;
-    const {ipcRenderer} = electron;
+    const {app, ipcRenderer} = electron;
     const path = window.nodeRequire('path');
     const cp = window.nodeRequire('child_process');
     
@@ -46,7 +46,7 @@
                         },
                         fatal: true
                     };
-                    ipcRenderer.send('showErrorDialog', content);
+                    ipcRenderer.send('showErrorDialog', content.text);
                 }
             },
             showDialog: true
@@ -67,7 +67,7 @@
                 },
                 fatal: true
             };
-            ipcRenderer.send('showErrorDialog', content);
+            ipcRenderer.send('showErrorDialog', content.text);
             return;
         }
 
@@ -313,10 +313,19 @@
 
         smartcash.unref();
         smartcash.on('error', (err) => {
-            console.log('tried to open the node client and failed');
             console.log(err);
+            
             remote.getGlobal('sharedObject').sysLogger.error('appInit - start Smartcash core: ' + err);
             remote.getGlobal('sharedObject').coreError = true;
+            
+            var content = {
+                text: {
+                    title: 'Error',
+                    body: 'The SmartCash node client cannot be loaded. Please check smartcashPath in .env.'
+                },
+                fatal: false
+            };
+            ipcRenderer.send('showErrorDialog', content.text);
         });
         
         setTimeout(() => {

@@ -15,8 +15,7 @@ let db = new Store({name: "smart-sweeper"})
 let reqPerMin
 global.smartcashCallbackInfo = new Map() // keeps track of API callback vars per function call
 
-function init() {
-}
+function init() {}
 
 /* Generic API callback function. */
 let smartcashCallback = function(resp, functionName, projectInfo, callback = null) {

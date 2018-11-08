@@ -89,7 +89,7 @@ function init() {
                     },
                     fatal: true
                 }            
-                ipcRenderer.send('showErrorDialog', content)
+                ipcRenderer.send('showErrorDialog', content.text)
             }
 
             console.log(client)
