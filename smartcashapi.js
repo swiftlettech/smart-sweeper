@@ -292,7 +292,7 @@ function doSend(transactions, projectInfo, callback) {
             callback({type: 'error', msg: resp}, 'sendFunds', projectInfo)
         }
         else {
-            /*if (debugUtils.DEBUG) {
+            if (debugUtils.DEBUG) {
                 var decodeTxCmd = {
                     method: 'decoderawtransaction',
                     params: [resp]
@@ -302,7 +302,7 @@ function doSend(transactions, projectInfo, callback) {
                     console.log("decoderawtransaction resp: ", resp)
                     console.log("decoderawtransaction resp vin: ", resp.vin)
                 })
-            }*/
+            }
 
             var signTxCmd = {
                 method: 'signrawtransaction',
@@ -394,7 +394,7 @@ function doSweep(projectInfo, callback) {
                     callback({type: 'error', msg: resp}, 'sweepFunds', projectInfo)
                 }
                 else {
-                    /*if (debugUtils.DEBUG) {
+                    if (debugUtils.DEBUG) {
                         var decodeTxCmd = {
                             method: 'decoderawtransaction',
                             params: [resp]
@@ -403,7 +403,7 @@ function doSweep(projectInfo, callback) {
                         rpc.sendCmd(decodeTxCmd, function(err, resp) {
                             console.log("decoderawtransaction resp: ", resp)
                         })
-                    }*/
+                    }
                     
                     signTxCmd = {
                         method: 'signrawtransaction',
@@ -493,16 +493,21 @@ function getAddressInfo(projectInfo, callback) {
 
 /* Send funds from one address to another. */
 function sendFunds(projectInfo, callback) {
+    if (debugUtils.DEBUG) {
+        debugUtils.debugSave('sendFunds')
+        debugUtils.debugSave('projectInfo: ' + util.inspect(projectInfo, {showHidden: false, depth: null}))
+    }
+    
     // get all transactions associated with the project address
     request({
         url: smartcashExplorer + '/addr/' + projectInfo.fromAddr,
         method: 'GET',
         json: true
     }, function (err, resp, body) {
-        /*if (debugUtils.DEBUG) {
-            console.log('sendFunds')
-            console.log(body)
-        }*/
+        if (debugUtils.DEBUG) {
+            debugUtils.debugSave('RESP: ', util.inspect(resp, {showHidden: false, depth: null}))
+            debugUtils.debugSave('BODY: ', util.inspect(body, {showHidden: false, depth: null}))
+        }
         
         if (resp && (resp.headers['content-type'].indexOf('json') != -1) && (typeof body === "string"))
             body = JSON.parse(body)

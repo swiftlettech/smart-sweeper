@@ -1,7 +1,7 @@
 {
     "name": "smart-sweeper",
     "productName": "SmartSweeper",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Sweeper application for SmartCash cryptocurrency to allow easy retrieval of gift funds.",
     "homepage": "http://smartsweeper.cc",
     "author": "Swiftlet Technology, LLC",

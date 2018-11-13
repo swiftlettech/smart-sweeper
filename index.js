@@ -395,13 +395,15 @@ function createBgWindow() {
     bgWin.on("ready-to-show", () => {
         setTimeout(function() {
             closeSplashScreen()
-            //bgWin.show()
+            
+            if (debugUtils.DEBUG)
+                bgWin.show()
         }, 12000)
     })
     
-    bgWin.on('show', () => {
-        //bgWin.openDevTools()
-    })
+    /*bgWin.on('show', () => {
+        bgWin.openDevTools()
+    })*/
 
     bgWin.on('closed', () => {        
         bgWin = null
@@ -1690,15 +1692,29 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
     var txFee = getTxFee(numWallets)
     
     // calculate and save the amount per address
-    var totalAmtToSend = args.originalFunds - txFee
-    var amtPerWallet = totalAmtToSend / numWallets
+    var modifiedAmtToSend = args.originalFunds - txFee
+    var amtPerWallet = modifiedAmtToSend / numWallets
     
-    if (debugUtils.DEBUG) {        
+    if (debugUtils.DEBUG) {
         debugUtils.debugSave('args.originalFunds: ' + args.originalFunds)
         debugUtils.debugSave('txFee: ' + txFee)
         debugUtils.debugSave('args.wallets.length: ' + args.wallets.length)
         debugUtils.debugSave('amtPerWallet: ' + amtPerWallet)
+        debugUtils.debugSave()
     }
+    
+    var str = amtPerWallet.toString()
+    var decimalPoint = str.indexOf('.')
+    
+    // only slice off the end of the string if the num of digits after the decimal point > 8
+    var result
+    if (str.substr(decimalPoint+1).length > 8) {
+    	result = str.slice(0, decimalPoint+9) // keep eight places after the decimal
+    	amtPerWallet = parseFloat(result)
+    }
+    
+    if (debugUtils.DEBUG)
+        debugUtils.debugSave('new amtPerWallet: ' + amtPerWallet)
     
     loadProjects()
     var index = getDbIndex(args.projectID)
@@ -1715,7 +1731,7 @@ ipcMain.on('sendPromotionalFunds', (event, args) => {
         apiCallbackCounter: 0
     })
     
-    smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectID: global.availableProjects.list[index].id, projectName: global.availableProjects.list[index].name, amtToSend: totalAmtToSend, amtPerWallet: amtPerWallet, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback)
+    //smartcashapi.sendFunds({referrer: "sendPromotionalFunds", projectIndex: index, projectID: global.availableProjects.list[index].id, projectName: global.availableProjects.list[index].name, amtToSend: args.originalFunds, amtPerWallet: amtPerWallet, fromAddr: args.fromAddr, fromPK: args.fromPK, toAddr: toAddr}, apiCallback)
 })
 
 // set which function opened a modal/dialog
