@@ -1,5 +1,5 @@
-# SmartSweeper
-
+# SmartSweeper - Archived
+## This software is no longer supported and should be used at your own risk. Please visit the "Security" tab to better understand those risks.
 ### Note
 Bug fixes and new features will be added to the dev branch first.
 
